@@ -20,9 +20,10 @@ const WaveManager = {
     waveActive: false,
     endless: false,
     levelScale: 1, // increases each level
+    currentLevel: 1, // stored directly to avoid fragile derivation
 
     getWaveDef(waveNum) {
-        const level = Math.round((this.levelScale - 1) / 0.5) + 1; // recover level from scale
+        const level = this.currentLevel;
 
         // Level 1: use base wave definitions as-is
         if (level <= 1) {
@@ -81,7 +82,7 @@ const WaveManager = {
         const def = this.getWaveDef(this.currentWave);
         this.spawnQueue = [];
         for (const group of def) {
-            // Count already scaled by getWaveDef/_scaleWaveDef for levels 2+
+            // Count already scaled by getWaveDef/_generateWave for levels 2+
             const scaledCount = group.count;
             for (let i = 0; i < scaledCount; i++) {
                 this.spawnQueue.push(group.type);
@@ -129,5 +130,6 @@ const WaveManager = {
         this.waveActive = false;
         this.endless = false;
         this.levelScale = 1;
+        this.currentLevel = 1;
     }
 };

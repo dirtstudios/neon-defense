@@ -231,6 +231,7 @@ const game = {
         WaveManager.waveActive = false;
         WaveManager.spawnQueue = [];
         WaveManager.endless = false;
+        WaveManager.currentLevel = this.level;
         WaveManager.levelScale = 1 + (this.level - 1) * 0.5; // 50% harder each level
         
         // Floating text
