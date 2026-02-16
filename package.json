@@ -1,0 +1,13 @@
+{
+  "name": "neon-defense",
+  "version": "1.0.0",
+  "description": "Browser-based tower defense game with neon geometric art style",
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "test:watch": "node --test --watch test/*.test.js"
+  },
+  "keywords": ["game", "tower-defense", "canvas", "html5"],
+  "author": "Developer",
+  "license": "MIT"
+}

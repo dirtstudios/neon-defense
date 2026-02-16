@@ -1,0 +1,34 @@
+# Progress Log
+Run: 43dc10a9-8c57-45dc-90b0-7399cd11ad04
+Task: Build Neon Defense - a browser-based tower defense game with neon geometric art style
+Started: Sunday, February 15th, 2026 — 4:59 AM
+
+## Codebase Patterns
+- **Vanilla Canvas Game**: No frameworks, all rendering done via HTML5 Canvas 2D context
+- **Fixed Timestep Game Loop**: Uses `requestAnimationFrame` with fixed timestep accumulator (16.67ms) for stable 60 FPS
+- **State Management**: Simple string-based states ('menu', 'playing', 'gameover') with validation
+- **Module Pattern**: Each game system (towers, enemies, particles, etc.) in separate JS files
+- **Object Pooling**: ParticlePool and ProjectilePool used to avoid GC during gameplay
+- **Event-driven UI**: DOM buttons call game methods directly via onclick handlers
+- **Testing**: Node.js built-in test runner with mocked DOM globals
+
+---
+
+## February 15, 2026 5:07 AM - US-001: Complete core game loop and state management
+- Implemented proper 60 FPS targeting with fixed timestep accumulator
+- Added FPS counter with F key toggle for debugging (displays in top-left when enabled)
+- Improved delta time handling with proper capping (33.33ms max to maintain 30fps minimum)
+- Enhanced state management with setState() validation and onStateChange() callbacks
+- Added comprehensive test suite for game state and FPS management (10 tests, all passing)
+- **Learnings:** Game uses requestAnimationFrame but needed fixed timestep for consistent physics; state transitions need validation to prevent invalid game states; FPS counter essential for performance debugging
+---
+
+## February 15, 2026 6:09 AM - US-002: Complete S-curve path system
+- Enhanced path system with smoother S-curve using 42 waypoints instead of 20
+- Implemented pathProgress-based movement system for smooth enemy movement along curves
+- Added path length calculation and position interpolation methods to Path object
+- Refactored enemy movement to use progress (0-1) instead of jumping between waypoints
+- Created comprehensive test suite for path system (11 tests covering path calculation, movement, and edge cases)
+- All tests pass, enemies now move smoothly along the S-curve path
+- **Learnings:** Smooth movement requires interpolation between path points rather than discrete waypoint jumping; pathProgress system scales better than pathIndex for complex curves; comprehensive path testing essential for game feel
+---

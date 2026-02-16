@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neon Defense</title>
+    <link rel="stylesheet" href="css/style.css?v=1771206580">
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        <div id="hud-top">
+            <span id="gold">💰 200</span>
+            <span id="wave-info">Wave 1/5</span>
+            <span id="lives">❤️ 20</span>
+            <span id="wave-preview"></span>
+            <span id="score">Score: 0</span>
+            <span id="speed-controls">
+                <button id="speed1" class="speed-btn active" onclick="game.setSpeed(1)">1x</button>
+                <button id="speed2" class="speed-btn" onclick="game.setSpeed(2)">2x</button>
+            </span>
+        </div>
+        <div id="hud-bottom">
+            <button class="tower-btn" data-tower="blaster" onclick="game.selectTower('blaster')">
+                <span class="tower-icon blaster-icon">△</span>
+                Blaster $50
+            </button>
+            <button class="tower-btn" data-tower="sniper" onclick="game.selectTower('sniper')">
+                <span class="tower-icon sniper-icon">◇</span>
+                Sniper $100
+            </button>
+            <button class="tower-btn" data-tower="aoe" onclick="game.selectTower('aoe')">
+                <span class="tower-icon aoe-icon">⬡</span>
+                AOE $150
+            </button>
+            <button class="tower-btn" data-tower="boat" id="boat-btn" onclick="game.selectTower('boat')" style="display:none">
+                <span class="tower-icon boat-icon">⛵</span>
+                Boat $75
+            </button>
+            <span class="separator">|</span>
+            <button class="tower-btn trap-btn" data-tower="mine" onclick="game.selectTower('mine')">
+                <span class="tower-icon mine-icon">💣</span>
+                Mine $30
+            </button>
+            <button class="tower-btn trap-btn" data-tower="poison" onclick="game.selectTower('poison')">
+                <span class="tower-icon poison-icon">☠️</span>
+                Poison $40
+            </button>
+            <button class="tower-btn trap-btn" data-tower="ice" onclick="game.selectTower('ice')">
+                <span class="tower-icon ice-icon">❄️</span>
+                Ice $25
+            </button>
+            <span class="separator">|</span>
+            <button class="tower-btn sell-btn" onclick="game.selectTower('sell')">
+                Sell
+            </button>
+            <button id="start-wave-btn" onclick="game.startWave()">▶ Start Wave</button>
+        </div>
+        <div id="menu-screen">
+            <h1>NEON DEFENSE</h1>
+            <p class="subtitle">A Tower Defense Game</p>
+            <div id="map-info">
+                <span id="map-name">Map: —</span>
+                <span id="map-seed">Seed: —</span>
+            </div>
+            <button id="play-btn" onclick="game.startGame()">PLAY</button>
+            <button id="new-map-btn" onclick="game.rerollMap()">🔄 NEW MAP</button>
+            <div id="seed-input-row">
+                <input type="text" id="seed-input" placeholder="Enter seed..." maxlength="10">
+                <button onclick="game.loadSeed()">GO</button>
+            </div>
+            <p class="controls-hint">Place towers to defend against waves of enemies</p>
+        </div>
+        <div id="game-over-screen" style="display:none">
+            <h1 id="end-title">GAME OVER</h1>
+            <p id="end-message"></p>
+            <p id="end-score"></p>
+            <p id="end-map-info"></p>
+            <div id="end-buttons">
+                <button onclick="game.restart()">RETRY MAP</button>
+                <button onclick="game.restartNewMap()">NEW MAP</button>
+                <button class="menu-btn" onclick="game.backToMenu()">MENU</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/utils.js?v=1771206580"></script>
+    <script src="js/audio.js?v=1771206580"></script>
+    <script src="js/path.js?v=1771206580"></script>
+    <script src="js/particle.js?v=1771206580"></script>
+    <script src="js/projectile.js?v=1771206580"></script>
+    <script src="js/enemy.js?v=1771206580"></script>
+    <script src="js/tower.js?v=1771206580"></script>
+    <script src="js/trap.js?v=1771206580"></script>
+    <script src="js/wave.js?v=1771206580"></script>
+    <script src="js/ui.js?v=1771206580"></script>
+    <script src="js/game.js?v=1771206580"></script>
+</body>
+</html>

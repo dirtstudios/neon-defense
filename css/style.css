@@ -1,0 +1,261 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    background: #020208;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    color: #fff;
+    overflow: hidden;
+}
+
+#game-container {
+    position: relative;
+    width: 800px;
+    height: 700px;
+}
+
+#gameCanvas {
+    display: block;
+    background: #050510;
+    border: 1px solid rgba(0, 243, 255, 0.2);
+}
+
+#hud-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 16px;
+    background: rgba(5, 5, 16, 0.95);
+    border-bottom: 1px solid rgba(0, 243, 255, 0.15);
+    font-size: 14px;
+    height: 40px;
+    gap: 12px;
+}
+
+#hud-top > span { display: flex; align-items: center; gap: 4px; white-space: nowrap; }
+
+#hud-bottom {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 10px;
+    background: rgba(5, 5, 16, 0.95);
+    border-top: 1px solid rgba(0, 243, 255, 0.15);
+    height: 46px;
+    flex-wrap: nowrap;
+}
+
+.tower-btn {
+    background: rgba(0, 243, 255, 0.08);
+    border: 1px solid rgba(0, 243, 255, 0.3);
+    color: #cceeff;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 11px;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+}
+
+.tower-btn:hover { background: rgba(0, 243, 255, 0.15); border-color: #00f3ff; }
+.tower-btn.active { background: rgba(0, 243, 255, 0.25); border-color: #00f3ff; box-shadow: 0 0 8px rgba(0, 243, 255, 0.3); }
+.tower-btn.disabled { opacity: 0.3; cursor: not-allowed; }
+
+.sell-btn { border-color: rgba(255, 0, 85, 0.3); color: #ff9999; background: rgba(255, 0, 85, 0.08); }
+.sell-btn:hover { border-color: #ff0055; background: rgba(255, 0, 85, 0.15); }
+.sell-btn.active { border-color: #ff0055; background: rgba(255, 0, 85, 0.25); box-shadow: 0 0 8px rgba(255, 0, 85, 0.3); }
+
+.tower-icon { font-size: 16px; }
+.blaster-icon { color: #00f3ff; }
+.sniper-icon { color: #aa88ff; }
+.aoe-icon { color: #ff8800; }
+.boat-icon { color: #0088ff; }
+.mine-icon { color: #ff3333; }
+.poison-icon { color: #44ff44; }
+.ice-icon { color: #88ddff; }
+
+.trap-btn { border-color: rgba(255, 255, 255, 0.2); font-size: 11px; padding: 4px 6px; }
+.trap-btn:hover { border-color: rgba(255, 255, 255, 0.4); }
+
+.separator { color: #333; font-size: 18px; margin: 0 2px; }
+
+.speed-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #888;
+    padding: 2px 8px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 12px;
+}
+.speed-btn.active { color: #00f3ff; border-color: #00f3ff; }
+
+#start-wave-btn {
+    background: rgba(0, 255, 100, 0.1);
+    border: 1px solid rgba(0, 255, 100, 0.4);
+    color: #88ffaa;
+    padding: 4px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 11px;
+    margin-left: auto;
+    white-space: nowrap;
+}
+#start-wave-btn:hover { background: rgba(0, 255, 100, 0.2); }
+#start-wave-btn.disabled { opacity: 0.3; cursor: not-allowed; }
+
+#wave-preview {
+    color: #666;
+    font-size: 11px;
+    flex: 1;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Menu & Game Over screens */
+#menu-screen, #game-over-screen {
+    position: absolute;
+    top: 40px;
+    left: 0;
+    width: 800px;
+    height: 600px;
+    background: rgba(5, 5, 16, 0.92);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+}
+
+#menu-screen h1, #game-over-screen h1 {
+    font-size: 48px;
+    font-weight: 300;
+    letter-spacing: 12px;
+    color: #00f3ff;
+    text-shadow: 0 0 30px rgba(0, 243, 255, 0.5);
+    margin-bottom: 8px;
+}
+
+.subtitle {
+    color: #555;
+    font-size: 14px;
+    letter-spacing: 4px;
+    margin-bottom: 40px;
+}
+
+#play-btn, #game-over-screen button {
+    background: transparent;
+    border: 1px solid #00f3ff;
+    color: #00f3ff;
+    padding: 12px 48px;
+    font-size: 18px;
+    letter-spacing: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+#play-btn:hover, #game-over-screen button:hover {
+    background: rgba(0, 243, 255, 0.1);
+    box-shadow: 0 0 20px rgba(0, 243, 255, 0.3);
+}
+
+#new-map-btn {
+    background: transparent;
+    border: 1px solid rgba(255, 136, 0, 0.5);
+    color: #ff8800;
+    padding: 8px 28px;
+    font-size: 14px;
+    letter-spacing: 3px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 12px;
+}
+#new-map-btn:hover {
+    background: rgba(255, 136, 0, 0.1);
+    box-shadow: 0 0 15px rgba(255, 136, 0, 0.2);
+}
+
+#map-info {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 28px;
+    font-size: 13px;
+    color: #666;
+    letter-spacing: 2px;
+}
+#map-name { color: #ff8800; }
+#map-seed { color: #555; }
+
+#seed-input-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    align-items: center;
+}
+#seed-input {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #aaa;
+    padding: 6px 12px;
+    font-size: 13px;
+    border-radius: 3px;
+    width: 140px;
+    text-align: center;
+    font-family: monospace;
+}
+#seed-input::placeholder { color: #444; }
+#seed-input:focus { outline: none; border-color: rgba(0, 243, 255, 0.4); }
+#seed-input-row button {
+    background: transparent;
+    border: 1px solid rgba(0, 243, 255, 0.3);
+    color: #00f3ff;
+    padding: 6px 14px;
+    font-size: 13px;
+    cursor: pointer;
+    border-radius: 3px;
+}
+#seed-input-row button:hover { background: rgba(0, 243, 255, 0.1); }
+
+.controls-hint {
+    color: #444;
+    font-size: 12px;
+    margin-top: 24px;
+}
+
+#end-title { margin-bottom: 16px; }
+#end-message { color: #888; font-size: 16px; margin-bottom: 8px; }
+#end-score { color: #00f3ff; font-size: 20px; margin-bottom: 8px; }
+#end-map-info { color: #555; font-size: 13px; margin-bottom: 28px; letter-spacing: 1px; }
+#end-buttons { display: flex; gap: 12px; }
+#end-buttons button {
+    background: transparent;
+    border: 1px solid #00f3ff;
+    color: #00f3ff;
+    padding: 10px 28px;
+    font-size: 15px;
+    letter-spacing: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+#end-buttons button:hover {
+    background: rgba(0, 243, 255, 0.1);
+    box-shadow: 0 0 15px rgba(0, 243, 255, 0.3);
+}
+#end-buttons .menu-btn {
+    border-color: rgba(255, 255, 255, 0.3);
+    color: #888;
+    letter-spacing: 3px;
+}
+#end-buttons .menu-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    box-shadow: none;
+    color: #aaa;
+}
