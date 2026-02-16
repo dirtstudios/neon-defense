@@ -19,15 +19,17 @@ const Utils = {
     randInt(min, max) {
         return Math.floor(Math.random() * (max - min + 1)) + min;
     },
-    // Grid snapping (20px grid for finer placement)
-    GRID: 20,
+    // Grid snapping (10px grid for finer placement - 2x previous)
+    GRID: 10,
     snapToGrid(x, y) {
+        const g = Utils.GRID;
         return {
-            x: Math.floor(x / 20) * 20 + 10,
-            y: Math.floor(y / 20) * 20 + 10
+            x: Math.floor(x / g) * g + g / 2,
+            y: Math.floor(y / g) * g + g / 2
         };
     },
     gridKey(x, y) {
-        return `${Math.floor(x / 20)},${Math.floor(y / 20)}`;
+        const g = Utils.GRID;
+        return `${Math.floor(x / g)},${Math.floor(y / g)}`;
     }
 };

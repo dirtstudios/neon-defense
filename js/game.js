@@ -418,7 +418,7 @@ const game = {
 
         // Check if clicking existing tower
         for (const t of this.towers) {
-            if (Utils.dist(mx, my, t.x, t.y) < 20) {
+            if (Utils.dist(mx, my, t.x, t.y) < Utils.GRID * 1.5) {
                 if (this.selectedTower === 'sell') {
                     // Sell tower
                     this.gold += t.sellValue;
@@ -484,11 +484,12 @@ const game = {
 
             // Check not on existing tower
             for (const t of this.towers) {
-                if (Utils.dist(snap.x, snap.y, t.x, t.y) < 28) return; // min spacing between towers
+                if (Utils.dist(snap.x, snap.y, t.x, t.y) < Utils.GRID * 2.5) return; // min spacing between towers
             }
 
             // Check bounds
-            if (snap.x < 20 || snap.x > 780 || snap.y < 20 || snap.y > 580) return;
+            const padding = Utils.GRID * 2;
+            if (snap.x < padding || snap.x > 800 - padding || snap.y < padding || snap.y > 600 - padding) return;
 
             // Check water/land placement
             const onWater = Path.isWater(snap.x, snap.y);
@@ -662,12 +663,13 @@ const game = {
 
         // Grid (subtle, themed — show every other line slightly brighter)
         ctx.lineWidth = 1;
+        const gridStep = Utils.GRID * 2; // Highlight every 2nd grid line
         for (let x = 0; x <= 800; x += Utils.GRID) {
-            ctx.strokeStyle = (x % 40 === 0) ? theme.path + '0.04)' : theme.path + '0.02)';
+            ctx.strokeStyle = (x % gridStep === 0) ? theme.path + '0.04)' : theme.path + '0.02)';
             ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 600); ctx.stroke();
         }
         for (let y = 0; y <= 600; y += Utils.GRID) {
-            ctx.strokeStyle = (y % 40 === 0) ? theme.path + '0.04)' : theme.path + '0.02)';
+            ctx.strokeStyle = (y % gridStep === 0) ? theme.path + '0.04)' : theme.path + '0.02)';
             ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(800, y); ctx.stroke();
         }
 
