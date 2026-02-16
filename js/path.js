@@ -407,6 +407,8 @@ const Path = {
         this._segmentLengths = null;
         this._blocked = null;
         this._waterCells = null;
+        this._splineDirty = true;
+        this._cachedSpline = null;
         
         this._calculatePathLength();
         
@@ -559,8 +561,18 @@ const Path = {
         return spline;
     },
 
-    // Flow animation timer
+    // Spline cache + flow animation
+    _cachedSpline: null,
+    _splineDirty: true,
     _flowOffset: 0,
+
+    getSpline() {
+        if (!this._cachedSpline || this._splineDirty) {
+            this._cachedSpline = this._getSplinePoints(6);
+            this._splineDirty = false;
+        }
+        return this._cachedSpline;
+    },
 
     draw(ctx, theme) {
         const pathColor = theme ? theme.path : 'rgba(0, 243, 255,';
@@ -591,8 +603,8 @@ const Path = {
             ctx.stroke();
         }
         
-        // Generate smooth spline
-        const spline = this._getSplinePoints(6);
+        // Use cached smooth spline
+        const spline = this.getSpline();
         
         // Outer glow (wide, faint)
         ctx.beginPath();
