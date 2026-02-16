@@ -222,6 +222,26 @@ function createEnemy(type, waveNum) {
                 ctx.fillStyle = this.hp / this.maxHp > 0.3 ? '#00ff66' : '#ff3333';
                 ctx.fillRect(barX, barY, barW * (this.hp / this.maxHp), barH);
             }
+            
+            // Resistance indicator icon above enemy
+            const resistIcon = this._getResistIcon();
+            if (resistIcon) {
+                ctx.font = '10px monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText(resistIcon, this.x, this.y - s - 12);
+            }
+        },
+        
+        _getResistIcon() {
+            // Show resistance icons based on enemy type
+            if (this.resist) {
+                if (this.resist.kinetic && this.resist.kinetic < 1) return '🛡️'; // resists kinetic
+                if (this.resist.fire && this.resist.fire < 1) return '🔥'; // resists fire
+                if (this.resist.pierce && this.resist.pierce < 1) return '💎'; // resists pierce
+                if (this.type === 'healer') return '💚'; // healer
+                if (this.type === 'stealth') return '👻'; // stealth
+            }
+            return null;
         }
     };
 }
