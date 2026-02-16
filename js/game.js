@@ -793,13 +793,21 @@ const game = {
             const upgradeW = upgradeText ? ctx.measureText(upgradeText).width : 0;
             
             const padding = 20;
-            const boxW = Math.max(nameW, statsW, sellW, upgradeW) + padding * 2;
+            const maxTextW = Math.max(nameW, statsW, sellW, upgradeW);
+            // Cap width and enable wrapping for long text
+            const boxW = Math.min(maxTextW + padding * 2, 250);
             const lineH = 16;
             const lines = upgradeText ? 4 : 3;
             const boxH = lines * lineH + 12;
             
-            const tx = Utils.clamp(t.x, boxW / 2 + 10, 800 - boxW / 2 - 10);
-            const ty = t.y - 40;
+            // Position tooltip above tower, within bounds
+            let tx = t.x;
+            let ty = t.y - 40;
+            
+            // Clamp x position to keep box on screen
+            tx = Math.max(boxW / 2 + 10, Math.min(800 - boxW / 2 - 10, tx));
+            // If too close to top, show below tower
+            if (ty - boxH < 10) ty = t.y + 30;
             const bx = tx - boxW / 2;
             const by = ty - boxH;
             
