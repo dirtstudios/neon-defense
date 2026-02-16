@@ -574,6 +574,91 @@ const Path = {
         return this._cachedSpline;
     },
 
+    // Extend path with new segments for level progression
+    extend(seed) {
+        this._seedRng(seed || Math.floor(Math.random() * 2147483647));
+        const rng = (min, max) => this._rngRange(min, max);
+        
+        const lastPt = this.points[this.points.length - 1];
+        const prevPt = this.points[this.points.length - 2] || lastPt;
+        
+        // Determine general direction from last two points
+        const dx = lastPt.x - prevPt.x;
+        const dy = lastPt.y - prevPt.y;
+        
+        const newPoints = [];
+        let cx = lastPt.x;
+        let cy = lastPt.y;
+        
+        // Generate 3-5 new waypoints that create interesting path extensions
+        const segments = 3 + Math.floor(rng(0, 3));
+        
+        for (let i = 0; i < segments; i++) {
+            // Pick a direction that stays in bounds and creates interesting turns
+            let nx, ny;
+            const attempts = 20;
+            for (let a = 0; a < attempts; a++) {
+                const angle = rng(0, Math.PI * 2);
+                const dist = rng(60, 140);
+                nx = cx + Math.cos(angle) * dist;
+                ny = cy + Math.sin(angle) * dist;
+                // Keep in bounds
+                if (nx > 60 && nx < 740 && ny > 60 && ny < 540) break;
+            }
+            nx = Math.max(60, Math.min(740, nx));
+            ny = Math.max(60, Math.min(540, ny));
+            newPoints.push({ x: nx, y: ny });
+            cx = nx;
+            cy = ny;
+        }
+        
+        // Add an exit point at the nearest edge
+        const exitOptions = [
+            { x: -20, y: cy + rng(-10, 10) },    // left
+            { x: 820, y: cy + rng(-10, 10) },     // right
+            { x: cx + rng(-10, 10), y: -20 },     // top
+            { x: cx + rng(-10, 10), y: 620 }      // bottom
+        ];
+        // Pick the exit closest to the last generated point's direction
+        let bestExit = exitOptions[0];
+        let bestDist = Infinity;
+        for (const exit of exitOptions) {
+            const d = Math.sqrt((exit.x - cx) ** 2 + (exit.y - cy) ** 2);
+            if (d < bestDist) { bestDist = d; bestExit = exit; }
+        }
+        newPoints.push(bestExit);
+        
+        // Remove the old exit point (last point) and append new points
+        // Keep existing path but replace the final exit with a connection
+        this.points.pop(); // remove old exit
+        for (const p of newPoints) {
+            this.points.push(p);
+        }
+        
+        // Subdivide the new section (re-subdivide full path for consistency)
+        // Actually just recalculate everything
+        this._totalLength = null;
+        this._segmentLengths = null;
+        this._blocked = null;
+        this._waterCells = null;
+        this._splineDirty = true;
+        this._cachedSpline = null;
+        
+        this._calculatePathLength();
+        
+        return { newPointCount: newPoints.length };
+    },
+
+    // Get restricted zones (new path cells) for build phase display
+    getNewPathCells(oldBlockedSet) {
+        const currentBlocked = this.getBlocked();
+        const newCells = new Set();
+        for (const cell of currentBlocked) {
+            if (!oldBlockedSet.has(cell)) newCells.add(cell);
+        }
+        return newCells;
+    },
+
     draw(ctx, theme) {
         const pathColor = theme ? theme.path : 'rgba(0, 243, 255,';
         

@@ -206,24 +206,38 @@ const game = {
     __doAdvanceLevel() {
         this.level++;
         
-        // Roguelike: refund all tower sell values before clearing
-        let towerRefund = 0;
-        for (const t of this.towers) {
-            towerRefund += t.sellValue || 0;
-        }
-        this.gold += towerRefund;
+        // Save old blocked cells to detect new path zones
+        const oldBlocked = new Set(Path.getBlocked());
         
-        // Clear everything for new map
-        this.towers = [];
-        this.traps = [];
+        // EXTEND path instead of replacing — towers persist!
+        Path.extend(this.level * 7919); // deterministic seed per level
+        
+        // Auto-sell towers that now overlap with new path (100% refund)
+        const newBlocked = Path.getBlocked();
+        const towersToRemove = [];
+        for (const t of this.towers) {
+            const gx = Math.floor(t.x / Utils.GRID);
+            const gy = Math.floor(t.y / Utils.GRID);
+            const key = `${gx},${gy}`;
+            if (newBlocked.has(key) && !oldBlocked.has(key)) {
+                this.gold += t.sellValue || 0;
+                towersToRemove.push(t);
+            }
+        }
+        for (const t of towersToRemove) {
+            this.towers = this.towers.filter(tw => tw !== t);
+        }
+        
+        // Clear enemies, projectiles, particles (but NOT towers)
         this.enemies = [];
         this._floatingTexts = [];
         ParticlePool.active = [];
         ProjectilePool.active = [];
         ProjectilePool.rings = [];
         
-        // New map
-        this.mapInfo = Path.generate();
+        // Remove dead traps
+        this.traps = this.traps.filter(t => t.alive);
+        
         this._updateMapDisplay();
         
         // Reset wave manager for new level (scale difficulty)
@@ -232,30 +246,37 @@ const game = {
         WaveManager.spawnQueue = [];
         WaveManager.endless = false;
         WaveManager.currentLevel = this.level;
-        WaveManager.levelScale = 1 + (this.level - 1) * 0.5; // 50% harder each level
+        WaveManager.levelScale = 1 + (this.level - 1) * 0.5;
         
-        // Floating text
+        // Level transition floating text
         const theme = this.getCurrentTheme();
         this._floatingTexts.push({
             text: `LEVEL ${this.level} — ${theme.name.toUpperCase()}`,
-            x: 400, y: 260,
-            life: 3, maxLife: 3,
+            x: 400, y: 240,
+            life: 4, maxLife: 4,
             color: '#ffffff'
         });
         this._floatingTexts.push({
-            text: this.mapInfo.name,
-            x: 400, y: 290,
-            life: 3, maxLife: 3,
-            color: '#888888'
+            text: 'PATH EXTENDED — TOWERS PERSIST',
+            x: 400, y: 270,
+            life: 4, maxLife: 4,
+            color: '#00ff66'
         });
-        if (towerRefund > 0) {
+        if (towersToRemove.length > 0) {
+            const refund = towersToRemove.reduce((sum, t) => sum + (t.sellValue || 0), 0);
             this._floatingTexts.push({
-                text: `+${towerRefund}💰 towers salvaged`,
-                x: 400, y: 320,
-                life: 3, maxLife: 3,
+                text: `${towersToRemove.length} tower${towersToRemove.length > 1 ? 's' : ''} relocated (+${refund}💰)`,
+                x: 400, y: 300,
+                life: 4, maxLife: 4,
                 color: '#ffdd00'
             });
         }
+        this._floatingTexts.push({
+            text: 'Place towers, then press SPACE',
+            x: 400, y: 330,
+            life: 5, maxLife: 5,
+            color: '#888888'
+        });
         
         Audio.levelUp();
         this.updateUI();
