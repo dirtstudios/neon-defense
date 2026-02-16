@@ -532,12 +532,41 @@ const Path = {
         return this.isWater(cx, cy);
     },
 
+    // Catmull-Rom spline interpolation for smooth curves
+    _catmullRom(p0, p1, p2, p3, t) {
+        const t2 = t * t, t3 = t2 * t;
+        return {
+            x: 0.5 * ((2 * p1.x) + (-p0.x + p2.x) * t + (2 * p0.x - 5 * p1.x + 4 * p2.x - p3.x) * t2 + (-p0.x + 3 * p1.x - 3 * p2.x + p3.x) * t3),
+            y: 0.5 * ((2 * p1.y) + (-p0.y + p2.y) * t + (2 * p0.y - 5 * p1.y + 4 * p2.y - p3.y) * t2 + (-p0.y + 3 * p1.y - 3 * p2.y + p3.y) * t3)
+        };
+    },
+
+    // Generate smooth spline points from control points
+    _getSplinePoints(stepsPerSegment) {
+        const pts = this.points;
+        if (pts.length < 2) return pts;
+        const spline = [];
+        for (let i = 0; i < pts.length - 1; i++) {
+            const p0 = pts[Math.max(0, i - 1)];
+            const p1 = pts[i];
+            const p2 = pts[i + 1];
+            const p3 = pts[Math.min(pts.length - 1, i + 2)];
+            for (let s = 0; s < stepsPerSegment; s++) {
+                spline.push(this._catmullRom(p0, p1, p2, p3, s / stepsPerSegment));
+            }
+        }
+        spline.push(pts[pts.length - 1]);
+        return spline;
+    },
+
+    // Flow animation timer
+    _flowOffset: 0,
+
     draw(ctx, theme) {
         const pathColor = theme ? theme.path : 'rgba(0, 243, 255,';
         
         // Draw water zones first (below path)
         for (const zone of this.waterZones) {
-            // Outer glow
             const grad = ctx.createRadialGradient(zone.x, zone.y, 0, zone.x, zone.y, zone.radius);
             grad.addColorStop(0, 'rgba(0, 80, 180, 0.15)');
             grad.addColorStop(0.6, 'rgba(0, 60, 150, 0.10)');
@@ -547,7 +576,6 @@ const Path = {
             ctx.arc(zone.x, zone.y, zone.radius, 0, Math.PI * 2);
             ctx.fill();
             
-            // Inner water body
             const innerGrad = ctx.createRadialGradient(zone.x, zone.y, 0, zone.x, zone.y, zone.radius * 0.8);
             innerGrad.addColorStop(0, 'rgba(0, 100, 200, 0.12)');
             innerGrad.addColorStop(1, 'rgba(0, 60, 150, 0.06)');
@@ -556,7 +584,6 @@ const Path = {
             ctx.arc(zone.x, zone.y, zone.radius * 0.8, 0, Math.PI * 2);
             ctx.fill();
             
-            // Subtle edge
             ctx.strokeStyle = 'rgba(0, 120, 220, 0.12)';
             ctx.lineWidth = 1;
             ctx.beginPath();
@@ -564,26 +591,49 @@ const Path = {
             ctx.stroke();
         }
         
-        // Path
+        // Generate smooth spline
+        const spline = this._getSplinePoints(6);
+        
+        // Outer glow (wide, faint)
         ctx.beginPath();
-        ctx.moveTo(this.points[0].x, this.points[0].y);
-        for (let i = 1; i < this.points.length; i++) {
-            ctx.lineTo(this.points[i].x, this.points[i].y);
-        }
-        ctx.strokeStyle = pathColor + '0.08)';
-        ctx.lineWidth = Utils.GRID * 0.8;
+        ctx.moveTo(spline[0].x, spline[0].y);
+        for (let i = 1; i < spline.length; i++) ctx.lineTo(spline[i].x, spline[i].y);
+        ctx.strokeStyle = pathColor + '0.04)';
+        ctx.lineWidth = Utils.GRID * 1.2;
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
         ctx.stroke();
-
+        
+        // Main path body
         ctx.beginPath();
-        ctx.moveTo(this.points[0].x, this.points[0].y);
-        for (let i = 1; i < this.points.length; i++) {
-            ctx.lineTo(this.points[i].x, this.points[i].y);
-        }
-        ctx.strokeStyle = pathColor + '0.15)';
+        ctx.moveTo(spline[0].x, spline[0].y);
+        for (let i = 1; i < spline.length; i++) ctx.lineTo(spline[i].x, spline[i].y);
+        ctx.strokeStyle = pathColor + '0.08)';
+        ctx.lineWidth = Utils.GRID * 0.8;
+        ctx.stroke();
+
+        // Edge glow lines
+        ctx.beginPath();
+        ctx.moveTo(spline[0].x, spline[0].y);
+        for (let i = 1; i < spline.length; i++) ctx.lineTo(spline[i].x, spline[i].y);
+        ctx.strokeStyle = pathColor + '0.2)';
         ctx.lineWidth = 2;
         ctx.stroke();
+
+        // Directional flow arrows (animated dashes)
+        this._flowOffset = (this._flowOffset + 0.3) % 30;
+        ctx.save();
+        ctx.setLineDash([4, 26]);
+        ctx.lineDashOffset = -this._flowOffset;
+        ctx.beginPath();
+        ctx.moveTo(spline[0].x, spline[0].y);
+        for (let i = 1; i < spline.length; i++) ctx.lineTo(spline[i].x, spline[i].y);
+        ctx.strokeStyle = pathColor + '0.35)';
+        ctx.lineWidth = 1.5;
+        ctx.lineCap = 'butt';
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.restore();
         
         // Entry/exit markers
         const entry = this.points[0];
