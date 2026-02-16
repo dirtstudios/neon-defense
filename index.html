@@ -55,6 +55,7 @@
                 Sell
             </button>
             <button id="start-wave-btn" onclick="game.startWave()">▶ Start Wave</button>
+            <button id="bestiary-btn" onclick="UI.toggleBestiary()">❓</button>
         </div>
         <div id="menu-screen">
             <h1>NEON DEFENSE</h1>
@@ -81,6 +82,15 @@
                 <button onclick="game.restartNewMap()">NEW MAP</button>
                 <button class="menu-btn" onclick="game.backToMenu()">MENU</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Bestiary Modal -->
+    <div id="bestiary-modal" style="display:none">
+        <div id="bestiary-inner">
+            <h2>ENEMY BESTIARY</h2>
+            <div id="bestiary-content"></div>
+            <button onclick="UI.toggleBestiary()">CLOSE</button>
         </div>
     </div>
 

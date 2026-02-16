@@ -568,6 +568,11 @@ const game = {
         // Screen shake
         if (this.shakeTimer > 0) this.shakeTimer -= dt;
 
+        // Update wave remaining display
+        if (WaveManager.waveActive) {
+            UI.updateWaveRemaining(this.enemies);
+        }
+
         // Wave complete check
         if (WaveManager.isWaveComplete(this.enemies)) {
             const bonus = 50 + WaveManager.currentWave * 10;

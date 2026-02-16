@@ -37,6 +37,53 @@ const UI = {
             if (def) btn.classList.toggle('disabled', gold < def.cost);
         });
     },
+    // Bestiary
+    bestiaryData: [
+        { name: 'Basic', color: '#ff0055', shape: '●', hp: 30, speed: 2, gold: 10, resist: 'None', tip: 'No resistances — any tower works' },
+        { name: 'Fast', color: '#ff3388', shape: '◆', hp: 20, speed: 3, gold: 15, resist: 'Weak to Pierce (1.5x)', tip: 'Use Snipers to pick them off' },
+        { name: 'Tank', color: '#ff4400', shape: '⬡', hp: 100, speed: 1, gold: 30, resist: 'Kinetic 0.5x, Fire 1.5x', tip: 'AOE fire towers melt these' },
+        { name: 'Shield', color: '#4488ff', shape: '🛡', hp: 60, speed: 1.8, gold: 20, resist: 'Fire 0.5x, Pierce 2x', tip: 'Snipers pierce their shields' },
+        { name: 'Swarm', color: '#ffaa00', shape: '●', hp: 12, speed: 2.5, gold: 5, resist: 'Pierce 0.3x, Fire 2x', tip: 'AOE fire wipes swarms fast' },
+        { name: 'Healer', color: '#44ff88', shape: '✚', hp: 40, speed: 1.5, gold: 25, resist: 'Kinetic 1.5x', tip: 'Kill first! Heals nearby enemies' },
+        { name: 'Stealth', color: '#8844aa', shape: '◆', hp: 35, speed: 2.2, gold: 20, resist: 'Fire 0.5x, Kinetic 0.7x', tip: 'Hard to hit — use AOE splash' },
+        { name: 'Boss', color: '#ff0055', shape: '⬡', hp: 500, speed: 0.5, gold: 100, resist: 'Kinetic 0.7x, Fire 0.7x', tip: 'Needs everything — focus fire!' }
+    ],
+
+    toggleBestiary() {
+        const modal = document.getElementById('bestiary-modal');
+        if (modal.style.display === 'none') {
+            const content = document.getElementById('bestiary-content');
+            content.innerHTML = this.bestiaryData.map(e => `
+                <div class="bestiary-entry">
+                    <div class="bestiary-icon" style="background:${e.color}22;color:${e.color};border:1px solid ${e.color}">${e.shape}</div>
+                    <div class="bestiary-info">
+                        <div class="bestiary-name" style="color:${e.color}">${e.name}</div>
+                        <div class="bestiary-stats">HP ${e.hp} · SPD ${e.speed} · 💰${e.gold} · ${e.resist}</div>
+                        <div class="bestiary-tip">💡 ${e.tip}</div>
+                    </div>
+                </div>
+            `).join('');
+            modal.style.display = 'flex';
+        } else {
+            modal.style.display = 'none';
+        }
+    },
+
+    updateWaveRemaining(enemies) {
+        const el = document.getElementById('wave-preview');
+        if (!WaveManager.waveActive) return;
+        // Count remaining in spawn queue + alive
+        const remaining = {};
+        for (const type of WaveManager.spawnQueue) {
+            remaining[type] = (remaining[type] || 0) + 1;
+        }
+        for (const e of enemies) {
+            if (e.alive) remaining[e.type] = (remaining[e.type] || 0) + 1;
+        }
+        const parts = Object.entries(remaining).map(([t, c]) => `${c} ${t}`);
+        el.textContent = parts.length > 0 ? `Remaining: ${parts.join(' + ')}` : '';
+    },
+
     showMenu() {
         document.getElementById('menu-screen').style.display = 'flex';
         document.getElementById('game-over-screen').style.display = 'none';
