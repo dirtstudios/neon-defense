@@ -22,21 +22,58 @@ const WaveManager = {
     levelScale: 1, // increases each level
 
     getWaveDef(waveNum) {
-        if (waveNum < this.waves.length) {
-            return this.waves[waveNum];
+        const level = Math.round((this.levelScale - 1) / 0.5) + 1; // recover level from scale
+
+        // Level 1: use base wave definitions as-is
+        if (level <= 1) {
+            if (waveNum < this.waves.length) return this.waves[waveNum];
         }
-        // Endless mode: scale with all enemy types
-        const scale = 1 + (waveNum - 4) * 0.2;
-        return [
-            { type: 'basic', count: Math.floor(15 * scale) },
-            { type: 'fast', count: Math.floor(8 * scale) },
-            { type: 'tank', count: Math.floor(6 * scale) },
-            { type: 'shield', count: Math.floor(4 * scale) },
-            { type: 'swarm', count: Math.floor(10 * scale) },
-            { type: 'healer', count: Math.floor(2 * scale) },
-            { type: 'stealth', count: Math.floor(3 * scale) },
-            { type: 'boss', count: Math.floor(1 + (waveNum - 4) * 0.5) }
-        ];
+
+        // Level 2+: generate waves based on combined difficulty
+        // "effective wave" = total waves completed + current wave within level
+        // So level 2 wave 1 = effective wave 6, level 3 wave 1 = effective wave 11, etc
+        const effectiveWave = (level - 1) * this.waves.length + waveNum;
+        return this._generateWave(effectiveWave, waveNum, level);
+    },
+
+    // Generate wave composition based on effective difficulty
+    _generateWave(effectiveWave, waveInLevel, level) {
+        const s = effectiveWave; // shorthand for scaling
+
+        // Base counts scale with effective wave number
+        const wave = [];
+
+        // Basics always present but become less dominant
+        const basicCount = Math.max(5, Math.floor(10 + s * 1.5));
+        wave.push({ type: 'basic', count: basicCount });
+
+        // Fast enemies from effective wave 2+
+        if (s >= 2) wave.push({ type: 'fast', count: Math.floor(4 + s * 1.2) });
+
+        // Swarm from effective wave 3+
+        if (s >= 3) wave.push({ type: 'swarm', count: Math.floor(6 + s * 1.5) });
+
+        // Tanks from effective wave 3+
+        if (s >= 3) wave.push({ type: 'tank', count: Math.floor(2 + s * 0.8) });
+
+        // Shields from effective wave 4+
+        if (s >= 4) wave.push({ type: 'shield', count: Math.floor(2 + s * 0.6) });
+
+        // Healers from effective wave 5+
+        if (s >= 5) wave.push({ type: 'healer', count: Math.floor(1 + s * 0.3) });
+
+        // Stealth from effective wave 5+
+        if (s >= 5) wave.push({ type: 'stealth', count: Math.floor(2 + s * 0.4) });
+
+        // Bosses on wave 5 of each level, plus scattered in later levels
+        if (waveInLevel === 4) {
+            wave.push({ type: 'boss', count: Math.max(1, level) });
+        } else if (level >= 3 && waveInLevel >= 2) {
+            // Mini-boss waves in later levels
+            wave.push({ type: 'boss', count: Math.floor((level - 1) / 2) });
+        }
+
+        return wave.filter(g => g.count > 0);
     },
 
     startWave() {
@@ -44,7 +81,8 @@ const WaveManager = {
         const def = this.getWaveDef(this.currentWave);
         this.spawnQueue = [];
         for (const group of def) {
-            const scaledCount = Math.floor(group.count * this.levelScale);
+            // Count already scaled by getWaveDef/_scaleWaveDef for levels 2+
+            const scaledCount = group.count;
             for (let i = 0; i < scaledCount; i++) {
                 this.spawnQueue.push(group.type);
             }

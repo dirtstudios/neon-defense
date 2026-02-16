@@ -231,7 +231,7 @@ const game = {
         WaveManager.waveActive = false;
         WaveManager.spawnQueue = [];
         WaveManager.endless = false;
-        WaveManager.levelScale = 1 + (this.level - 1) * 0.3; // 30% harder each level
+        WaveManager.levelScale = 1 + (this.level - 1) * 0.5; // 50% harder each level
         
         // Floating text
         const theme = this.getCurrentTheme();
