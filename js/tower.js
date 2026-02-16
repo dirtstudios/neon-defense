@@ -94,11 +94,13 @@ function createTower(type, x, y) {
             this.findTarget(enemies);
 
             if (this.target && this.cooldown <= 0) {
+                const dmgType = DamageTypes[this.type] || 'kinetic';
                 ProjectilePool.fire(
                     this.x, this.y, this.target,
                     this.damage, 10,
                     this.projectileColor,
-                    this.aoe, this.aoeSlow, this.aoeRadius
+                    this.aoe, this.aoeSlow, this.aoeRadius,
+                    dmgType
                 );
                 this.cooldown = 1 / this.fireRate;
                 Audio.shoot();

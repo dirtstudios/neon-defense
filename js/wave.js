@@ -1,16 +1,16 @@
 // Wave definitions and spawner
 const WaveManager = {
     waves: [
-        // Wave 1: tutorial
+        // Wave 1: tutorial — just basics
         [{ type: 'basic', count: 10 }],
-        // Wave 2
-        [{ type: 'basic', count: 15 }, { type: 'fast', count: 3 }],
-        // Wave 3
-        [{ type: 'basic', count: 10 }, { type: 'fast', count: 5 }, { type: 'tank', count: 2 }],
-        // Wave 4
-        [{ type: 'basic', count: 15 }, { type: 'fast', count: 8 }, { type: 'tank', count: 5 }],
-        // Wave 5: boss
-        [{ type: 'basic', count: 20 }, { type: 'fast', count: 10 }, { type: 'tank', count: 8 }, { type: 'boss', count: 1 }]
+        // Wave 2: introduce fast enemies
+        [{ type: 'basic', count: 12 }, { type: 'fast', count: 4 }],
+        // Wave 3: introduce tanks + swarm
+        [{ type: 'basic', count: 8 }, { type: 'fast', count: 5 }, { type: 'tank', count: 2 }, { type: 'swarm', count: 8 }],
+        // Wave 4: introduce shields + healer
+        [{ type: 'basic', count: 10 }, { type: 'fast', count: 6 }, { type: 'tank', count: 3 }, { type: 'shield', count: 4 }, { type: 'healer', count: 2 }],
+        // Wave 5: boss + full mix including stealth
+        [{ type: 'basic', count: 12 }, { type: 'fast', count: 8 }, { type: 'tank', count: 5 }, { type: 'shield', count: 3 }, { type: 'swarm', count: 10 }, { type: 'stealth', count: 3 }, { type: 'boss', count: 1 }]
     ],
 
     currentWave: 0,
@@ -25,12 +25,16 @@ const WaveManager = {
         if (waveNum < this.waves.length) {
             return this.waves[waveNum];
         }
-        // Endless mode: scale previous pattern
+        // Endless mode: scale with all enemy types
         const scale = 1 + (waveNum - 4) * 0.2;
         return [
-            { type: 'basic', count: Math.floor(20 * scale) },
-            { type: 'fast', count: Math.floor(10 * scale) },
-            { type: 'tank', count: Math.floor(8 * scale) },
+            { type: 'basic', count: Math.floor(15 * scale) },
+            { type: 'fast', count: Math.floor(8 * scale) },
+            { type: 'tank', count: Math.floor(6 * scale) },
+            { type: 'shield', count: Math.floor(4 * scale) },
+            { type: 'swarm', count: Math.floor(10 * scale) },
+            { type: 'healer', count: Math.floor(2 * scale) },
+            { type: 'stealth', count: Math.floor(3 * scale) },
             { type: 'boss', count: Math.floor(1 + (waveNum - 4) * 0.5) }
         ];
     },

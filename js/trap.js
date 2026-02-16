@@ -46,7 +46,7 @@ function createTrap(type, x, y) {
                     // Mine: big damage to all in radius, then gone
                     for (const e2 of enemies) {
                         if (e2.alive && Utils.dist(this.x, this.y, e2.x, e2.y) <= this.radius) {
-                            e2.takeDamage(this.damage);
+                            e2.takeDamage(this.damage, 'fire');
                         }
                     }
                     ParticlePool.spawn(this.x, this.y, this.color, 20);

@@ -6,14 +6,13 @@ const ProjectilePool = {
 
     init() {
         for (let i = 0; i < this.MAX; i++) {
-            this.pool.push({ x: 0, y: 0, tx: 0, ty: 0, speed: 0, damage: 0, color: '', target: null, aoe: false, aoeSlow: false, aoeRadius: 0 });
+            this.pool.push({ x: 0, y: 0, tx: 0, ty: 0, speed: 0, damage: 0, color: '', target: null, aoe: false, aoeSlow: false, aoeRadius: 0, damageType: 'kinetic' });
         }
     },
 
-    fire(x, y, target, damage, speed, color, aoe, aoeSlow, aoeRadius) {
+    fire(x, y, target, damage, speed, color, aoe, aoeSlow, aoeRadius, damageType) {
         if (aoe) {
-            // AOE fires a ring blast — no projectile travel, instant area effect
-            this._fireRing(x, y, damage, color, aoeSlow, aoeRadius);
+            this._fireRing(x, y, damage, color, aoeSlow, aoeRadius, damageType || 'fire');
             return;
         }
         if (this.pool.length === 0) return;
@@ -30,15 +29,16 @@ const ProjectilePool = {
         p.aoeSlow = false;
         p.aoeRadius = 0;
         p.isRing = false;
+        p.damageType = damageType || 'kinetic';
         this.active.push(p);
     },
     
     // Ring blast for AOE towers — expanding ring
     rings: [],
     
-    _fireRing(x, y, damage, color, aoeSlow, radius) {
+    _fireRing(x, y, damage, color, aoeSlow, radius, damageType) {
         this.rings.push({
-            x, y, damage, color, aoeSlow,
+            x, y, damage, color, aoeSlow, damageType: damageType || 'fire',
             maxRadius: radius,
             currentRadius: 0,
             speed: 120, // pixels per second (slower = more visible)
@@ -63,7 +63,7 @@ const ProjectilePool = {
             if (dist < 10) {
                 if (p.target && p.target.alive) {
                     const bonusMult = p.target.slowed ? 1.5 : 1;
-                    p.target.takeDamage(p.damage * bonusMult);
+                    p.target.takeDamage(p.damage * bonusMult, p.damageType);
                     ParticlePool.spawn(p.x, p.y, p.color, 3);
                 }
                 this.pool.push(p);
@@ -86,7 +86,7 @@ const ProjectilePool = {
                 // Enemy is within the ring band (current radius ± tolerance)
                 if (d <= r.currentRadius + 15 && d >= r.currentRadius - 15) {
                     const bonusMult = e.slowed ? 1.5 : 1;
-                    e.takeDamage(r.damage * bonusMult);
+                    e.takeDamage(r.damage * bonusMult, r.damageType);
                     if (r.aoeSlow) {
                         e.slowed = true;
                         e.slowTimer = 2;

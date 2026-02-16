@@ -431,7 +431,7 @@ const game = {
 
             // Check not on existing tower
             for (const t of this.towers) {
-                if (Utils.dist(snap.x, snap.y, t.x, t.y) < Utils.GRID * 0.8) return;
+                if (Utils.dist(snap.x, snap.y, t.x, t.y) < 28) return; // min spacing between towers
             }
 
             // Check bounds
@@ -463,7 +463,7 @@ const game = {
             
             // Check not on existing trap
             for (const t of this.traps) {
-                if (t.alive && Utils.dist(snap.x, snap.y, t.x, t.y) < Utils.GRID * 0.6) return;
+                if (t.alive && Utils.dist(snap.x, snap.y, t.x, t.y) < 16) return; // min spacing between traps
             }
             
             const trap = createTrap(this.selectedTower, snap.x, snap.y);
@@ -602,13 +602,14 @@ const game = {
         ctx.fillStyle = theme.bg;
         ctx.fillRect(-10, -10, 820, 620);
 
-        // Grid (subtle, themed)
-        ctx.strokeStyle = theme.path + '0.03)';
+        // Grid (subtle, themed — show every other line slightly brighter)
         ctx.lineWidth = 1;
         for (let x = 0; x <= 800; x += Utils.GRID) {
+            ctx.strokeStyle = (x % 40 === 0) ? theme.path + '0.04)' : theme.path + '0.02)';
             ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 600); ctx.stroke();
         }
         for (let y = 0; y <= 600; y += Utils.GRID) {
+            ctx.strokeStyle = (y % 40 === 0) ? theme.path + '0.04)' : theme.path + '0.02)';
             ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(800, y); ctx.stroke();
         }
 
@@ -700,47 +701,86 @@ const game = {
         // Tower info tooltip (when a placed tower is selected)
         if (this.selectedPlacedTower) {
             const t = this.selectedPlacedTower;
-            const tx = Math.min(Math.max(t.x, 100), 700);
-            const ty = t.y - 50;
             
-            // Background
-            ctx.fillStyle = 'rgba(5, 5, 16, 0.9)';
-            ctx.strokeStyle = t.color;
-            ctx.lineWidth = 1;
-            const boxW = 160, boxH = t.tier < 3 ? 52 : 40;
-            const bx = tx - boxW / 2, by = ty - boxH;
-            ctx.fillRect(bx, by, boxW, boxH);
-            ctx.strokeRect(bx, by, boxW, boxH);
-            
-            // Tower name + tier
-            ctx.fillStyle = t.color;
-            ctx.font = 'bold 11px monospace';
-            ctx.textAlign = 'center';
+            // Build tooltip text lines
             const tierName = (TowerUpgrades[t.type] && TowerUpgrades[t.type][t.tier - 1])
                 ? TowerUpgrades[t.type][t.tier - 1].name
                 : t.type.charAt(0).toUpperCase() + t.type.slice(1);
             const displayName = t.tier === 1 ? `${t.type.charAt(0).toUpperCase() + t.type.slice(1)} ★` : tierName + ' ' + '★'.repeat(t.tier);
-            ctx.fillText(displayName, tx, by + 14);
+            const statsText = `DMG ${t.damage}  RNG ${t.range}  SPD ${t.fireRate.toFixed(1)}`;
+            const sellText = `Sell: $${t.sellValue}`;
             
-            // Stats line
-            ctx.fillStyle = '#888';
-            ctx.font = '10px monospace';
-            ctx.fillText(`DMG:${t.damage} RNG:${t.range} SPD:${t.fireRate.toFixed(1)} Sell:$${t.sellValue}`, tx, by + 28);
-            
-            // Upgrade info
+            let upgradeText = '';
+            let upgradeColor = '#ffdd00';
             if (t.tier < 3) {
                 const upgradeCost = t.getUpgradeCost();
                 if (upgradeCost !== null) {
                     const canAfford = this.gold >= upgradeCost;
-                    ctx.fillStyle = canAfford ? '#ffdd00' : '#ff4444';
-                    ctx.font = 'bold 10px monospace';
-                    ctx.fillText(`⬆ Click to upgrade — $${upgradeCost}`, tx, by + 44);
+                    upgradeColor = canAfford ? '#ffdd00' : '#ff4444';
+                    upgradeText = `Click to upgrade — $${upgradeCost}`;
                 }
             } else {
-                ctx.fillStyle = '#ffdd00';
-                ctx.font = 'bold 10px monospace';
-                ctx.fillText('✦ MAX TIER ✦', tx, by + 44);
+                upgradeText = '✦ MAX TIER ✦';
             }
+            
+            // Measure text widths to size box properly
+            ctx.font = 'bold 12px monospace';
+            const nameW = ctx.measureText(displayName).width;
+            ctx.font = '10px monospace';
+            const statsW = ctx.measureText(statsText).width;
+            const sellW = ctx.measureText(sellText).width;
+            ctx.font = 'bold 10px monospace';
+            const upgradeW = upgradeText ? ctx.measureText(upgradeText).width : 0;
+            
+            const padding = 20;
+            const boxW = Math.max(nameW, statsW, sellW, upgradeW) + padding * 2;
+            const lineH = 16;
+            const lines = upgradeText ? 4 : 3;
+            const boxH = lines * lineH + 12;
+            
+            const tx = Utils.clamp(t.x, boxW / 2 + 10, 800 - boxW / 2 - 10);
+            const ty = t.y - 40;
+            const bx = tx - boxW / 2;
+            const by = ty - boxH;
+            
+            // Background with rounded feel
+            ctx.fillStyle = 'rgba(5, 5, 20, 0.92)';
+            ctx.strokeStyle = t.color;
+            ctx.lineWidth = 1.5;
+            ctx.fillRect(bx, by, boxW, boxH);
+            ctx.strokeRect(bx, by, boxW, boxH);
+            
+            // Accent line at top
+            ctx.fillStyle = t.color;
+            ctx.fillRect(bx + 1, by + 1, boxW - 2, 2);
+            
+            ctx.textAlign = 'center';
+            let curY = by + 18;
+            
+            // Tower name
+            ctx.fillStyle = t.color;
+            ctx.font = 'bold 12px monospace';
+            ctx.fillText(displayName, tx, curY);
+            curY += lineH;
+            
+            // Stats
+            ctx.fillStyle = '#aaa';
+            ctx.font = '10px monospace';
+            ctx.fillText(statsText, tx, curY);
+            curY += lineH;
+            
+            // Sell value
+            ctx.fillStyle = '#888';
+            ctx.fillText(sellText, tx, curY);
+            curY += lineH;
+            
+            // Upgrade info
+            if (upgradeText) {
+                ctx.fillStyle = upgradeColor;
+                ctx.font = 'bold 10px monospace';
+                ctx.fillText(upgradeText, tx, curY);
+            }
+            
             ctx.textAlign = 'start';
         }
 
