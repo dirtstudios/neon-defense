@@ -768,6 +768,9 @@ const game = {
                 : t.type.charAt(0).toUpperCase() + t.type.slice(1);
             const displayName = t.tier === 1 ? `${t.type.charAt(0).toUpperCase() + t.type.slice(1)} ★` : tierName + ' ' + '★'.repeat(t.tier);
             const statsText = `DMG ${t.damage}  RNG ${t.range}  SPD ${t.fireRate.toFixed(1)}`;
+            const dmgType = DamageTypes[t.type] || 'kinetic';
+            const dmgTypeNames = { kinetic: 'KINETIC', pierce: 'PIERCE', fire: 'FIRE' };
+            const typeText = `TYPE: ${dmgTypeNames[dmgType] || dmgType.toUpperCase()}`;
             const sellText = `Sell: $${t.sellValue}`;
             
             let upgradeText = '';
@@ -790,14 +793,15 @@ const game = {
             const statsW = ctx.measureText(statsText).width;
             const sellW = ctx.measureText(sellText).width;
             ctx.font = 'bold 10px monospace';
+            const typeW = ctx.measureText(typeText).width;
             const upgradeW = upgradeText ? ctx.measureText(upgradeText).width : 0;
             
             const padding = 20;
-            const maxTextW = Math.max(nameW, statsW, sellW, upgradeW);
+            const maxTextW = Math.max(nameW, statsW, sellW, upgradeW, typeW);
             // Cap width and enable wrapping for long text
             const boxW = Math.min(maxTextW + padding * 2, 250);
             const lineH = 16;
-            const lines = upgradeText ? 4 : 3;
+            const lines = upgradeText ? 5 : 4;
             const boxH = lines * lineH + 12;
             
             // Position tooltip above tower, within bounds
@@ -835,6 +839,13 @@ const game = {
             ctx.fillStyle = '#aaa';
             ctx.font = '10px monospace';
             ctx.fillText(statsText, tx, curY);
+            curY += lineH;
+            
+            // Damage type
+            const typeColors = { KINETIC: '#00f3ff', PIERCE: '#aa88ff', FIRE: '#ff8800' };
+            ctx.fillStyle = typeColors[dmgTypeNames[dmgType]] || '#aaa';
+            ctx.font = 'bold 10px monospace';
+            ctx.fillText(typeText, tx, curY);
             curY += lineH;
             
             // Sell value
