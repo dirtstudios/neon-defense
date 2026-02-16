@@ -593,20 +593,34 @@ const Path = {
         // Generate 3-5 new waypoints that create interesting path extensions
         const segments = 3 + Math.floor(rng(0, 3));
         
+        // Build blocked set from existing path for intersection checks
+        const existingBlocked = this.getBlocked();
+        
         for (let i = 0; i < segments; i++) {
-            // Pick a direction that stays in bounds and creates interesting turns
-            let nx, ny;
-            const attempts = 20;
+            let nx, ny, bestNx, bestNy, bestScore = -Infinity;
+            const attempts = 30;
             for (let a = 0; a < attempts; a++) {
                 const angle = rng(0, Math.PI * 2);
                 const dist = rng(60, 140);
                 nx = cx + Math.cos(angle) * dist;
                 ny = cy + Math.sin(angle) * dist;
                 // Keep in bounds
-                if (nx > 60 && nx < 740 && ny > 60 && ny < 540) break;
+                if (nx < 60 || nx > 740 || ny < 60 || ny > 540) continue;
+                // Check intersection with existing path
+                const gx = Math.floor(nx / Utils.GRID);
+                const gy = Math.floor(ny / Utils.GRID);
+                const key = `${gx},${gy}`;
+                const intersects = existingBlocked.has(key);
+                // Score: prefer non-intersecting, in-bounds points
+                const score = (intersects ? -100 : 0) + rng(0, 10);
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestNx = nx;
+                    bestNy = ny;
+                }
             }
-            nx = Math.max(60, Math.min(740, nx));
-            ny = Math.max(60, Math.min(540, ny));
+            nx = bestNx || Math.max(60, Math.min(740, cx + rng(-80, 80)));
+            ny = bestNy || Math.max(60, Math.min(540, cy + rng(-80, 80)));
             newPoints.push({ x: nx, y: ny });
             cx = nx;
             cy = ny;

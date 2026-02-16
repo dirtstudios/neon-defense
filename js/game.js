@@ -49,6 +49,10 @@ const game = {
         });
 
         this.canvas.addEventListener('click', (e) => {
+            if (this.levelTransition) {
+                this._confirmLevelAdvance();
+                return;
+            }
             if (this.state !== 'playing') return;
             const rect = this.canvas.getBoundingClientRect();
             const mx = e.clientX - rect.left;
@@ -64,6 +68,11 @@ const game = {
                 return;
             }
             
+            if (this.levelTransition && (e.key === ' ' || e.key === 'Enter')) {
+                e.preventDefault();
+                this._confirmLevelAdvance();
+                return;
+            }
             if (this.state !== 'playing') return;
             if (e.key === '1') this.selectTower('blaster');
             else if (e.key === '2') this.selectTower('sniper');
@@ -199,7 +208,29 @@ const game = {
         return this.colorThemes[idx];
     },
     
+    // Level transition state
+    levelTransition: false,
+    levelTransitionTimer: 0,
+    levelStats: null,
+
     _advanceLevel() {
+        try {
+            // Capture stats before advancing
+            this.levelStats = {
+                level: this.level,
+                score: this.score,
+                gold: this.gold,
+                towersPlaced: this.towers.length,
+                wavesCleared: WaveManager.waves.length
+            };
+            this.levelTransition = true;
+            this.levelTransitionTimer = 0;
+        } catch(e) { console.error('Level advance error:', e); }
+    },
+
+    _confirmLevelAdvance() {
+        this.levelTransition = false;
+        this.levelStats = null;
         try { this.__doAdvanceLevel(); } catch(e) { console.error('Level advance error:', e); }
     },
     
@@ -523,7 +554,7 @@ const game = {
     },
 
     update(dt) {
-        if (this.state !== 'playing') return;
+        if (this.state !== 'playing' || this.levelTransition) return;
 
         const speedMult = this.speed;
 
@@ -813,6 +844,50 @@ const game = {
 
         ctx.restore();
         
+        // Level transition overlay
+        if (this.levelTransition && this.levelStats) {
+            ctx.fillStyle = 'rgba(2, 2, 8, 0.85)';
+            ctx.fillRect(0, 0, 800, 600);
+            
+            const s = this.levelStats;
+            const theme = this.getCurrentTheme();
+            
+            ctx.textAlign = 'center';
+            
+            // Title
+            ctx.fillStyle = '#00ff66';
+            ctx.font = 'bold 28px monospace';
+            ctx.shadowColor = '#00ff66';
+            ctx.shadowBlur = 20;
+            ctx.fillText(`LEVEL ${s.level} COMPLETE`, 400, 200);
+            ctx.shadowBlur = 0;
+            
+            // Stats
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '16px monospace';
+            ctx.fillText(`Waves Cleared: ${s.wavesCleared}`, 400, 260);
+            ctx.fillText(`Score: ${s.score}`, 400, 290);
+            ctx.fillText(`Gold Banked: ${s.gold}`, 400, 320);
+            ctx.fillText(`Towers Active: ${s.towersPlaced}`, 400, 350);
+            
+            // Next level hint
+            ctx.fillStyle = '#ffcc00';
+            ctx.font = 'bold 14px monospace';
+            const nextTheme = this.colorThemes[this.level % this.colorThemes.length];
+            ctx.fillText(`Next: Level ${s.level + 1} — ${nextTheme.name}`, 400, 400);
+            
+            // Prompt
+            this.levelTransitionTimer += 1/60;
+            const blink = Math.sin(this.levelTransitionTimer * 4) > 0;
+            if (blink) {
+                ctx.fillStyle = '#888888';
+                ctx.font = '13px monospace';
+                ctx.fillText('Press SPACE or click to continue', 400, 460);
+            }
+            
+            ctx.textAlign = 'start';
+        }
+
         // FPS counter (outside of shake transform)
         if (this.showFPS) {
             ctx.fillStyle = '#00f3ff';
