@@ -82,11 +82,11 @@ function createTower(type, x, y) {
             const up = upgrades[this.tier];
             if (!up) return false;
             this.tier++;
-            this.damage = up.damage;
-            this.range = up.range;
-            this.fireRate = up.fireRate;
-            this.color = up.color;
-            this.projectileColor = up.color;
+            if (up.damage !== undefined) this.damage = up.damage;
+            if (up.range !== undefined) this.range = up.range;
+            if (up.fireRate !== undefined) this.fireRate = up.fireRate;
+            if (up.color) this.color = up.color;
+            if (up.color) this.projectileColor = up.color;
             if (up.aoeRadius) this.aoeRadius = up.aoeRadius;
             // Sentinel upgrade stats
             if (up.maxSentinels !== undefined) this.maxSentinels = up.maxSentinels;

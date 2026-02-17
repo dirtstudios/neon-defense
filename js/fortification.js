@@ -123,15 +123,6 @@ const Fortification = {
             return { ok: false, reason: 'Cannot build on water' };
         }
         
-        // Temporarily add wall and check if path is still valid via BFS
-        const testWalls = this.getWallSet();
-        testWalls.add(`${gx},${gy}`);
-        
-        const pathValid = this._validatePath(testWalls);
-        if (!pathValid) {
-            return { ok: false, reason: 'PATH BLOCKED!' };
-        }
-        
         const maxHp = this.getWallMaxHp(level);
         this.walls.push({ gx, gy, hp: maxHp, maxHp });
         this._wallKeys.add(`${gx},${gy}`);
