@@ -116,6 +116,7 @@ const game = {
         if (this.state !== 'menu') return;
         Audio.init();
         this.reset();
+        this._buildLevelWaves();
         this.setState('playing');
         UI.hideMenu();
         this.updateUI();
@@ -181,6 +182,7 @@ const game = {
         this.level = 1;
         this.mapInfo = Path.generate(this.mapInfo.seed);
         this.reset();
+        this._buildLevelWaves();
         this.setState('playing');
         document.getElementById('game-over-screen').style.display = 'none';
         this.updateUI();
@@ -191,6 +193,7 @@ const game = {
         this.level = 1;
         this.mapInfo = Path.generate();
         this.reset();
+        this._buildLevelWaves();
         this.setState('playing');
         document.getElementById('game-over-screen').style.display = 'none';
         this.updateUI();
@@ -237,44 +240,34 @@ const game = {
         try { this.__doAdvanceLevel(); } catch(e) { console.error('Level advance error:', e); }
     },
     
+    // Waves per level: 5, 10, 15, 20, 20, 20...
+    getWavesForLevel(level) {
+        return Math.min(20, 5 + (level - 1) * 5);
+    },
+
     __doAdvanceLevel() {
         this.level++;
         
-        // Save old blocked cells to detect new path zones
-        const oldBlocked = new Set(Path.getBlocked());
+        // Level bonus: +50 gold per level cleared
+        const levelBonus = 50 * (this.level - 1);
+        this.gold += levelBonus;
         
-        // EXTEND path instead of replacing — towers persist!
-        Path.extend(this.level * 7919); // deterministic seed per level
-        
-        // Auto-sell towers that now overlap with new path (100% refund)
-        const newBlocked = Path.getBlocked();
-        const towersToRemove = [];
-        for (const t of this.towers) {
-            const gx = Math.floor(t.x / Utils.GRID);
-            const gy = Math.floor(t.y / Utils.GRID);
-            const key = `${gx},${gy}`;
-            if (newBlocked.has(key) && !oldBlocked.has(key)) {
-                this.gold += t.sellValue || 0;
-                towersToRemove.push(t);
-            }
-        }
-        for (const t of towersToRemove) {
-            this.towers = this.towers.filter(tw => tw !== t);
-        }
-        
-        // Clear enemies, projectiles, particles (but NOT towers)
+        // Full reset — new map, clear towers, fresh start
+        this.towers = [];
+        this.traps = [];
         this.enemies = [];
         this._floatingTexts = [];
+        this.selectedTower = null;
+        this.selectedPlacedTower = null;
         ParticlePool.active = [];
         ProjectilePool.active = [];
         ProjectilePool.rings = [];
         
-        // Remove dead traps
-        this.traps = this.traps.filter(t => t.alive);
-        
+        // New map
+        this.mapInfo = Path.generate();
         this._updateMapDisplay();
         
-        // Reset wave manager for new level (scale difficulty)
+        // Reset wave manager for new level
         WaveManager.currentWave = 0;
         WaveManager.waveActive = false;
         WaveManager.spawnQueue = [];
@@ -282,29 +275,30 @@ const game = {
         WaveManager.currentLevel = this.level;
         WaveManager.levelScale = 1 + (this.level - 1) * 0.5;
         
+        // Update wave definitions for this level's wave count
+        this._buildLevelWaves();
+        
         // Level transition floating text
         const theme = this.getCurrentTheme();
+        const wavesThisLevel = this.getWavesForLevel(this.level);
         this._floatingTexts.push({
             text: `LEVEL ${this.level} — ${theme.name.toUpperCase()}`,
-            x: 400, y: 240,
+            x: 400, y: 230,
             life: 4, maxLife: 4,
             color: '#ffffff'
         });
         this._floatingTexts.push({
-            text: 'PATH EXTENDED — TOWERS PERSIST',
-            x: 400, y: 270,
+            text: `${wavesThisLevel} WAVES · NEW MAP`,
+            x: 400, y: 260,
             life: 4, maxLife: 4,
-            color: '#00ff66'
+            color: '#00f3ff'
         });
-        if (towersToRemove.length > 0) {
-            const refund = towersToRemove.reduce((sum, t) => sum + (t.sellValue || 0), 0);
-            this._floatingTexts.push({
-                text: `${towersToRemove.length} tower${towersToRemove.length > 1 ? 's' : ''} relocated (+${refund}💰)`,
-                x: 400, y: 300,
-                life: 4, maxLife: 4,
-                color: '#ffdd00'
-            });
-        }
+        this._floatingTexts.push({
+            text: `+${levelBonus}💰 level bonus`,
+            x: 400, y: 290,
+            life: 4, maxLife: 4,
+            color: '#ffdd00'
+        });
         this._floatingTexts.push({
             text: 'Place towers, then press SPACE',
             x: 400, y: 330,
@@ -314,6 +308,55 @@ const game = {
         
         Audio.levelUp();
         this.updateUI();
+    },
+    
+    // Build wave definitions based on current level's wave count
+    _buildLevelWaves() {
+        const totalWaves = this.getWavesForLevel(this.level);
+        const level = this.level;
+        const waves = [];
+        
+        for (let w = 0; w < totalWaves; w++) {
+            const progress = w / (totalWaves - 1); // 0 to 1 within this level
+            const wave = this._generateWaveForProgress(progress, level);
+            waves.push(wave);
+        }
+        
+        WaveManager.waves = waves;
+    },
+    
+    // Generate a wave definition based on progress within level (0=easy, 1=boss)
+    _generateWaveForProgress(progress, level) {
+        const s = level; // level scaling factor
+        const p = progress; // 0 = start of level, 1 = final wave
+        
+        const wave = [];
+        
+        // Basics — always present, decrease proportion as progress increases
+        wave.push({ type: 'basic', count: Math.floor((8 + s * 3) * (1.2 - p * 0.4)) });
+        
+        // Fast — from 10% progress
+        if (p >= 0.1) wave.push({ type: 'fast', count: Math.floor((3 + s * 2) * p) });
+        
+        // Swarm — from 15% progress
+        if (p >= 0.15) wave.push({ type: 'swarm', count: Math.floor((4 + s * 2) * p) });
+        
+        // Tank — from 25% progress
+        if (p >= 0.25) wave.push({ type: 'tank', count: Math.floor((2 + s) * p) });
+        
+        // Shield — from 35%
+        if (p >= 0.35) wave.push({ type: 'shield', count: Math.floor((2 + s * 0.8) * p) });
+        
+        // Healer — from 50%
+        if (p >= 0.5) wave.push({ type: 'healer', count: Math.max(1, Math.floor(s * 0.5 * p)) });
+        
+        // Stealth — from 60%
+        if (p >= 0.6) wave.push({ type: 'stealth', count: Math.floor((1 + s * 0.6) * p) });
+        
+        // Boss — final wave only
+        if (p >= 0.95) wave.push({ type: 'boss', count: Math.max(1, Math.floor(s * 0.5)) });
+        
+        return wave.filter(g => g.count > 0);
     },
 
     backToMenu() {
@@ -657,7 +700,7 @@ const game = {
             WaveManager.waveActive = false;
             this.wavesStacked = 0;
 
-            // Level progression: after wave 5, advance to new level
+            // Level progression: after all waves for this level, advance
             if (WaveManager.currentWave >= WaveManager.waves.length && !WaveManager.endless) {
                 this._advanceLevel();
             }
@@ -918,7 +961,8 @@ const game = {
             ctx.fillStyle = '#ffcc00';
             ctx.font = 'bold 14px monospace';
             const nextTheme = this.colorThemes[this.level % this.colorThemes.length];
-            ctx.fillText(`Next: Level ${s.level + 1} — ${nextTheme.name}`, 400, 400);
+            const nextWaves = this.getWavesForLevel(s.level + 1);
+            ctx.fillText(`Next: Level ${s.level + 1} — ${nextTheme.name} (${nextWaves} waves)`, 400, 400);
             
             // Prompt
             this.levelTransitionTimer += 1/60;
