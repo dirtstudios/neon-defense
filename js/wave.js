@@ -19,6 +19,7 @@ const WaveManager = {
     spawnInterval: 0.6, // seconds between spawns
     waveActive: false,
     endless: false,
+    earlyAdvanced: false, // true if wave was advanced by early-wave (skip auto-advance on complete)
     levelScale: 1, // increases each level
     currentLevel: 1, // stored directly to avoid fragile derivation
 
@@ -77,28 +78,38 @@ const WaveManager = {
         return wave.filter(g => g.count > 0);
     },
 
-    startWave() {
-        if (this.waveActive) return;
-        const def = this.getWaveDef(this.currentWave);
-        this.spawnQueue = [];
+    _buildSpawnList(waveNum) {
+        const def = this.getWaveDef(waveNum);
+        const queue = [];
         for (const group of def) {
-            // Count already scaled by getWaveDef/_generateWave for levels 2+
-            const scaledCount = group.count;
-            for (let i = 0; i < scaledCount; i++) {
-                this.spawnQueue.push(group.type);
+            for (let i = 0; i < group.count; i++) {
+                queue.push(group.type);
             }
         }
-        // Shuffle slightly for variety (keep bosses last)
-        const bosses = this.spawnQueue.filter(t => t === 'boss');
-        const others = this.spawnQueue.filter(t => t !== 'boss');
-        // Simple shuffle of non-boss enemies
+        // Shuffle non-boss enemies, keep bosses last
+        const bosses = queue.filter(t => t === 'boss');
+        const others = queue.filter(t => t !== 'boss');
         for (let i = others.length - 1; i > 0; i--) {
             const j = Utils.randInt(0, i);
             [others[i], others[j]] = [others[j], others[i]];
         }
-        this.spawnQueue = [...others, ...bosses];
+        return [...others, ...bosses];
+    },
+
+    startWave() {
+        if (this.waveActive) return;
+        this.spawnQueue = this._buildSpawnList(this.currentWave);
         this.spawnTimer = 0;
         this.waveActive = true;
+        if (this.currentWave >= this.waves.length) this.endless = true;
+    },
+
+    // Append next wave's enemies onto the existing spawn queue (wave overlap)
+    appendWave() {
+        const newEnemies = this._buildSpawnList(this.currentWave);
+        this.spawnQueue = [...this.spawnQueue, ...newEnemies];
+        this.waveActive = true;
+        this.earlyAdvanced = true;
         if (this.currentWave >= this.waves.length) this.endless = true;
     },
 
@@ -129,6 +140,7 @@ const WaveManager = {
         this.spawnTimer = 0;
         this.waveActive = false;
         this.endless = false;
+        this.earlyAdvanced = false;
         this.levelScale = 1;
         this.currentLevel = 1;
     }

@@ -377,36 +377,37 @@ const game = {
     },
 
     startWave() {
-        // Allow starting next wave even if current wave enemies still alive
-        // But only if spawning is done (no double-spawn)
-        if (WaveManager.waveActive && WaveManager.spawnQueue.length > 0) return; // Still spawning
-        
         // Don't allow early-calling during the last wave of a level — must beat it
         if (WaveManager.waveActive && WaveManager.currentWave >= WaveManager.waves.length - 1 && !WaveManager.endless) {
             return; // Must finish the boss wave naturally
         }
         
         if (WaveManager.waveActive) {
-            // Early wave! Enemies still alive from current wave
+            // Early wave! Enemies still alive + still spawning from current wave
             const aliveEnemies = this.enemies.filter(e => e.alive).length;
-            if (aliveEnemies > 0) {
-                const bonus = aliveEnemies * 5;
+            const unspawned = WaveManager.spawnQueue.length;
+            const totalRemaining = aliveEnemies + unspawned;
+            if (totalRemaining > 0) {
+                // Bigger bonus when called during spawning (more risk = more reward)
+                const bonus = totalRemaining * 5 + (unspawned > 0 ? unspawned * 3 : 0);
                 this.gold += bonus;
                 this.score += bonus;
+                const label = unspawned > 0 ? 'WAVE OVERLAP!' : 'EARLY WAVE!';
                 this._floatingTexts.push({
-                    text: `+${bonus}💰 EARLY WAVE!`,
+                    text: `+${bonus}💰 ${label}`,
                     x: 400, y: 280,
                     life: 1.5, maxLife: 1.5,
-                    color: '#ffdd00'
+                    color: unspawned > 0 ? '#ff6600' : '#ffdd00'
                 });
                 Audio.earlyWave();
             }
-            // Advance wave counter, start next
+            // Advance wave counter, append next wave's enemies to spawn queue
             WaveManager.currentWave++;
-            WaveManager.waveActive = false;
+            WaveManager.appendWave();
+        } else {
+            WaveManager.startWave();
         }
         
-        WaveManager.startWave();
         Audio.waveStart();
         UI.updateWavePreview('');
         this.updateUI();
@@ -549,9 +550,9 @@ const game = {
         if (!WaveManager.waveActive) {
             UI.updateWavePreview(WaveManager.getPreviewText());
         }
-        // Start wave always enabled (early wave for bonus)
-        const spawning = WaveManager.waveActive && WaveManager.spawnQueue.length > 0;
-        UI.setStartWaveEnabled(!spawning);
+        // Start wave always enabled — player can overlap waves at will
+        const isLastWave = WaveManager.waveActive && WaveManager.currentWave >= WaveManager.waves.length - 1 && !WaveManager.endless;
+        UI.setStartWaveEnabled(!isLastWave);
     },
 
     update(dt) {
@@ -631,7 +632,10 @@ const game = {
             const bonus = 50 + WaveManager.currentWave * 10;
             this.gold += bonus;
             this.score += bonus;
-            WaveManager.currentWave++;
+            if (!WaveManager.earlyAdvanced) {
+                WaveManager.currentWave++;
+            }
+            WaveManager.earlyAdvanced = false;
             WaveManager.waveActive = false;
 
             // Level progression: after wave 5, advance to new level
