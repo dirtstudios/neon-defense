@@ -81,8 +81,9 @@ const game = {
             else if (e.key === '5') this.selectTower('mine');
             else if (e.key === '6') this.selectTower('poison');
             else if (e.key === '7') this.selectTower('ice');
-            else if (e.key === '8') this.selectFortification('wall');
-            else if (e.key === '9') this.selectFortification('barricade');
+            else if (e.key === '8') this.selectTower('sentinel');
+            else if (e.key === '9') this.selectFortification('wall');
+            else if (e.key === '0') this.selectFortification('barricade');
             else if (e.key === 's' || e.key === 'S') this.selectTower('sell');
             else if (e.key === ' ') { e.preventDefault(); this.startWave(); }
             else if (e.key === 'p' || e.key === 'P') this.togglePause();
@@ -179,6 +180,7 @@ const game = {
         ProjectilePool.rings = [];
         WaveManager.reset();
         Fortification.reset();
+        SentinelManager.reset();
     },
 
     restart() {
@@ -266,6 +268,7 @@ const game = {
         ParticlePool.active = [];
         ProjectilePool.active = [];
         ProjectilePool.rings = [];
+        SentinelManager.reset();
         
         // New map
         this.mapInfo = Path.generate();
@@ -595,6 +598,7 @@ const game = {
             if (Utils.dist(mx, my, t.x, t.y) < Utils.GRID * 1.5) {
                 if (this.selectedTower === 'sell') {
                     // Sell tower
+                    if (t.isSentinel) SentinelManager.unregisterTower(t);
                     this.gold += t.sellValue;
                     this.towers = this.towers.filter(tw => tw !== t);
                     Audio.sell();
@@ -675,6 +679,10 @@ const game = {
             this.towers.push(tower);
             this.gold -= def.cost;
             Audio.place();
+            // Register sentinel units
+            if (tower.isSentinel) {
+                SentinelManager.registerTower(tower);
+            }
             this.updateUI();
         }
         
@@ -700,6 +708,22 @@ const game = {
             Audio.trapPlace();
             this.updateUI();
             return;
+        }
+        
+        // If sentinel tower is selected and clicking on path, set rally point
+        if (this.selectedPlacedTower && this.selectedPlacedTower.isSentinel) {
+            const pathBlocked = Path.getBlocked();
+            if (pathBlocked.has(gridKey)) {
+                SentinelManager.setRallyPoint(this.selectedPlacedTower, snap.x, snap.y);
+                this._floatingTexts.push({
+                    text: '🚩 RALLY SET',
+                    x: snap.x, y: snap.y - 15,
+                    life: 1, maxLife: 1,
+                    color: '#00ff88'
+                });
+                Audio.place();
+                return;
+            }
         }
         
         // Clicked empty space — deselect any selected tower
@@ -780,6 +804,9 @@ const game = {
 
         // Update fortifications
         Fortification.update(dt, this.enemies, speedMult);
+
+        // Update sentinels
+        SentinelManager.update(dt, this.enemies, speedMult);
 
         // Update projectiles
         ProjectilePool.update(dt, this.enemies);
@@ -925,6 +952,9 @@ const game = {
 
         // Enemies
         for (const e of this.enemies) e.draw(ctx);
+
+        // Sentinels (above enemies)
+        SentinelManager.draw(ctx);
 
         // Projectiles
         ProjectilePool.draw(ctx);

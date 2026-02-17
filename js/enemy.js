@@ -4,7 +4,8 @@ const DamageTypes = {
     blaster: 'kinetic',
     sniper: 'pierce',
     aoe: 'fire',
-    boat: 'kinetic'
+    boat: 'kinetic',
+    sentinel: 'melee'
 };
 
 const EnemyTypes = {
@@ -121,8 +122,8 @@ function createEnemy(type, waveNum) {
                 return;
             }
 
-            // Stopped by barricade — don't move
-            if (this._stoppedByBarricade) return;
+            // Stopped by barricade or sentinel — don't move
+            if (this._stoppedByBarricade || this._blockedBySentinel) return;
 
             // Calculate movement distance based on speed
             const moveSpeed = this.speed * speedMult * 60 * dt;

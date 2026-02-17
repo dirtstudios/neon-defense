@@ -4,7 +4,9 @@ const TowerTypes = {
     blaster: { cost: 50, damage: 10, range: 100, fireRate: 2, color: '#00f3ff', shape: 'triangle', projectileColor: '#00f3ff', land: true },
     sniper:  { cost: 100, damage: 50, range: 200, fireRate: 0.3, color: '#aa88ff', shape: 'diamond', projectileColor: '#aa88ff', land: true },
     aoe:     { cost: 150, damage: 15, range: 80, fireRate: 0.8, color: '#ff8800', shape: 'hexagon', projectileColor: '#ff8800', aoe: true, aoeSlow: true, aoeRadius: 60, land: true },
-    boat:    { cost: 75, damage: 20, range: 140, fireRate: 1.2, color: '#0088ff', shape: 'boat', projectileColor: '#0088ff', water: true }
+    boat:    { cost: 75, damage: 20, range: 140, fireRate: 1.2, color: '#0088ff', shape: 'boat', projectileColor: '#0088ff', water: true },
+    sentinel:{ cost: 75, damage: 0, range: 0, fireRate: 0, color: '#00ff88', shape: 'sentinel', projectileColor: '#00ff88', land: true,
+               isSentinel: true, maxSentinels: 2, sentinelHp: 40, sentinelDmg: 5, sentinelRespawn: 10, sentinelDmgReduction: 0 }
 };
 
 const TowerUpgrades = {
@@ -27,6 +29,13 @@ const TowerUpgrades = {
         null,
         { cost: 80, damage: 35, range: 160, fireRate: 1.5, color: '#33aaff', name: 'Boat II' },
         { cost: 130, damage: 55, range: 180, fireRate: 1.8, color: '#66ccff', name: 'Boat III' }
+    ],
+    sentinel: [
+        null,
+        { cost: 100, color: '#33ffaa', name: 'Sentinel II',
+          maxSentinels: 3, sentinelHp: 60, sentinelDmg: 8, sentinelRespawn: 8, sentinelDmgReduction: 0 },
+        { cost: 150, color: '#66ffcc', name: 'Sentinel III',
+          maxSentinels: 3, sentinelHp: 100, sentinelDmg: 12, sentinelRespawn: 6, sentinelDmgReduction: 0.2 }
     ]
 };
 
@@ -51,6 +60,15 @@ function createTower(type, x, y) {
         target: null,
         sellValue: Math.floor(def.cost * 0.5),
         selected: false,
+        // Sentinel properties
+        isSentinel: def.isSentinel || false,
+        maxSentinels: def.maxSentinels || 0,
+        sentinelHp: def.sentinelHp || 0,
+        sentinelDmg: def.sentinelDmg || 0,
+        sentinelRespawn: def.sentinelRespawn || 10,
+        sentinelDmgReduction: def.sentinelDmgReduction || 0,
+        rallyPoint: null,
+        settingRally: false,
 
         getUpgradeCost() {
             const upgrades = TowerUpgrades[this.type];
@@ -70,8 +88,16 @@ function createTower(type, x, y) {
             this.color = up.color;
             this.projectileColor = up.color;
             if (up.aoeRadius) this.aoeRadius = up.aoeRadius;
+            // Sentinel upgrade stats
+            if (up.maxSentinels !== undefined) this.maxSentinels = up.maxSentinels;
+            if (up.sentinelHp !== undefined) this.sentinelHp = up.sentinelHp;
+            if (up.sentinelDmg !== undefined) this.sentinelDmg = up.sentinelDmg;
+            if (up.sentinelRespawn !== undefined) this.sentinelRespawn = up.sentinelRespawn;
+            if (up.sentinelDmgReduction !== undefined) this.sentinelDmgReduction = up.sentinelDmgReduction;
             this.totalInvested += up.cost;
             this.sellValue = Math.floor(this.totalInvested * 0.5);
+            // Notify sentinel manager of upgrade
+            if (this.isSentinel) SentinelManager.onTowerUpgrade(this);
             return true;
         },
 
@@ -90,6 +116,8 @@ function createTower(type, x, y) {
         },
 
         update(dt, enemies, speedMult) {
+            if (this.isSentinel) return; // Sentinels don't shoot — SentinelManager handles combat
+            
             this.cooldown -= dt * speedMult;
             this.findTarget(enemies);
 
@@ -140,6 +168,17 @@ function createTower(type, x, y) {
                 }
                 ctx.closePath();
                 ctx.fill();
+            } else if (this.shape === 'sentinel') {
+                // Flag/banner shape for barracks
+                ctx.beginPath();
+                ctx.moveTo(this.x - s * 0.6, this.y + s * 0.6);
+                ctx.lineTo(this.x - s * 0.6, this.y - s);
+                ctx.lineTo(this.x + s * 0.6, this.y - s * 0.4);
+                ctx.lineTo(this.x - s * 0.6, this.y + s * 0.1);
+                ctx.closePath();
+                ctx.fill();
+                // Base
+                ctx.fillRect(this.x - s * 0.7, this.y + s * 0.4, s * 1.4, s * 0.25);
             } else if (this.shape === 'boat') {
                 // Boat hull shape
                 ctx.beginPath();

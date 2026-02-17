@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Neon Defense</title>
-    <link rel="stylesheet" href="css/style.css?v=1771223992">
+    <link rel="stylesheet" href="css/style.css?v=1771223993">
 </head>
 <body>
     <div id="game-container">
@@ -36,6 +36,10 @@
             <button class="tower-btn" data-tower="boat" id="boat-btn" onclick="game.selectTower('boat')" style="display:none">
                 <span class="tower-icon boat-icon">⛵</span>
                 Boat $75
+            </button>
+            <button class="tower-btn" data-tower="sentinel" onclick="game.selectTower('sentinel')">
+                <span class="tower-icon sentinel-icon">⚔️</span>
+                Sentinel $75
             </button>
             <span class="separator">|</span>
             <button class="tower-btn trap-btn" data-tower="mine" onclick="game.selectTower('mine')">
@@ -101,17 +105,18 @@
         </div>
     </div>
 
-    <script src="js/utils.js?v=1771223992"></script>
-    <script src="js/audio.js?v=1771223992"></script>
-    <script src="js/path.js?v=1771223992"></script>
-    <script src="js/particle.js?v=1771223992"></script>
-    <script src="js/projectile.js?v=1771223992"></script>
-    <script src="js/enemy.js?v=1771223992"></script>
-    <script src="js/tower.js?v=1771223992"></script>
-    <script src="js/trap.js?v=1771223992"></script>
-    <script src="js/fortification.js?v=1771223992"></script>
-    <script src="js/wave.js?v=1771223992"></script>
-    <script src="js/ui.js?v=1771223992"></script>
-    <script src="js/game.js?v=1771223992"></script>
+    <script src="js/utils.js?v=1771223993"></script>
+    <script src="js/audio.js?v=1771223993"></script>
+    <script src="js/path.js?v=1771223993"></script>
+    <script src="js/particle.js?v=1771223993"></script>
+    <script src="js/projectile.js?v=1771223993"></script>
+    <script src="js/enemy.js?v=1771223993"></script>
+    <script src="js/tower.js?v=1771223993"></script>
+    <script src="js/trap.js?v=1771223993"></script>
+    <script src="js/sentinel.js?v=1771223993"></script>
+    <script src="js/fortification.js?v=1771223993"></script>
+    <script src="js/wave.js?v=1771223993"></script>
+    <script src="js/ui.js?v=1771223993"></script>
+    <script src="js/game.js?v=1771223993"></script>
 </body>
 </html>
