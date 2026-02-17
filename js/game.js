@@ -468,16 +468,7 @@ const game = {
         // Reset barricade stock for new wave
         Fortification.onWaveStart();
         
-        // Cap stacking at 2 waves ahead to prevent performance issues
-        if (WaveManager.waveActive && this.wavesStacked >= 2) {
-            this._floatingTexts.push({
-                text: 'MAX STACK!',
-                x: 400, y: 280,
-                life: 1, maxLife: 1,
-                color: '#ff3333'
-            });
-            return;
-        }
+        // No wave cap — stack as many as you dare
         
         if (WaveManager.waveActive) {
             // Early wave! Enemies still alive + still spawning from current wave
