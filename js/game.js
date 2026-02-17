@@ -37,6 +37,12 @@ const game = {
         ParticlePool.init();
         ProjectilePool.init();
         
+        // Load sprites, then generate map
+        Sprites.load(() => {
+            console.log('Sprites loaded:', Sprites.loaded);
+            Terrain._cacheDirty = true; // Re-render terrain with sprites
+        });
+        
         // Generate first map
         this.mapInfo = Path.generate();
         Terrain.generate(this.mapInfo.seed);

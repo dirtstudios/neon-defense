@@ -262,208 +262,87 @@ const Terrain = {
     },
     
     _drawTile(ctx, x, y, ts, type, noise, theme, row, col) {
-        const hue = theme ? this._extractHue(theme.path) : { r: 0, g: 243, b: 255 };
+        const S = Sprites.TILES;
         
+        // Try sprite-based rendering first
+        if (Sprites.loaded) {
+            switch(type) {
+                case 'grass':
+                    Sprites.drawTile(ctx, S.GRASS, x, y, ts, ts);
+                    return;
+                case 'path': {
+                    Sprites.drawTile(ctx, S.DIRT, x, y, ts, ts);
+                    return;
+                }
+                case 'water':
+                    // Use grass as base, tint blue
+                    Sprites.drawTile(ctx, S.GRASS, x, y, ts, ts);
+                    ctx.fillStyle = 'rgba(20, 60, 140, 0.6)';
+                    ctx.fillRect(x, y, ts, ts);
+                    return;
+                case 'rock':
+                    Sprites.drawTile(ctx, S.GRASS, x, y, ts, ts);
+                    // Draw rock sprite on top
+                    const rockTile = noise > 0.6 ? S.ROCK_LG : (noise > 0.3 ? S.ROCK_MD : S.ROCK_SM);
+                    Sprites.drawTile(ctx, rockTile, x, y, ts, ts);
+                    return;
+                case 'forest':
+                    Sprites.drawTile(ctx, S.GRASS, x, y, ts, ts);
+                    const treeTile = noise > 0.5 ? S.TREE1 : S.TREE2;
+                    Sprites.drawTile(ctx, treeTile, x, y, ts, ts);
+                    return;
+                case 'structure':
+                    Sprites.drawTile(ctx, S.GRASS, x, y, ts, ts);
+                    const bushTile = noise > 0.5 ? S.BUSH1 : S.BUSH2;
+                    Sprites.drawTile(ctx, bushTile, x, y, ts, ts);
+                    return;
+            }
+        }
+        
+        // Fallback: procedural rendering if sprites not loaded
+        const hue = theme ? this._extractHue(theme.path) : { r: 0, g: 243, b: 255 };
         switch(type) {
             case 'grass': {
-                // Rich green base with theme tint and noise variation
                 const brightness = 25 + noise * 20;
-                const greenBoost = 40 + noise * 25;
-                const tintR = Math.floor(hue.r * 0.04);
-                const tintB = Math.floor(hue.b * 0.04);
-                ctx.fillStyle = `rgb(${brightness + tintR}, ${greenBoost + brightness}, ${brightness + tintB})`;
+                ctx.fillStyle = `rgb(${brightness}, ${brightness + 35}, ${brightness})`;
                 ctx.fillRect(x, y, ts, ts);
-                
-                // Subtle grass blades on many tiles
-                if (noise > 0.4) {
-                    const bladeAlpha = 0.3 + noise * 0.3;
-                    ctx.strokeStyle = `rgba(${50 + tintR}, ${80 + Math.floor(noise * 40)}, ${35 + tintB}, ${bladeAlpha})`;
-                    ctx.lineWidth = 1;
-                    // Multiple blades per tile for coverage
-                    for (let b = 0; b < 3; b++) {
-                        const bx = x + ((noise * 7 + b * 11) % 1) * ts * 0.8 + ts * 0.1;
-                        const by = y + ts * (0.6 + b * 0.12);
-                        ctx.beginPath();
-                        ctx.moveTo(bx, by);
-                        ctx.lineTo(bx + (b - 1) * 2, by - 5 - noise * 5);
-                        ctx.stroke();
-                    }
-                }
-                
-                // Occasional tiny flower
-                if (noise > 0.9) {
-                    const flowerColors = ['#ff6688', '#ffaa44', '#aa88ff', '#44ddff'];
-                    ctx.fillStyle = flowerColors[Math.floor(noise * 40) % flowerColors.length];
-                    ctx.globalAlpha = 0.7;
-                    ctx.beginPath();
-                    ctx.arc(x + ts * 0.3, y + ts * 0.5, 2, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.globalAlpha = 1;
-                }
                 break;
             }
-            
             case 'path': {
-                // Dirt road — warm sandy brown, lighter center
-                const isEdge = this._isPathEdge(row, col);
-                const base = isEdge ? 35 + noise * 10 : 50 + noise * 15;
+                const base = 50 + noise * 15;
                 ctx.fillStyle = `rgb(${base + 20}, ${base + 10}, ${base - 5})`;
                 ctx.fillRect(x, y, ts, ts);
-                
-                // Edge transition — blend toward grass
-                if (isEdge) {
-                    ctx.fillStyle = `rgba(30, 55, 30, 0.25)`;
-                    ctx.fillRect(x, y, ts, ts);
-                }
-                
-                // Texture — scattered dots and pebbles
-                if (noise > 0.4) {
-                    ctx.fillStyle = `rgba(${65 + Math.floor(noise * 25)}, ${50 + Math.floor(noise * 20)}, ${30}, 0.25)`;
-                    ctx.beginPath();
-                    ctx.arc(x + noise * ts, y + (1-noise) * ts, 1.5, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-                if (noise > 0.75) {
-                    ctx.fillStyle = `rgba(80, 70, 55, 0.3)`;
-                    ctx.beginPath();
-                    ctx.arc(x + ts * 0.7, y + ts * 0.3, 2, 0, Math.PI * 2);
-                    ctx.fill();
-                }
                 break;
             }
-            
             case 'water': {
-                // Rich blue with theme tint
                 const depth = 15 + noise * 12;
                 ctx.fillStyle = `rgb(${depth + 5}, ${depth + 15}, ${depth + 45})`;
                 ctx.fillRect(x, y, ts, ts);
-                
-                // Static highlight shimmer
-                if (noise > 0.4) {
-                    ctx.fillStyle = `rgba(${30 + Math.floor(hue.r * 0.2)}, ${40 + Math.floor(hue.g * 0.2)}, ${80 + Math.floor(hue.b * 0.3)}, 0.15)`;
-                    ctx.fillRect(x + 3, y + noise * ts * 0.5, ts - 6, 1);
-                }
                 break;
             }
-            
             case 'rock': {
-                // Grass underneath
-                const gBright = 25 + noise * 15;
-                ctx.fillStyle = `rgb(${gBright}, ${gBright + 30}, ${gBright})`;
+                ctx.fillStyle = `rgb(${25 + noise * 15}, ${25 + noise * 15 + 30}, ${25 + noise * 15})`;
                 ctx.fillRect(x, y, ts, ts);
-                
-                // Rock — irregular polygon, brighter
-                ctx.fillStyle = `rgb(${55 + Math.floor(noise * 25)}, ${50 + Math.floor(noise * 20)}, ${45 + Math.floor(noise * 18)})`;
+                ctx.fillStyle = `rgb(${55 + Math.floor(noise * 25)}, ${50 + Math.floor(noise * 20)}, ${45})`;
                 ctx.beginPath();
-                const cx = x + ts / 2;
-                const cy = y + ts / 2;
-                const sz = ts * 0.35 + noise * ts * 0.12;
-                for (let i = 0; i < 6; i++) {
-                    const a = (Math.PI / 3) * i + noise * 0.5;
-                    const r = sz * (0.7 + ((noise * 7 + i * 3) % 1) * 0.3);
-                    const px = cx + Math.cos(a) * r;
-                    const py = cy + Math.sin(a) * r;
-                    if (i === 0) ctx.moveTo(px, py);
-                    else ctx.lineTo(px, py);
-                }
-                ctx.closePath();
-                ctx.fill();
-                
-                // Highlight on top-left
-                ctx.fillStyle = `rgba(255, 255, 255, 0.1)`;
-                ctx.beginPath();
-                ctx.arc(cx - 2, cy - 2, sz * 0.35, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // Shadow on bottom-right
-                ctx.fillStyle = `rgba(0, 0, 0, 0.15)`;
-                ctx.beginPath();
-                ctx.arc(cx + 2, cy + 2, sz * 0.3, 0, Math.PI * 2);
+                ctx.arc(x + ts/2, y + ts/2, ts * 0.3, 0, Math.PI * 2);
                 ctx.fill();
                 break;
             }
-            
             case 'forest': {
-                // Darker grass base
-                const fBright = 18 + noise * 12;
-                ctx.fillStyle = `rgb(${fBright}, ${fBright + 22}, ${fBright})`;
+                ctx.fillStyle = `rgb(${18 + noise * 12}, ${18 + noise * 12 + 22}, ${18 + noise * 12})`;
                 ctx.fillRect(x, y, ts, ts);
-                
-                // 2-3 small triangle trees
-                const numTrees = noise > 0.4 ? 3 : 2;
-                for (let t = 0; t < numTrees; t++) {
-                    const tx = x + ts * (0.15 + t * 0.32) + (noise - 0.5) * 4;
-                    const ty = y + ts * 0.85;
-                    const th = ts * 0.55 + noise * ts * 0.25;
-                    const tw = ts * 0.22 + noise * ts * 0.08;
-                    
-                    // Trunk
-                    ctx.fillStyle = `rgb(${40 + Math.floor(noise * 15)}, ${28 + Math.floor(noise * 8)}, ${15})`;
-                    ctx.fillRect(tx - 1.5, ty - th * 0.35, 3, th * 0.35);
-                    
-                    // Canopy — layered triangles for depth
-                    const tintG = Math.floor(hue.g * 0.1);
-                    // Back layer (darker)
-                    ctx.fillStyle = `rgb(${15}, ${45 + Math.floor(noise * 25) + tintG}, ${15})`;
-                    ctx.beginPath();
-                    ctx.moveTo(tx, ty - th - 2);
-                    ctx.lineTo(tx - tw - 2, ty - th * 0.25);
-                    ctx.lineTo(tx + tw + 2, ty - th * 0.25);
-                    ctx.closePath();
-                    ctx.fill();
-                    
-                    // Front layer (brighter)
-                    ctx.fillStyle = `rgb(${20}, ${60 + Math.floor(noise * 30) + tintG}, ${20})`;
-                    ctx.beginPath();
-                    ctx.moveTo(tx, ty - th);
-                    ctx.lineTo(tx - tw, ty - th * 0.3);
-                    ctx.lineTo(tx + tw, ty - th * 0.3);
-                    ctx.closePath();
-                    ctx.fill();
-                    
-                    // Glow
-                    ctx.shadowColor = `rgba(${Math.floor(hue.r * 0.3)}, ${Math.floor(hue.g * 0.4)}, ${Math.floor(hue.b * 0.3)}, 0.4)`;
-                    ctx.shadowBlur = 4;
-                    ctx.fill();
-                    ctx.shadowBlur = 0;
-                }
+                ctx.fillStyle = `rgb(20, ${60 + Math.floor(noise * 30)}, 20)`;
+                ctx.beginPath();
+                ctx.arc(x + ts/2, y + ts/2, ts * 0.35, 0, Math.PI * 2);
+                ctx.fill();
                 break;
             }
-            
             case 'structure': {
-                // Grass base
-                const sBright = 25 + noise * 12;
-                ctx.fillStyle = `rgb(${sBright}, ${sBright + 25}, ${sBright})`;
+                ctx.fillStyle = `rgb(${25 + noise * 12}, ${25 + noise * 12 + 25}, ${25 + noise * 12})`;
                 ctx.fillRect(x, y, ts, ts);
-                
-                // Building — slightly larger, more detail
-                const bw = ts * 0.75;
-                const bh = ts * 0.65;
-                const bx = x + (ts - bw) / 2;
-                const by = y + (ts - bh) / 2 + 2;
-                
-                // Walls
-                ctx.fillStyle = `rgb(${50 + Math.floor(noise * 15)}, ${45 + Math.floor(noise * 12)}, ${38 + Math.floor(noise * 10)})`;
-                ctx.fillRect(bx, by, bw, bh);
-                
-                // Roof
-                ctx.fillStyle = `rgb(${60 + Math.floor(noise * 10)}, ${35 + Math.floor(noise * 8)}, ${25})`;
-                ctx.beginPath();
-                ctx.moveTo(bx - 2, by);
-                ctx.lineTo(bx + bw / 2, by - 6);
-                ctx.lineTo(bx + bw + 2, by);
-                ctx.closePath();
-                ctx.fill();
-                
-                // Window glow
-                ctx.fillStyle = `rgba(${Math.floor(hue.r * 0.8)}, ${Math.floor(hue.g * 0.7)}, ${Math.floor(hue.b * 0.6)}, 0.7)`;
-                ctx.shadowColor = `rgba(${Math.floor(hue.r * 0.5)}, ${Math.floor(hue.g * 0.5)}, ${Math.floor(hue.b * 0.5)}, 0.5)`;
-                ctx.shadowBlur = 3;
-                ctx.fillRect(bx + bw * 0.25, by + bh * 0.25, 4, 4);
-                if (noise > 0.5) {
-                    ctx.fillRect(bx + bw * 0.6, by + bh * 0.25, 4, 4);
-                }
-                ctx.shadowBlur = 0;
+                ctx.fillStyle = `rgb(${50 + Math.floor(noise * 15)}, ${45 + Math.floor(noise * 12)}, ${38})`;
+                ctx.fillRect(x + ts*0.15, y + ts*0.15, ts*0.7, ts*0.7);
                 break;
             }
         }
