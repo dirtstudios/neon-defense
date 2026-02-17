@@ -376,10 +376,23 @@ const game = {
         document.getElementById(`speed${s}`).classList.add('active');
     },
 
+    wavesStacked: 0,
+
     startWave() {
         // Don't allow early-calling during the last wave of a level — must beat it
         if (WaveManager.waveActive && WaveManager.currentWave >= WaveManager.waves.length - 1 && !WaveManager.endless) {
             return; // Must finish the boss wave naturally
+        }
+        
+        // Cap stacking at 2 waves ahead to prevent performance issues
+        if (WaveManager.waveActive && this.wavesStacked >= 2) {
+            this._floatingTexts.push({
+                text: 'MAX STACK!',
+                x: 400, y: 280,
+                life: 1, maxLife: 1,
+                color: '#ff3333'
+            });
+            return;
         }
         
         if (WaveManager.waveActive) {
@@ -404,8 +417,10 @@ const game = {
             // Advance wave counter, append next wave's enemies to spawn queue
             WaveManager.currentWave++;
             WaveManager.appendWave();
+            this.wavesStacked++;
         } else {
             WaveManager.startWave();
+            this.wavesStacked = 0;
         }
         
         Audio.waveStart();
@@ -637,6 +652,7 @@ const game = {
             }
             WaveManager.earlyAdvanced = false;
             WaveManager.waveActive = false;
+            this.wavesStacked = 0;
 
             // Level progression: after wave 5, advance to new level
             if (WaveManager.currentWave >= WaveManager.waves.length && !WaveManager.endless) {
