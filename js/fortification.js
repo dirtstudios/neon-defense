@@ -40,6 +40,7 @@ const Fortification = {
     
     reset() {
         this.walls = [];
+        this._wallKeys.clear();
         this.barricades = [];
         this.barricadesRemaining = 0;
         this._bfsPath = null;
@@ -58,7 +59,8 @@ const Fortification = {
     },
     
     onWaveStart() {
-        this.barricadesRemaining = this.BARRICADES_PER_WAVE;
+        // Add new stock but keep unused from previous wave (cap at 10)
+        this.barricadesRemaining = Math.min(10, this.barricadesRemaining + this.BARRICADES_PER_WAVE);
     },
     
     getWallMaxHp(level) {
@@ -72,9 +74,16 @@ const Fortification = {
         return s;
     },
     
+    // Wall lookup set for O(1) checks
+    _wallKeys: new Set(),
+    _rebuildWallKeys() {
+        this._wallKeys.clear();
+        for (const w of this.walls) this._wallKeys.add(`${w.gx},${w.gy}`);
+    },
+    
     // Check if a grid cell has a wall
     hasWall(gx, gy) {
-        return this.walls.some(w => w.gx === gx && w.gy === gy);
+        return this._wallKeys.has(`${gx},${gy}`);
     },
     
     // Check if a grid cell has a barricade
@@ -125,6 +134,7 @@ const Fortification = {
         
         const maxHp = this.getWallMaxHp(level);
         this.walls.push({ gx, gy, hp: maxHp, maxHp });
+        this._wallKeys.add(`${gx},${gy}`);
         
         // Recalculate enemy paths
         this._recalcEnemyPaths();
@@ -136,6 +146,7 @@ const Fortification = {
     removeWall(wall) {
         const idx = this.walls.indexOf(wall);
         if (idx >= 0) {
+            this._wallKeys.delete(`${wall.gx},${wall.gy}`);
             this.walls.splice(idx, 1);
             this._recalcEnemyPaths();
         }
