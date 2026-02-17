@@ -81,6 +81,8 @@ const game = {
             else if (e.key === '5') this.selectTower('mine');
             else if (e.key === '6') this.selectTower('poison');
             else if (e.key === '7') this.selectTower('ice');
+            else if (e.key === '8') this.selectFortification('wall');
+            else if (e.key === '9') this.selectFortification('barricade');
             else if (e.key === 's' || e.key === 'S') this.selectTower('sell');
             else if (e.key === ' ') { e.preventDefault(); this.startWave(); }
             else if (e.key === 'p' || e.key === 'P') this.togglePause();
@@ -105,7 +107,7 @@ const game = {
                     }
                 }
             }
-            else if (e.key === 'Escape') { this.selectedTower = null; this.selectedPlacedTower = null; this.towers.forEach(tw => tw.selected = false); UI.setTowerActive(null); }
+            else if (e.key === 'Escape') { this.selectedTower = null; this.selectedPlacedTower = null; this.towers.forEach(tw => tw.selected = false); UI.setTowerActive(null); Fortification.placementMode = null; UI.setFortificationActive(null); }
         });
 
         UI.showMenu();
@@ -116,6 +118,7 @@ const game = {
         if (this.state !== 'menu') return;
         Audio.init();
         this.reset();
+        Fortification.onLevelStart(this.level);
         this._buildLevelWaves();
         this.setState('playing');
         UI.hideMenu();
@@ -175,6 +178,7 @@ const game = {
         ProjectilePool.active = [];
         ProjectilePool.rings = [];
         WaveManager.reset();
+        Fortification.reset();
     },
 
     restart() {
@@ -266,6 +270,9 @@ const game = {
         // New map
         this.mapInfo = Path.generate();
         this._updateMapDisplay();
+        
+        // Init fortifications for new level
+        Fortification.onLevelStart(this.level);
         
         // Reset wave manager for new level
         WaveManager.currentWave = 0;
@@ -406,6 +413,8 @@ const game = {
     },
 
     selectTower(type) {
+        Fortification.placementMode = null;
+        UI.setFortificationActive(null);
         if (type === this.selectedTower) {
             this.selectedTower = null;
             UI.setTowerActive(null);
@@ -413,6 +422,30 @@ const game = {
             this.selectedTower = type;
             this.selectedPlacedTower = null;
             UI.setTowerActive(type);
+        }
+    },
+    
+    selectFortification(mode) {
+        if (!Fortification.unlocked && mode === 'wall') {
+            this._floatingTexts.push({
+                text: 'Walls unlock at level 2!',
+                x: 400, y: 280,
+                life: 1.5, maxLife: 1.5,
+                color: '#ff4444'
+            });
+            return;
+        }
+        this.selectedTower = null;
+        this.selectedPlacedTower = null;
+        this.towers.forEach(tw => tw.selected = false);
+        UI.setTowerActive(null);
+        
+        if (Fortification.placementMode === mode) {
+            Fortification.placementMode = null;
+            UI.setFortificationActive(null);
+        } else {
+            Fortification.placementMode = mode;
+            UI.setFortificationActive(mode);
         }
     },
 
@@ -429,6 +462,9 @@ const game = {
         if (WaveManager.waveActive && WaveManager.currentWave >= WaveManager.waves.length - 1 && !WaveManager.endless) {
             return; // Must finish the boss wave naturally
         }
+        
+        // Reset barricade stock for new wave
+        Fortification.onWaveStart();
         
         // Cap stacking at 2 waves ahead to prevent performance issues
         if (WaveManager.waveActive && this.wavesStacked >= 2) {
@@ -477,6 +513,82 @@ const game = {
     handleClick(mx, my) {
         const snap = Utils.snapToGrid(mx, my);
         const gridKey = Utils.gridKey(mx, my);
+        const gx = Math.floor(mx / Utils.GRID);
+        const gy = Math.floor(my / Utils.GRID);
+
+        // Fortification placement
+        if (Fortification.placementMode === 'wall') {
+            if (this.gold < Fortification.WALL_COST) {
+                Audio.noMoney();
+                return;
+            }
+            const result = Fortification.placeWall(gx, gy, this.level);
+            if (result.ok) {
+                this.gold -= Fortification.WALL_COST;
+                Audio.place();
+                this.updateUI();
+            } else {
+                this._floatingTexts.push({
+                    text: result.reason,
+                    x: mx, y: my - 15,
+                    life: 1, maxLife: 1,
+                    color: '#ff4444'
+                });
+            }
+            return;
+        }
+        
+        if (Fortification.placementMode === 'barricade') {
+            if (!WaveManager.waveActive) {
+                this._floatingTexts.push({
+                    text: 'Barricades during waves only!',
+                    x: mx, y: my - 15,
+                    life: 1, maxLife: 1,
+                    color: '#ff4444'
+                });
+                return;
+            }
+            if (this.gold < Fortification.BARRICADE_COST) {
+                Audio.noMoney();
+                return;
+            }
+            const result = Fortification.placeBarricade(gx, gy);
+            if (result.ok) {
+                this.gold -= Fortification.BARRICADE_COST;
+                Audio.trapPlace();
+                this.updateUI();
+            } else {
+                this._floatingTexts.push({
+                    text: result.reason,
+                    x: mx, y: my - 15,
+                    life: 1, maxLife: 1,
+                    color: '#ff4444'
+                });
+            }
+            return;
+        }
+        
+        // Right-click or click on damaged wall to repair
+        const existingWall = Fortification.walls.find(w => w.gx === gx && w.gy === gy);
+        if (existingWall && existingWall.hp < existingWall.maxHp && !this.selectedTower) {
+            if (this.gold < Fortification.WALL_REPAIR_COST) {
+                Audio.noMoney();
+                return;
+            }
+            const result = Fortification.repairWall(gx, gy, this.level);
+            if (result.ok) {
+                this.gold -= Fortification.WALL_REPAIR_COST;
+                this._floatingTexts.push({
+                    text: '🔧 REPAIRED',
+                    x: mx, y: my - 15,
+                    life: 1, maxLife: 1,
+                    color: '#00ff66'
+                });
+                Audio.place();
+                this.updateUI();
+            }
+            return;
+        }
 
         // Check if clicking existing tower
         for (const t of this.towers) {
@@ -666,6 +778,9 @@ const game = {
         }
         this.traps = this.traps.filter(t => t.alive);
 
+        // Update fortifications
+        Fortification.update(dt, this.enemies, speedMult);
+
         // Update projectiles
         ProjectilePool.update(dt, this.enemies);
 
@@ -741,6 +856,14 @@ const game = {
 
         // Path (pass theme)
         Path.draw(ctx, theme);
+
+        // Draw fortifications (walls + barricades)
+        Fortification.draw(ctx, theme);
+        
+        // Fortification placement preview
+        if (this.state === 'playing' && Fortification.placementMode) {
+            Fortification.drawPreview(ctx, this.mouseX, this.mouseY, theme);
+        }
 
         // Tower/trap placement preview
         if (this.state === 'playing' && this.selectedTower && this.selectedTower !== 'sell') {

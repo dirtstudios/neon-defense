@@ -36,6 +36,24 @@ const UI = {
             const def = TowerTypes[type] || (typeof TrapTypes !== 'undefined' && TrapTypes[type]);
             if (def) btn.classList.toggle('disabled', gold < def.cost);
         });
+        // Fortification affordability
+        const wallBtn = document.getElementById('wall-btn');
+        const barricadeBtn = document.getElementById('barricade-btn');
+        if (wallBtn) {
+            wallBtn.classList.toggle('disabled', gold < Fortification.WALL_COST || !Fortification.unlocked);
+            wallBtn.title = Fortification.unlocked ? `Wall $${Fortification.WALL_COST} — redirect enemy path` : 'Unlocks at level 2';
+        }
+        if (barricadeBtn) {
+            barricadeBtn.classList.toggle('disabled', gold < Fortification.BARRICADE_COST || Fortification.barricadesRemaining <= 0);
+            barricadeBtn.textContent = `🧱 Barricade $${Fortification.BARRICADE_COST} (${Fortification.barricadesRemaining})`;
+        }
+    },
+    
+    setFortificationActive(mode) {
+        const wallBtn = document.getElementById('wall-btn');
+        const barricadeBtn = document.getElementById('barricade-btn');
+        if (wallBtn) wallBtn.classList.toggle('active', mode === 'wall');
+        if (barricadeBtn) barricadeBtn.classList.toggle('active', mode === 'barricade');
     },
     // Bestiary
     bestiaryData: [

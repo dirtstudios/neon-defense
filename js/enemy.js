@@ -121,6 +121,9 @@ function createEnemy(type, waveNum) {
                 return;
             }
 
+            // Stopped by barricade — don't move
+            if (this._stoppedByBarricade) return;
+
             // Calculate movement distance based on speed
             const moveSpeed = this.speed * speedMult * 60 * dt;
             const pathLength = Path.getTotalLength();
