@@ -269,22 +269,18 @@ const Terrain = {
             switch(type) {
                 case 'grass':
                     Sprites.drawTile(ctx, S.GRASS, x, y, ts, ts);
-                    // Brighten — overlay a light green tint
-                    ctx.fillStyle = 'rgba(60, 180, 60, 0.15)';
-                    ctx.fillRect(x, y, ts, ts);
                     return;
                 case 'path': {
                     Sprites.drawTile(ctx, S.DIRT, x, y, ts, ts);
-                    // Warm bright tint
-                    ctx.fillStyle = 'rgba(180, 140, 80, 0.12)';
-                    ctx.fillRect(x, y, ts, ts);
                     return;
                 }
                 case 'water':
-                    Sprites.drawTile(ctx, S.GRASS, x, y, ts, ts);
-                    // Bright blue water overlay
-                    ctx.fillStyle = 'rgba(40, 120, 220, 0.55)';
+                    // Bright blue water
+                    ctx.fillStyle = 'rgb(52, 152, 219)';
                     ctx.fillRect(x, y, ts, ts);
+                    // Subtle wave highlight
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+                    ctx.fillRect(x, y + ts * 0.3 + Math.sin(col * 0.7) * 3, ts, 2);
                     return;
                 case 'rock':
                     Sprites.drawTile(ctx, S.GRASS, x, y, ts, ts);
@@ -308,20 +304,19 @@ const Terrain = {
         const hue = theme ? this._extractHue(theme.path) : { r: 0, g: 243, b: 255 };
         switch(type) {
             case 'grass': {
-                const brightness = 25 + noise * 20;
-                ctx.fillStyle = `rgb(${brightness}, ${brightness + 35}, ${brightness})`;
+                const g = 170 + noise * 40;
+                ctx.fillStyle = `rgb(${40 + noise * 10}, ${g}, ${80 + noise * 20})`;
                 ctx.fillRect(x, y, ts, ts);
                 break;
             }
             case 'path': {
-                const base = 50 + noise * 15;
-                ctx.fillStyle = `rgb(${base + 20}, ${base + 10}, ${base - 5})`;
+                const base = 150 + noise * 30;
+                ctx.fillStyle = `rgb(${base + 30}, ${base - 10}, ${base - 60})`;
                 ctx.fillRect(x, y, ts, ts);
                 break;
             }
             case 'water': {
-                const depth = 15 + noise * 12;
-                ctx.fillStyle = `rgb(${depth + 5}, ${depth + 15}, ${depth + 45})`;
+                ctx.fillStyle = `rgb(${40 + noise * 15}, ${130 + noise * 20}, ${200 + noise * 20})`;
                 ctx.fillRect(x, y, ts, ts);
                 break;
             }

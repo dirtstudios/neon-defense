@@ -9,9 +9,9 @@ const Sprites = {
     // Tile index mapping (1-based tile numbers)
     // Verified against Kenney TD tilesheet (1472x832, 23x13 grid)
     TILES: {
-        // Pure terrain fills
-        GRASS: 24,           // Solid green grass (row 1, col 1)
-        DIRT: 1,             // Solid brown dirt (row 0, col 1) — used for paths
+        // Pure terrain fills (verified via pixel variance analysis)
+        GRASS: 120,          // Solid bright green (46,204,113) — zero variance
+        DIRT: 51,            // Solid warm brown (187,128,68) — zero variance, paths
         
         // Grass-dirt transitions (biome 1, rows 0-1)
         // These auto-tile edges make path borders look natural
