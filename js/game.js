@@ -39,6 +39,7 @@ const game = {
         
         // Generate first map
         this.mapInfo = Path.generate();
+        Terrain.generate(this.mapInfo.seed);
         this._updateMapDisplay();
 
         // Mouse tracking
@@ -127,8 +128,8 @@ const game = {
     
     rerollMap() {
         this.mapInfo = Path.generate();
+        Terrain.generate(this.mapInfo.seed);
         this._updateMapDisplay();
-        // Redraw preview
         if (this.state === 'menu') {
             this.draw();
         }
@@ -139,6 +140,7 @@ const game = {
         const val = parseInt(input.value, 10);
         if (!isNaN(val) && val > 0) {
             this.mapInfo = Path.generate(val);
+            Terrain.generate(this.mapInfo.seed);
             this._updateMapDisplay();
             input.value = '';
             if (this.state === 'menu') this.draw();
@@ -186,6 +188,7 @@ const game = {
         if (this.state !== 'gameover') return;
         this.level = 1;
         this.mapInfo = Path.generate(this.mapInfo.seed);
+        Terrain.generate(this.mapInfo.seed);
         this.reset();
         this._buildLevelWaves();
         this.setState('playing');
@@ -197,6 +200,7 @@ const game = {
         if (this.state !== 'gameover') return;
         this.level = 1;
         this.mapInfo = Path.generate();
+        Terrain.generate(this.mapInfo.seed);
         this.reset();
         this._buildLevelWaves();
         this.setState('playing');
@@ -271,6 +275,7 @@ const game = {
         
         // New map
         this.mapInfo = Path.generate();
+        Terrain.generate(this.mapInfo.seed);
         this._updateMapDisplay();
         
         // Init fortifications for new level
@@ -372,6 +377,7 @@ const game = {
         this.level = 1;
         this.reset();
         this.mapInfo = Path.generate();
+        Terrain.generate(this.mapInfo.seed);
         this._updateMapDisplay();
         this.setState('menu');
         document.getElementById('game-over-screen').style.display = 'none';
@@ -604,22 +610,22 @@ const game = {
                 return;
             }
 
-            // Check not on path
-            if (Path.getBlocked().has(gridKey)) return;
+            // Check terrain — must be buildable (grass) or water for boats
+            const terrainType = Terrain.getType(snap.x, snap.y);
+            if (def.water) {
+                if (terrainType !== 'water') return; // Boat needs water
+            } else {
+                if (!Terrain.canBuild(snap.x, snap.y)) return; // Land towers need grass
+            }
 
             // Check not on existing tower
             for (const t of this.towers) {
-                if (Utils.dist(snap.x, snap.y, t.x, t.y) < Utils.GRID * 2.5) return; // min spacing between towers
+                if (Utils.dist(snap.x, snap.y, t.x, t.y) < Utils.GRID * 2.5) return;
             }
 
             // Check bounds
             const padding = Utils.GRID * 2;
             if (snap.x < padding || snap.x > 800 - padding || snap.y < padding || snap.y > 600 - padding) return;
-
-            // Check water/land placement
-            const onWater = Path.isWater(snap.x, snap.y);
-            if (def.water && !onWater) return;  // Boat needs water
-            if (def.land && onWater) return;     // Land towers can't go in water
 
             // Place it
             const tower = createTower(this.selectedTower, snap.x, snap.y);
@@ -641,8 +647,8 @@ const game = {
                 return;
             }
             
-            // Must be on path
-            if (!Path.getBlocked().has(gridKey)) return;
+            // Must be on path terrain
+            if (Terrain.getType(snap.x, snap.y) !== 'path') return;
             
             // Check not on existing trap
             for (const t of this.traps) {
@@ -811,25 +817,9 @@ const game = {
         ctx.save();
         ctx.translate(sx, sy);
 
-        // Clear (themed background)
+        // Draw terrain (cached offscreen canvas + water animation + flow arrows)
         const theme = this.getCurrentTheme();
-        ctx.fillStyle = theme.bg;
-        ctx.fillRect(-10, -10, 820, 620);
-
-        // Grid (subtle, themed — show every other line slightly brighter)
-        ctx.lineWidth = 1;
-        const gridStep = Utils.GRID * 2; // Highlight every 2nd grid line
-        for (let x = 0; x <= 800; x += Utils.GRID) {
-            ctx.strokeStyle = (x % gridStep === 0) ? theme.path + '0.04)' : theme.path + '0.02)';
-            ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 600); ctx.stroke();
-        }
-        for (let y = 0; y <= 600; y += Utils.GRID) {
-            ctx.strokeStyle = (y % gridStep === 0) ? theme.path + '0.04)' : theme.path + '0.02)';
-            ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(800, y); ctx.stroke();
-        }
-
-        // Path (pass theme)
-        Path.draw(ctx, theme);
+        Terrain.draw(ctx, theme);
 
         // Draw fortifications (walls + barricades)
         Fortification.draw(ctx, theme);
@@ -842,8 +832,7 @@ const game = {
         // Tower/trap placement preview
         if (this.state === 'playing' && this.selectedTower && this.selectedTower !== 'sell') {
             const snap = Utils.snapToGrid(this.mouseX, this.mouseY);
-            const gridKey = Utils.gridKey(this.mouseX, this.mouseY);
-            const onPath = Path.getBlocked().has(gridKey);
+            const terrType = Terrain.getType(snap.x, snap.y);
             const isTrap = TrapTypes && TrapTypes[this.selectedTower];
             
             if (isTrap) {
@@ -851,6 +840,7 @@ const game = {
                 const trapDef = TrapTypes[this.selectedTower];
                 const canAfford = this.gold >= trapDef.cost;
                 const occupied = this.traps.some(t => t.alive && Utils.dist(snap.x, snap.y, t.x, t.y) < Utils.GRID * 0.6);
+                const onPath = terrType === 'path';
                 const valid = onPath && canAfford && !occupied;
                 
                 ctx.globalAlpha = 0.4;
@@ -859,7 +849,6 @@ const game = {
                 ctx.arc(snap.x, snap.y, 8, 0, Math.PI * 2);
                 ctx.fill();
                 
-                // Radius preview
                 ctx.beginPath();
                 ctx.arc(snap.x, snap.y, trapDef.radius, 0, Math.PI * 2);
                 ctx.strokeStyle = `${trapDef.color}33`;
@@ -871,21 +860,22 @@ const game = {
                 if (def) {
                     const canAfford = this.gold >= def.cost;
                     const occupied = this.towers.some(t => Utils.dist(snap.x, snap.y, t.x, t.y) < Utils.GRID * 0.8);
-                    const onWater = Path.isWater(snap.x, snap.y);
-                    const wrongTerrain = (def.water && !onWater) || (def.land && onWater);
+                    const validTerrain = def.water ? (terrType === 'water') : (terrType === 'grass');
 
                     ctx.globalAlpha = 0.4;
-                    ctx.fillStyle = (onPath || occupied || !canAfford || wrongTerrain) ? '#ff0033' : def.color;
+                    ctx.fillStyle = (!validTerrain || occupied || !canAfford) ? '#ff0033' : def.color;
                     ctx.beginPath();
                     ctx.arc(snap.x, snap.y, 12, 0, Math.PI * 2);
                     ctx.fill();
 
-                    // Range preview
-                    ctx.beginPath();
-                    ctx.arc(snap.x, snap.y, def.range, 0, Math.PI * 2);
-                    ctx.strokeStyle = `${def.color}33`;
-                    ctx.lineWidth = 1;
-                    ctx.stroke();
+                    // Range preview (skip for sentinel — no range)
+                    if (def.range > 0) {
+                        ctx.beginPath();
+                        ctx.arc(snap.x, snap.y, def.range, 0, Math.PI * 2);
+                        ctx.strokeStyle = `${def.color}33`;
+                        ctx.lineWidth = 1;
+                        ctx.stroke();
+                    }
                     ctx.globalAlpha = 1;
                 }
             }
