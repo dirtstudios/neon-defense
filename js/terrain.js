@@ -269,20 +269,25 @@ const Terrain = {
             switch(type) {
                 case 'grass':
                     Sprites.drawTile(ctx, S.GRASS, x, y, ts, ts);
+                    // Brighten — overlay a light green tint
+                    ctx.fillStyle = 'rgba(60, 180, 60, 0.15)';
+                    ctx.fillRect(x, y, ts, ts);
                     return;
                 case 'path': {
                     Sprites.drawTile(ctx, S.DIRT, x, y, ts, ts);
+                    // Warm bright tint
+                    ctx.fillStyle = 'rgba(180, 140, 80, 0.12)';
+                    ctx.fillRect(x, y, ts, ts);
                     return;
                 }
                 case 'water':
-                    // Use grass as base, tint blue
                     Sprites.drawTile(ctx, S.GRASS, x, y, ts, ts);
-                    ctx.fillStyle = 'rgba(20, 60, 140, 0.6)';
+                    // Bright blue water overlay
+                    ctx.fillStyle = 'rgba(40, 120, 220, 0.55)';
                     ctx.fillRect(x, y, ts, ts);
                     return;
                 case 'rock':
                     Sprites.drawTile(ctx, S.GRASS, x, y, ts, ts);
-                    // Draw rock sprite on top
                     const rockTile = noise > 0.6 ? S.ROCK_LG : (noise > 0.3 ? S.ROCK_MD : S.ROCK_SM);
                     Sprites.drawTile(ctx, rockTile, x, y, ts, ts);
                     return;

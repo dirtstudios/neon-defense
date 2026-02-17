@@ -6,69 +6,51 @@ const Sprites = {
     TILE_H: 64,
     COLS: 23,
     
-    // Tile index mapping (1-based tile numbers → 0-based index)
-    // Kenney TD pack tile numbers
+    // Tile index mapping (1-based tile numbers)
+    // Verified against Kenney TD tilesheet (1472x832, 23x13 grid)
     TILES: {
-        // Terrain (these are the grass-on-dirt transitions, row 1-4)
-        GRASS: 24,           // Pure grass (tile024)
-        GRASS_VAR1: 1,       // Grass with dirt edge
-        GRASS_VAR2: 27,      // Another grass variant
-        DIRT: 50,            // Pure dirt/path
-        DIRT_VAR1: 53,       // Dirt variant
-        SAND: 77,            // Sand tile
-        SAND_VAR1: 80,       // Sand variant
+        // Pure terrain fills
+        GRASS: 24,           // Solid green grass (row 1, col 1)
+        DIRT: 1,             // Solid brown dirt (row 0, col 1) — used for paths
         
-        // Nature objects (row ~6, tiles 131+)
-        BUSH1: 131,          // Small round bush
-        BUSH2: 132,          // Leaf cluster
-        TREE1: 133,          // Round tree canopy
-        TREE2: 134,          // Star-shaped tree
-        ROCK_SM: 135,        // Small rock
-        ROCK_MD: 136,        // Medium rock
-        ROCK_LG: 137,        // Large rock
+        // Grass-dirt transitions (biome 1, rows 0-1)
+        // These auto-tile edges make path borders look natural
+        GRASS_DIRT_TL: 3,
+        GRASS_DIRT_T: 2,
+        GRASS_DIRT_TR: 1,
+        GRASS_DIRT_L: 26,
+        GRASS_DIRT_R: 24,
+        GRASS_DIRT_BL: 49,
+        GRASS_DIRT_B: 48,
+        GRASS_DIRT_BR: 47,
         
-        // Grass-dirt transitions (for path edges)
-        // Row 1: tiles 1-23
-        GRASS_DIRT_TL: 3,    // Top-left corner
-        GRASS_DIRT_T: 2,     // Top edge
-        GRASS_DIRT_TR: 1,    // Top-right corner
-        GRASS_DIRT_L: 26,    // Left edge
-        GRASS_DIRT_R: 24,    // Right edge  
-        GRASS_DIRT_BL: 49,   // Bottom-left corner
-        GRASS_DIRT_B: 48,    // Bottom edge
-        GRASS_DIRT_BR: 47,   // Bottom-right corner
+        // Nature objects (row 5, tiles ~128-136)
+        BUSH1: 128,          // Small bush
+        BUSH2: 130,          // Medium bush
+        BUSH3: 131,          // Large round bush
+        TREE1: 132,          // Large round tree canopy
+        TREE2: 133,          // Star/spiky tree
+        ROCK_SM: 134,        // Small grey rock
+        ROCK_MD: 135,        // Medium grey rock
+        ROCK_LG: 136,        // Large grey rock
         
-        // Tower bases (row ~8-9)
-        TOWER_BASE_GREEN: 180,
-        TOWER_BASE_BROWN: 181,
-        TOWER_BASE_GREY: 182,
+        // Tower bases (row 7, tiles 180-184)
+        TOWER_BASE_1: 180,   // Stone pedestal front
+        TOWER_BASE_2: 181,   // Stone pedestal variant
+        TOWER_BASE_3: 182,   // Stone pedestal angled
         
-        // Tower turrets
-        TURRET_1: 199,       // Basic turret
-        TURRET_2: 200,       // Armed turret
-        TURRET_3: 201,       // Missile turret
-        TURRET_4: 202,       // Heavy turret
-        
-        // Enemies
-        ENEMY_GREEN: 249,    // Green screw enemy
-        ENEMY_RED: 250,      // Red screw enemy
-        PLANE_GREEN: 270,    // Green plane
-        PLANE_GREY: 271,     // Grey plane
-        
-        // Coins
-        COIN_GOLD: 272,
-        COIN_SILVER: 273,
-        
-        // Structures
-        STRUCT_1: 138,       // Path corner (sand-grass)
-        STRUCT_2: 139,       // Path edge
-        STRUCT_3: 140,       // Path corner
+        // Turrets (row 8, tiles 201-204)
+        TURRET_EMPTY: 201,   // Base only, no weapon
+        TURRET_BASIC: 202,   // Small cannon
+        TURRET_MISSILE: 203, // Dual red rockets
+        TURRET_HEAVY: 204,   // Large dual rockets
     },
     
     load(callback) {
         this.sheet = new Image();
         this.sheet.onload = () => {
             this.loaded = true;
+            console.log('Tilesheet loaded successfully');
             if (callback) callback();
         };
         this.sheet.onerror = () => {
@@ -81,7 +63,7 @@ const Sprites = {
     
     // Get source x,y for a tile number (1-based)
     _getTilePos(tileNum) {
-        const idx = tileNum - 1; // Convert to 0-based
+        const idx = tileNum - 1;
         const col = idx % this.COLS;
         const row = Math.floor(idx / this.COLS);
         return { 
