@@ -33,9 +33,9 @@ const TowerUpgrades = {
     sentinel: [
         null,
         { cost: 100, color: '#33ffaa', name: 'Sentinel II',
-          maxSentinels: 3, sentinelHp: 60, sentinelDmg: 8, sentinelRespawn: 8, sentinelDmgReduction: 0 },
+          maxSentinels: 3, sentinelHp: 50, sentinelDmg: 6, sentinelRespawn: 9, sentinelDmgReduction: 0 },
         { cost: 150, color: '#66ffcc', name: 'Sentinel III',
-          maxSentinels: 3, sentinelHp: 100, sentinelDmg: 12, sentinelRespawn: 6, sentinelDmgReduction: 0.2 }
+          maxSentinels: 4, sentinelHp: 60, sentinelDmg: 8, sentinelRespawn: 8, sentinelDmgReduction: 0.15 }
     ]
 };
 

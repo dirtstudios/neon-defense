@@ -82,8 +82,7 @@ const game = {
             else if (e.key === '6') this.selectTower('poison');
             else if (e.key === '7') this.selectTower('ice');
             else if (e.key === '8') this.selectTower('sentinel');
-            else if (e.key === '9') this.selectFortification('wall');
-            else if (e.key === '0') this.selectFortification('barricade');
+            else if (e.key === '9') this.selectFortification('barricade');
             else if (e.key === 's' || e.key === 'S') this.selectTower('sell');
             else if (e.key === ' ') { e.preventDefault(); this.startWave(); }
             else if (e.key === 'p' || e.key === 'P') this.togglePause();
@@ -520,27 +519,6 @@ const game = {
         const gy = Math.floor(my / Utils.GRID);
 
         // Fortification placement
-        if (Fortification.placementMode === 'wall') {
-            if (this.gold < Fortification.WALL_COST) {
-                Audio.noMoney();
-                return;
-            }
-            const result = Fortification.placeWall(gx, gy, this.level);
-            if (result.ok) {
-                this.gold -= Fortification.WALL_COST;
-                Audio.place();
-                this.updateUI();
-            } else {
-                this._floatingTexts.push({
-                    text: result.reason,
-                    x: mx, y: my - 15,
-                    life: 1, maxLife: 1,
-                    color: '#ff4444'
-                });
-            }
-            return;
-        }
-        
         if (Fortification.placementMode === 'barricade') {
             if (!WaveManager.waveActive) {
                 this._floatingTexts.push({
@@ -571,28 +549,6 @@ const game = {
             return;
         }
         
-        // Right-click or click on damaged wall to repair
-        const existingWall = Fortification.walls.find(w => w.gx === gx && w.gy === gy);
-        if (existingWall && existingWall.hp < existingWall.maxHp && !this.selectedTower) {
-            if (this.gold < Fortification.WALL_REPAIR_COST) {
-                Audio.noMoney();
-                return;
-            }
-            const result = Fortification.repairWall(gx, gy, this.level);
-            if (result.ok) {
-                this.gold -= Fortification.WALL_REPAIR_COST;
-                this._floatingTexts.push({
-                    text: '🔧 REPAIRED',
-                    x: mx, y: my - 15,
-                    life: 1, maxLife: 1,
-                    color: '#00ff66'
-                });
-                Audio.place();
-                this.updateUI();
-            }
-            return;
-        }
-
         // Check if clicking existing tower
         for (const t of this.towers) {
             if (Utils.dist(mx, my, t.x, t.y) < Utils.GRID * 1.5) {
