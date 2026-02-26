@@ -2,9 +2,37 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Neon Defense</title>
     <link rel="stylesheet" href="css/style.css?v=1771223997">
+    <style>
+        /* Mobile responsive scaling */
+        @media (max-width: 820px) {
+            body {
+                align-items: flex-start !important;
+                overflow: auto !important;
+            }
+            #game-container {
+                transform-origin: top left;
+                position: absolute;
+                left: 50%;
+            }
+        }
+    </style>
+    <script>
+        function scaleGame() {
+            var container = document.getElementById('game-container');
+            if (!container || window.innerWidth > 820) {
+                if (container) { container.style.transform = ''; container.style.marginLeft = ''; }
+                return;
+            }
+            var scale = Math.min(window.innerWidth / 800, window.innerHeight / 700);
+            container.style.transform = 'scale(' + scale + ') translateX(-50%)';
+            container.style.marginLeft = '0';
+        }
+        window.addEventListener('load', scaleGame);
+        window.addEventListener('resize', scaleGame);
+    </script>
 </head>
 <body>
     <div id="game-container">
