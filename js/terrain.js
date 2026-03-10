@@ -272,66 +272,56 @@ const Terrain = {
         // All rendering is procedural at native 25px — no sprite downscaling
         switch(type) {
             case 'grass': {
-                // Rich green base with per-pixel variation for organic look
-                const baseR = 58, baseG = 175, baseB = 80;
+                // Cleaner, brighter grass. Less noisy, more readable.
                 const imgData = ctx.createImageData(ts, ts);
                 const d = imgData.data;
                 for (let py = 0; py < ts; py++) {
                     for (let px = 0; px < ts; px++) {
                         const h = this._hash(x + px, y + py);
                         const h2 = this._hash(x + px + 1000, y + py + 1000);
-                        // Grass blade brightness variation
-                        const blade = h > 0.7 ? 20 : (h > 0.4 ? 8 : 0);
-                        // Subtle darker patches
-                        const patch = h2 > 0.85 ? -15 : 0;
+                        const vignette = Math.max(0, 1 - Math.hypot(px - ts / 2, py - ts / 2) / (ts * 0.9));
+                        const bright = 8 + vignette * 10 + noise * 10;
+                        const blade = h > 0.965 ? 18 : (h > 0.93 ? 10 : 0);
+                        const patch = h2 > 0.985 ? -10 : 0;
                         const i = (py * ts + px) * 4;
-                        d[i]     = Math.min(255, baseR + blade + patch + (noise * 12 | 0));
-                        d[i + 1] = Math.min(255, baseG + blade * 2 + patch + (noise * 20 | 0));
-                        d[i + 2] = Math.min(255, baseB + blade + patch + (noise * 8 | 0));
+                        d[i]     = 52 + bright + blade + patch;
+                        d[i + 1] = 160 + bright + blade * 1.4 + patch;
+                        d[i + 2] = 72 + bright * 0.8 + blade * 0.5 + patch;
                         d[i + 3] = 255;
                     }
                 }
                 ctx.putImageData(imgData, x, y);
+                // faint tile definition so buildable cells read better
+                ctx.strokeStyle = 'rgba(255,255,255,0.045)';
+                ctx.strokeRect(x + 0.5, y + 0.5, ts - 1, ts - 1);
                 break;
             }
             case 'path': {
-                // Warm sandy-brown dirt with pebble specks
-                const baseR = 194, baseG = 155, baseB = 97;
+                // Smooth tan path with sparse pebbles, not noisy mush.
                 const imgData = ctx.createImageData(ts, ts);
                 const d = imgData.data;
                 for (let py = 0; py < ts; py++) {
                     for (let px = 0; px < ts; px++) {
                         const h = this._hash(x + px, y + py);
-                        const h2 = this._hash(x + px + 500, y + py + 500);
-                        // Pebble highlights
-                        const pebble = h > 0.92 ? 30 : (h > 0.88 ? -20 : 0);
-                        // Grain variation
-                        const grain = ((h2 * 16) | 0) - 8;
+                        const grain = ((this._hash(x + px + 500, y + py + 500) * 8) | 0) - 4;
+                        const pebble = h > 0.985 ? 26 : (h > 0.972 ? -14 : 0);
                         const i = (py * ts + px) * 4;
-                        d[i]     = Math.min(255, Math.max(0, baseR + pebble + grain + (noise * 10 | 0)));
-                        d[i + 1] = Math.min(255, Math.max(0, baseG + pebble + grain + (noise * 8 | 0)));
-                        d[i + 2] = Math.min(255, Math.max(0, baseB + pebble * 0.7 + grain + (noise * 5 | 0)));
+                        d[i]     = 198 + grain + pebble + (noise * 8 | 0);
+                        d[i + 1] = 160 + grain + pebble + (noise * 6 | 0);
+                        d[i + 2] = 104 + (grain * 0.8 | 0) + (pebble * 0.5 | 0) + (noise * 4 | 0);
                         d[i + 3] = 255;
                     }
                 }
                 ctx.putImageData(imgData, x, y);
-                // Subtle edge darkening where path meets grass
-                if (row > 0 && this.grid[row-1][col] !== 'path') {
-                    ctx.fillStyle = 'rgba(0,0,0,0.08)';
-                    ctx.fillRect(x, y, ts, 2);
-                }
-                if (row < this.ROWS-1 && this.grid[row+1][col] !== 'path') {
-                    ctx.fillStyle = 'rgba(0,0,0,0.08)';
-                    ctx.fillRect(x, y + ts - 2, ts, 2);
-                }
-                if (col > 0 && this.grid[row][col-1] !== 'path') {
-                    ctx.fillStyle = 'rgba(0,0,0,0.08)';
-                    ctx.fillRect(x, y, 2, ts);
-                }
-                if (col < this.COLS-1 && this.grid[row][col+1] !== 'path') {
-                    ctx.fillStyle = 'rgba(0,0,0,0.08)';
-                    ctx.fillRect(x + ts - 2, y, 2, ts);
-                }
+                // Stronger outline where path meets other terrain.
+                ctx.fillStyle = 'rgba(110, 78, 40, 0.25)';
+                if (row > 0 && this.grid[row-1][col] !== 'path') ctx.fillRect(x, y, ts, 2);
+                if (row < this.ROWS-1 && this.grid[row+1][col] !== 'path') ctx.fillRect(x, y + ts - 2, ts, 2);
+                if (col > 0 && this.grid[row][col-1] !== 'path') ctx.fillRect(x, y, 2, ts);
+                if (col < this.COLS-1 && this.grid[row][col+1] !== 'path') ctx.fillRect(x + ts - 2, y, 2, ts);
+                // Light center highlight so roads read instantly.
+                ctx.strokeStyle = 'rgba(255, 235, 190, 0.12)';
+                ctx.strokeRect(x + 2.5, y + 2.5, ts - 5, ts - 5);
                 break;
             }
             case 'water': {

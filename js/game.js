@@ -842,6 +842,20 @@ const game = {
             const isTrap = TrapTypes && TrapTypes[this.selectedTower];
             
             if (isTrap) {
+                // Show valid trap path cells while placing
+                const ts = Terrain.TILE_SIZE;
+                ctx.save();
+                for (let r = 0; r < Terrain.ROWS; r++) {
+                    for (let c = 0; c < Terrain.COLS; c++) {
+                        if (Terrain.grid[r][c] !== 'path') continue;
+                        const x = c * ts;
+                        const y = r * ts;
+                        ctx.strokeStyle = 'rgba(255, 200, 80, 0.18)';
+                        ctx.strokeRect(x + 5.5, y + 5.5, ts - 11, ts - 11);
+                    }
+                }
+                ctx.restore();
+
                 // Trap preview — must be ON path
                 const trapDef = TrapTypes[this.selectedTower];
                 const canAfford = this.gold >= trapDef.cost;
@@ -864,6 +878,28 @@ const game = {
             } else {
                 const def = TowerTypes[this.selectedTower];
                 if (def) {
+                    const ts = Terrain.TILE_SIZE;
+                    const needsWater = !!def.water;
+
+                    // Show valid build cells while placing towers
+                    ctx.save();
+                    for (let r = 0; r < Terrain.ROWS; r++) {
+                        for (let c = 0; c < Terrain.COLS; c++) {
+                            const tileType = Terrain.grid[r][c];
+                            const validTile = needsWater ? tileType === 'water' : tileType === 'grass';
+                            if (!validTile) continue;
+                            const cx = c * ts + ts / 2;
+                            const cy = r * ts + ts / 2;
+                            const occupied = this.towers.some(t => Utils.dist(cx, cy, t.x, t.y) < Utils.GRID * 0.8);
+                            if (occupied) continue;
+                            const x = c * ts;
+                            const y = r * ts;
+                            ctx.strokeStyle = needsWater ? 'rgba(80, 180, 255, 0.22)' : 'rgba(80, 255, 140, 0.20)';
+                            ctx.strokeRect(x + 4.5, y + 4.5, ts - 9, ts - 9);
+                        }
+                    }
+                    ctx.restore();
+
                     const canAfford = this.gold >= def.cost;
                     const occupied = this.towers.some(t => Utils.dist(snap.x, snap.y, t.x, t.y) < Utils.GRID * 0.8);
                     const validTerrain = def.water ? (terrType === 'water') : (terrType === 'grass');
@@ -874,6 +910,12 @@ const game = {
                     ctx.arc(snap.x, snap.y, 12, 0, Math.PI * 2);
                     ctx.fill();
 
+                    // Snap box so target cell is obvious
+                    ctx.globalAlpha = 1;
+                    ctx.strokeStyle = (!validTerrain || occupied || !canAfford) ? 'rgba(255,0,51,0.8)' : 'rgba(255,255,255,0.7)';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(snap.x - ts / 2 + 2, snap.y - ts / 2 + 2, ts - 4, ts - 4);
+
                     // Range preview (skip for sentinel — no range)
                     if (def.range > 0) {
                         ctx.beginPath();
@@ -882,7 +924,6 @@ const game = {
                         ctx.lineWidth = 1;
                         ctx.stroke();
                     }
-                    ctx.globalAlpha = 1;
                 }
             }
         }
