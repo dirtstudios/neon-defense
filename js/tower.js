@@ -60,6 +60,9 @@ function createTower(type, x, y) {
         target: null,
         sellValue: Math.floor(def.cost * 0.5),
         selected: false,
+        recoil: 0,
+        muzzleFlash: 0,
+        aimAngle: -Math.PI / 2,
         // Sentinel properties
         isSentinel: def.isSentinel || false,
         maxSentinels: def.maxSentinels || 0,
@@ -119,28 +122,60 @@ function createTower(type, x, y) {
             if (this.isSentinel) return; // Sentinels don't shoot — SentinelManager handles combat
             
             this.cooldown -= dt * speedMult;
+            this.recoil = Math.max(0, this.recoil - dt * 5.5 * speedMult);
+            this.muzzleFlash = Math.max(0, this.muzzleFlash - dt * 8 * speedMult);
             this.findTarget(enemies);
+            if (this.target && this.target.alive) {
+                this.aimAngle = Utils.angle(this.x, this.y, this.target.x, this.target.y);
+            }
 
             if (this.target && this.cooldown <= 0) {
                 const dmgType = DamageTypes[this.type] || 'kinetic';
+                const origin = this.getFireOrigin();
                 ProjectilePool.fire(
-                    this.x, this.y, this.target,
+                    origin.x, origin.y, this.target,
                     this.damage, 10,
                     this.projectileColor,
                     this.aoe, this.aoeSlow, this.aoeRadius,
                     dmgType
                 );
+                this.recoil = this.type === 'sniper' ? 1 : (this.type === 'aoe' ? 0.8 : 0.55);
+                this.muzzleFlash = 1;
                 this.cooldown = 1 / this.fireRate;
                 Audio.shoot();
             }
         },
 
+        getFireOrigin() {
+            const a = this.aimAngle || -Math.PI / 2;
+            if (this.type === 'blaster') {
+                return { x: this.x + Math.cos(a) * 15, y: this.y + Math.sin(a) * 15 - 4 };
+            }
+            if (this.type === 'sniper') {
+                return { x: this.x + Math.cos(a) * 20, y: this.y + Math.sin(a) * 20 - 7 };
+            }
+            if (this.type === 'aoe') {
+                return { x: this.x + Math.cos(a) * 10, y: this.y + Math.sin(a) * 10 - 3 };
+            }
+            if (this.type === 'boat') {
+                return { x: this.x + Math.cos(a) * 16, y: this.y + Math.sin(a) * 16 - 5 };
+            }
+            return { x: this.x, y: this.y };
+        },
+
         draw(ctx) {
             const s = 14 + (this.tier - 1) * 1.5;
             const pulse = 0.7 + Math.sin(performance.now() * 0.006 + this.x * 0.03) * 0.08;
+            const idle = Math.sin(performance.now() * 0.003 + this.x * 0.02 + this.y * 0.01) * 0.8;
             const dark = 'rgba(24,28,38,0.98)';
             const panel = 'rgba(60,72,92,0.95)';
+            const a = this.aimAngle || -Math.PI / 2;
+            const recoilPx = this.recoil * (this.type === 'sniper' ? 7 : this.type === 'aoe' ? 4 : 3.5);
+            const ox = Math.cos(a) * recoilPx * -1;
+            const oy = Math.sin(a) * recoilPx * -1;
 
+            ctx.save();
+            ctx.translate(ox, oy + idle);
             ctx.shadowColor = this.color;
             ctx.shadowBlur = this.selected ? 18 : 10;
             ctx.lineWidth = 1.5;
@@ -284,7 +319,27 @@ function createTower(type, x, y) {
                 }
             }
 
+            if (this.muzzleFlash > 0 && !this.isSentinel) {
+                const origin = this.getFireOrigin();
+                const flashAlpha = this.muzzleFlash * 0.9;
+                ctx.globalAlpha = flashAlpha;
+                ctx.fillStyle = this.type === 'aoe' ? '#ffd27a' : '#ffffff';
+                ctx.shadowColor = this.color;
+                ctx.shadowBlur = 16;
+                ctx.beginPath();
+                ctx.arc(origin.x - ox, origin.y - oy - idle, this.type === 'sniper' ? 4 : 3, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = `${this.color}aa`;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(origin.x - ox, origin.y - oy - idle);
+                ctx.lineTo(origin.x - ox + Math.cos(a) * (this.type === 'sniper' ? 10 : 6), origin.y - oy - idle + Math.sin(a) * (this.type === 'sniper' ? 10 : 6));
+                ctx.stroke();
+                ctx.globalAlpha = 1;
+            }
+
             ctx.shadowBlur = 0;
+            ctx.restore();
 
             // Tier pips (dots below tower)
             if (this.tier >= 2) {
