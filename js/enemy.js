@@ -366,11 +366,35 @@ function createEnemy(type, waveNum) {
             }
 
             if (isBoss) {
-                ctx.strokeStyle = 'rgba(255,80,120,0.25)';
-                ctx.lineWidth = 2;
+                // Different boss types have different aura colors
+                let auraColor, auraWidth;
+                if (this.bossRole === 'brood') {
+                    // Brood: orange/red aggressive glow
+                    auraColor = 'rgba(255,120,30,0.3)';
+                    auraWidth = 3;
+                } else if (this.bossRole === 'war') {
+                    // War: purple/royal glow
+                    auraColor = 'rgba(180,80,255,0.35)';
+                    auraWidth = 4;
+                } else {
+                    // Titan: classic red glow
+                    auraColor = 'rgba(255,80,120,0.25)';
+                    auraWidth = 2;
+                }
+                ctx.strokeStyle = auraColor;
+                ctx.lineWidth = auraWidth;
                 ctx.beginPath();
                 ctx.arc(this.x, this.y + bob, s * 1.45, 0, Math.PI * 2);
                 ctx.stroke();
+                
+                // Extra ring for war boss
+                if (this.bossRole === 'war') {
+                    ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y + bob, s * 1.7, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
             }
             
             // Resistance indicator icon above enemy
