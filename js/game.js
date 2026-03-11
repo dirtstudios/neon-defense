@@ -1112,16 +1112,22 @@ const game = {
             const bx = tx - boxW / 2;
             const by = ty - boxH;
             
-            // Background with rounded feel
+            // Background with rounded feel + glow
+            ctx.shadowColor = t.color;
+            ctx.shadowBlur = 12;
             ctx.fillStyle = 'rgba(5, 5, 20, 0.92)';
             ctx.strokeStyle = t.color;
             ctx.lineWidth = 1.5;
             ctx.fillRect(bx, by, boxW, boxH);
             ctx.strokeRect(bx, by, boxW, boxH);
+            ctx.shadowBlur = 0;
             
-            // Accent line at top
+            // Accent line at top with glow
+            ctx.shadowColor = t.color;
+            ctx.shadowBlur = 8;
             ctx.fillStyle = t.color;
             ctx.fillRect(bx + 1, by + 1, boxW - 2, 2);
+            ctx.shadowBlur = 0;
             
             ctx.textAlign = 'center';
             let curY = by + 18;
