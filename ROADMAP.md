@@ -5,17 +5,17 @@
 ### Sprint 1: Battlefield readability + visual identity
 - [x] Clean up terrain readability
 - [x] Improve path/build cell clarity while placing towers
-- [ ] Give every tower a stronger silhouette
-- [ ] Give every enemy a stronger silhouette
-- [ ] Improve projectile trails / muzzle feel / hit impact
+- [x] Give every tower a stronger silhouette
+- [x] Give every enemy a stronger silhouette
+- [x] Improve projectile trails / muzzle feel / hit impact
 - [ ] Make upgrades look visually stronger at each tier
 
 ### Sprint 2: Combat juice
-- [ ] Better muzzle flashes
-- [ ] Better enemy death effects
-- [ ] Better projectile variety by tower type
+- [x] Better muzzle flashes (muzzleFlash in tower.js)
+- [x] Better enemy death effects (explosion on death)
+- [x] Better projectile variety by tower type (pierce/fire/kinetic)
 - [ ] Better boss presence
-- [ ] Better sentinel presence and barracks feel
+- [x] Better sentinel presence and barracks feel
 
 ### Sprint 3: Clearer strategy
 - [ ] Tighten tower roles
@@ -26,11 +26,11 @@
 ## NEXT — Add run depth
 
 ### Sprint 4: Between-level choices
-- [ ] Add 3-choice perk screen after each level
-- [ ] Tower buffs
-- [ ] Economy buffs
-- [ ] Trap / sentinel buffs
-- [ ] Risk/reward modifiers
+- [x] Add 3-choice perk screen after each level
+- [x] Tower buffs (damage multipliers)
+- [x] Economy buffs (gold bonuses)
+- [x] Trap / sentinel buffs (HP, count)
+- [x] Risk/reward modifiers
 
 ### Sprint 5: Elite + boss structure
 - [ ] Elite wave warnings
@@ -54,7 +54,7 @@
 
 ## Current implementation order
 1. ~~Tower silhouette pass~~ - DONE: dark underlayer + tier pips + selected ring
-2. ~~Enemy silhouette pass~~ - DONE: dark underlayer for all enemy shapes
-3. Projectile / hit VFX pass
-4. Perk system
-5. Boss / elite pass
+2. ~~Enemy silhouette pass~~ - DONE: dark underlayer for all enemy shapes  
+3. ~~Projectile / hit VFX pass~~ - DONE: enhanced spark bursts
+4. ~~Perk system~~ - DONE: full perk system with 9 perks
+5. Boss / elite pass - NEXT
