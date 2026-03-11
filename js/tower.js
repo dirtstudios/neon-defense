@@ -166,7 +166,6 @@ function createTower(type, x, y) {
         draw(ctx) {
             const s = 14 + (this.tier - 1) * 1.5;
             const pulse = 0.7 + Math.sin(performance.now() * 0.006 + this.x * 0.03) * 0.08;
-            const idle = Math.sin(performance.now() * 0.003 + this.x * 0.02 + this.y * 0.01) * 0.8;
             const dark = 'rgba(24,28,38,0.98)';
             const panel = 'rgba(60,72,92,0.95)';
             const a = this.aimAngle || -Math.PI / 2;
@@ -175,7 +174,7 @@ function createTower(type, x, y) {
             const oy = Math.sin(a) * recoilPx * -1;
 
             ctx.save();
-            ctx.translate(ox, oy + idle);
+            ctx.translate(ox, oy);
             ctx.shadowColor = this.color;
             ctx.shadowBlur = this.selected ? 18 : 10;
             ctx.lineWidth = 1.5;
@@ -327,13 +326,13 @@ function createTower(type, x, y) {
                 ctx.shadowColor = this.color;
                 ctx.shadowBlur = 16;
                 ctx.beginPath();
-                ctx.arc(origin.x - ox, origin.y - oy - idle, this.type === 'sniper' ? 4 : 3, 0, Math.PI * 2);
+                ctx.arc(origin.x - ox, origin.y - oy, this.type === 'sniper' ? 4 : 3, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.strokeStyle = `${this.color}aa`;
                 ctx.lineWidth = 2;
                 ctx.beginPath();
-                ctx.moveTo(origin.x - ox, origin.y - oy - idle);
-                ctx.lineTo(origin.x - ox + Math.cos(a) * (this.type === 'sniper' ? 10 : 6), origin.y - oy - idle + Math.sin(a) * (this.type === 'sniper' ? 10 : 6));
+                ctx.moveTo(origin.x - ox, origin.y - oy);
+                ctx.lineTo(origin.x - ox + Math.cos(a) * (this.type === 'sniper' ? 10 : 6), origin.y - oy + Math.sin(a) * (this.type === 'sniper' ? 10 : 6));
                 ctx.stroke();
                 ctx.globalAlpha = 1;
             }

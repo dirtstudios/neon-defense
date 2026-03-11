@@ -63,7 +63,7 @@ function createEnemy(type, waveNum) {
         poisonTick: 0,
         hitFlash: 0,
         lastDamage: 0,
-        bossSpawnCooldown: def.shape === 'hexagon' && type === 'boss' ? 4.5 : 0,
+        bossSpawnCooldown: def.shape === 'hexagon' && type === 'boss' ? 3.2 : 0,
 
         // Apply resistance to damage based on tower's damage type
         takeDamage(dmg, damageType) {
@@ -122,22 +122,26 @@ function createEnemy(type, waveNum) {
                 }
             }
 
-            // Boss mechanic: periodically spawn support enemies
+            // Boss mechanic: periodically dump weak reinforcements to tie up sentinels
             if (this.type === 'boss' && game && game.enemies) {
                 this.bossSpawnCooldown -= dt;
                 if (this.bossSpawnCooldown <= 0) {
-                    this.bossSpawnCooldown = this.hp / this.maxHp < 0.5 ? 3.5 : 5.5;
-                    const supportType = this.hp / this.maxHp < 0.5 ? 'fast' : 'swarm';
-                    for (let i = 0; i < 2; i++) {
+                    const lowHp = this.hp / this.maxHp < 0.5;
+                    this.bossSpawnCooldown = lowHp ? 2.6 : 3.8;
+                    const supportType = lowHp ? 'fast' : 'swarm';
+                    const spawnCount = lowHp ? 8 : 6;
+                    for (let i = 0; i < spawnCount; i++) {
                         const add = createEnemy(supportType, waveNum);
-                        add.pathProgress = Math.max(0, this.pathProgress - 0.02 - i * 0.01);
+                        add.pathProgress = Math.max(0, this.pathProgress - 0.018 - i * 0.006);
                         const pos = Path.getPositionAtProgress(add.pathProgress);
-                        add.x = pos.x + (i === 0 ? -8 : 8);
-                        add.y = pos.y + 6;
+                        const side = (i % 2 === 0 ? -1 : 1);
+                        const row = Math.floor(i / 2);
+                        add.x = pos.x + side * (10 + row * 3);
+                        add.y = pos.y + 4 + row * 2;
                         game.enemies.push(add);
                     }
-                    ParticlePool.explosion(this.x, this.y, this.color, false);
-                    if (game.showBossBanner) game.showBossBanner('BOSS SUMMONS REINFORCEMENTS');
+                    ParticlePool.explosion(this.x, this.y, '#ff8844', false);
+                    if (game.showBossBanner) game.showBossBanner(lowHp ? 'BOSS UNLEASHES A SWARM' : 'BOSS CALLS REINFORCEMENTS');
                 }
             }
 

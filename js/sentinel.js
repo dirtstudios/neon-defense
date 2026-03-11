@@ -115,7 +115,7 @@ const SentinelManager = {
                 let closestDist = 25;
                 
                 for (const e of enemies) {
-                    if (!e.alive || e._blockedBySentinel) continue;
+                    if (!e.alive || e._blockedBySentinel || e.type === 'boss') continue;
                     const d = Utils.dist(s.x, s.y, e.x, e.y);
                     if (d < closestDist) {
                         closestDist = d;
@@ -213,48 +213,46 @@ const SentinelManager = {
                 continue;
             }
             
-            // Sentinel body — tiny soldier, not a dot
+            // Sentinel body — compact armored unit
             const engaged = !!s.engagedEnemy;
-            const bob = Math.sin(performance.now() * 0.01 + s.index) * 0.6;
 
             ctx.shadowColor = '#00ff88';
             ctx.shadowBlur = engaged ? 10 : 5;
 
-            // head
-            ctx.fillStyle = engaged ? '#66ffcc' : '#88ffcc';
+            // shield/body block
+            ctx.fillStyle = engaged ? '#38ffc0' : '#4fffb5';
             ctx.beginPath();
-            ctx.arc(s.x, s.y - 4 + bob, 2.2, 0, Math.PI * 2);
+            ctx.moveTo(s.x - 4, s.y - 2);
+            ctx.lineTo(s.x + 4, s.y - 2);
+            ctx.lineTo(s.x + 5, s.y + 4);
+            ctx.lineTo(s.x, s.y + 8);
+            ctx.lineTo(s.x - 5, s.y + 4);
+            ctx.closePath();
             ctx.fill();
 
-            // body
-            ctx.strokeStyle = engaged ? '#00ffaa' : '#00ff88';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(s.x, s.y - 1 + bob);
-            ctx.lineTo(s.x, s.y + 5 + bob);
-            ctx.stroke();
-
-            // arms
-            ctx.beginPath();
-            ctx.moveTo(s.x - 3, s.y + 1 + bob);
-            ctx.lineTo(s.x + 3, s.y + 1 + bob);
-            ctx.stroke();
+            // helmet/visor
+            ctx.fillStyle = 'rgba(20,30,35,0.95)';
+            ctx.fillRect(s.x - 3, s.y - 5, 6, 4);
+            ctx.fillStyle = '#d9fff1';
+            ctx.fillRect(s.x - 2, s.y - 4, 4, 1.5);
 
             // legs
+            ctx.strokeStyle = '#0f3';
+            ctx.lineWidth = 1.5;
             ctx.beginPath();
-            ctx.moveTo(s.x, s.y + 5 + bob);
-            ctx.lineTo(s.x - 3, s.y + 9 + bob);
-            ctx.moveTo(s.x, s.y + 5 + bob);
-            ctx.lineTo(s.x + 3, s.y + 9 + bob);
+            ctx.moveTo(s.x - 1.5, s.y + 8);
+            ctx.lineTo(s.x - 2.5, s.y + 11);
+            ctx.moveTo(s.x + 1.5, s.y + 8);
+            ctx.lineTo(s.x + 2.5, s.y + 11);
             ctx.stroke();
 
-            // sword / spear when engaged
+            // weapon when engaged
             if (engaged) {
                 ctx.strokeStyle = '#ffffff';
-                ctx.lineWidth = 1.5;
+                ctx.lineWidth = 2;
                 ctx.beginPath();
-                ctx.moveTo(s.x + 2, s.y - 1 + bob);
-                ctx.lineTo(s.x + 6, s.y - 5 + bob);
+                ctx.moveTo(s.x + 1, s.y + 1);
+                ctx.lineTo(s.x + 7, s.y - 3);
                 ctx.stroke();
             }
 
