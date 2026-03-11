@@ -34,8 +34,8 @@
 
 ### Sprint 5: Elite + boss structure
 - [x] Elite wave warnings (boss warning shown in wave preview)
-- [ ] Boss intros
-- [ ] Boss mechanics beyond raw HP
+- [x] Boss intros
+- [x] Boss mechanics beyond raw HP
 - [ ] Better reward moments
 
 ## LATER — Product polish
@@ -57,4 +57,4 @@
 2. ~~Enemy silhouette pass~~ - DONE: dark underlayer for all enemy shapes  
 3. ~~Projectile / hit VFX pass~~ - DONE: enhanced spark bursts
 4. ~~Perk system~~ - DONE: full perk system with 9 perks
-5. Boss / elite pass - NEXT
+5. ~~Boss / elite pass~~ - DONE: boss warnings, intros, mechanics
