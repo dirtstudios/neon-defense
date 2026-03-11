@@ -8,7 +8,7 @@
 - [x] Give every tower a stronger silhouette
 - [x] Give every enemy a stronger silhouette
 - [x] Improve projectile trails / muzzle feel / hit impact
-- [ ] Make upgrades look visually stronger at each tier
+- [x] Make upgrades look visually stronger at each tier (power aura for tier 2+)
 
 ### Sprint 2: Combat juice
 - [x] Better muzzle flashes (muzzleFlash in tower.js)
