@@ -33,7 +33,7 @@
 - [x] Risk/reward modifiers
 
 ### Sprint 5: Elite + boss structure
-- [ ] Elite wave warnings
+- [x] Elite wave warnings (boss warning shown in wave preview)
 - [ ] Boss intros
 - [ ] Boss mechanics beyond raw HP
 - [ ] Better reward moments
