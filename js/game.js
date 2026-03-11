@@ -803,6 +803,7 @@ const game = {
             if (!e.alive && e.reachedEnd) {
                 this.lives--;
                 e.reachedEnd = false;
+                this.shake(4); // Screen shake when enemy reaches end
                 if (this.lives <= 0) {
                     this.setState('gameover');
                     Audio.gameOver();
