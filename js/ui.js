@@ -1,7 +1,16 @@
 // UI update helpers
 const UI = {
-    updateGold(gold) {
-        document.getElementById('gold').textContent = `💰 ${gold}`;
+    updateGold(gold, flash = false) {
+        const el = document.getElementById('gold');
+        el.textContent = `💰 ${gold}`;
+        if (flash) {
+            el.style.textShadow = '0 0 12px #ffdd44, 0 0 24px #ffaa00';
+            el.style.transform = 'scale(1.15)';
+            setTimeout(() => {
+                el.style.textShadow = '';
+                el.style.transform = 'scale(1)';
+            }, 250);
+        }
     },
     updateWave(current, total, endless) {
         const lvl = game.level || 1;

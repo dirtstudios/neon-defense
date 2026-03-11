@@ -12,6 +12,7 @@ const game = {
     towers: [],
     enemies: [],
     shakeTimer: 0,
+    goldFlashTimer: 0,
     shakeIntensity: 0,
     lastTime: 0,
     mouseX: 0,
@@ -365,6 +366,7 @@ const game = {
         // Level bonus: +50 gold per level cleared
         const levelBonus = 50 * (this.level - 1) + this.perkState.economyBonusGold;
         this.gold += levelBonus;
+        this.goldFlashTimer = 0.5;
         if (this.perkState.healAfterLevel > 0) {
             this.lives += this.perkState.healAfterLevel;
         }
@@ -583,6 +585,7 @@ const game = {
                 const bonus = Math.floor((totalRemaining * 5 + (unspawned > 0 ? unspawned * 3 : 0)) * this.perkState.waveBonusMult);
                 this.gold += bonus;
                 this.score += bonus;
+                this.goldFlashTimer = 0.35;
                 const label = unspawned > 0 ? 'WAVE OVERLAP!' : 'EARLY WAVE!';
                 this._floatingTexts.push({
                     text: `+${bonus}💰 ${label}`,
@@ -776,7 +779,8 @@ const game = {
     },
 
     updateUI() {
-        UI.updateGold(this.gold);
+        UI.updateGold(this.gold, this.goldFlashTimer > 0);
+        if (this.goldFlashTimer > 0) this.goldFlashTimer -= 0.016;
         UI.updateWave(WaveManager.currentWave, WaveManager.waves.length, WaveManager.endless);
         UI.updateLives(this.lives);
         UI.updateScore(this.score);
@@ -818,6 +822,17 @@ const game = {
                 e.scored = true;
                 Audio.kill();
                 ParticlePool.explosion(e.x, e.y, e.color, e.type === 'boss');
+                // Gold earned floating text
+                this._floatingTexts.push({
+                    text: `+${e.gold}💰`,
+                    x: e.x,
+                    y: e.y - 22,
+                    life: 0.7,
+                    maxLife: 0.7,
+                    color: '#ffdd44'
+                });
+                // Gold flash effect on HUD
+                this.goldFlashTimer = 0.35;
                 this._floatingTexts.push({
                     text: `-${e.lastDamage || 0}`,
                     x: e.x,
