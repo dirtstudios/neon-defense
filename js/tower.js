@@ -404,20 +404,34 @@ function createTower(type, x, y) {
                 }
             }
 
-            // === SELECTED TOWER: Strong outer ring ===
+            // === SELECTED TOWER: clearer readable selection/range ===
             if (this.selected) {
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, s * 1.3, 0, Math.PI * 2);
-                ctx.strokeStyle = `${this.color}66`;
+                ctx.strokeStyle = 'rgba(20, 24, 34, 0.95)';
+                ctx.lineWidth = 4;
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, s * 1.3, 0, Math.PI * 2);
+                ctx.strokeStyle = `${this.color}88`;
                 ctx.lineWidth = 2;
                 ctx.stroke();
                 
-                // Range indicator
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.range, 0, Math.PI * 2);
-                ctx.strokeStyle = `${this.color}33`;
-                ctx.lineWidth = 1;
-                ctx.stroke();
+                // Range indicator — dark under-stroke + colored stroke so it reads on any background
+                if (this.range > 0) {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.range, 0, Math.PI * 2);
+                    ctx.strokeStyle = 'rgba(10, 12, 18, 0.9)';
+                    ctx.lineWidth = 4;
+                    ctx.stroke();
+
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.range, 0, Math.PI * 2);
+                    ctx.strokeStyle = `${this.color}88`;
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
             }
 
             // Targeting line

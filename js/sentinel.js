@@ -3,6 +3,7 @@
 
 const SentinelManager = {
     sentinels: [], // All active sentinels across all sentinel towers
+    MAX_RALLY_DISTANCE: 120,
     
     // Enemy damage dealt TO sentinels (per second)
     ENEMY_DPS: {
@@ -171,6 +172,15 @@ const SentinelManager = {
         for (const s of this.sentinels) {
             // Draw rally point indicator (subtle)
             if (s.index === 0 && s.tower.selected) {
+                // Max rally radius
+                ctx.beginPath();
+                ctx.arc(s.tower.x, s.tower.y, this.MAX_RALLY_DISTANCE, 0, Math.PI * 2);
+                ctx.strokeStyle = 'rgba(0, 255, 136, 0.12)';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([6, 6]);
+                ctx.stroke();
+
+                // Current rally marker
                 ctx.beginPath();
                 ctx.arc(s.targetX, s.targetY, 12, 0, Math.PI * 2);
                 ctx.strokeStyle = 'rgba(0, 255, 136, 0.3)';
@@ -183,7 +193,7 @@ const SentinelManager = {
                 ctx.beginPath();
                 ctx.moveTo(s.tower.x, s.tower.y);
                 ctx.lineTo(s.targetX, s.targetY);
-                ctx.strokeStyle = 'rgba(0, 255, 136, 0.15)';
+                ctx.strokeStyle = 'rgba(0, 255, 136, 0.18)';
                 ctx.lineWidth = 1;
                 ctx.stroke();
             }
@@ -329,13 +339,24 @@ const SentinelManager = {
     
     // Update rally point for a tower's sentinels
     setRallyPoint(tower, x, y) {
-        tower.rallyPoint = { x, y };
+        const dx = x - tower.x;
+        const dy = y - tower.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        let clampedX = x;
+        let clampedY = y;
+        if (dist > this.MAX_RALLY_DISTANCE) {
+            const scale = this.MAX_RALLY_DISTANCE / dist;
+            clampedX = tower.x + dx * scale;
+            clampedY = tower.y + dy * scale;
+        }
+
+        tower.rallyPoint = { x: clampedX, y: clampedY };
         const count = tower.maxSentinels || 2;
         for (const s of this.sentinels) {
             if (s.tower !== tower) continue;
             const offsetAngle = (s.index / count) * Math.PI * 2;
-            s.targetX = x + Math.cos(offsetAngle) * 8;
-            s.targetY = y + Math.sin(offsetAngle) * 8;
+            s.targetX = clampedX + Math.cos(offsetAngle) * 8;
+            s.targetY = clampedY + Math.sin(offsetAngle) * 8;
             s.atRally = false;
         }
     },
