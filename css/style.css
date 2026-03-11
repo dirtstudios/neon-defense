@@ -22,6 +22,9 @@ body {
     background: #050510;
     border: 1px solid rgba(0, 243, 255, 0.2);
     box-shadow: 0 0 30px rgba(0, 0, 0, 0.35);
+    touch-action: none;
+    -webkit-user-select: none;
+    user-select: none;
 }
 
 #hud-top {

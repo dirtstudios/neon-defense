@@ -50,6 +50,18 @@ const game = {
         healAfterLevel: 0
     },
     
+    getCanvasPoint(e) {
+        const rect = this.canvas.getBoundingClientRect();
+        const clientX = e.clientX ?? (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
+        const clientY = e.clientY ?? (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
+        const scaleX = this.canvas.width / rect.width;
+        const scaleY = this.canvas.height / rect.height;
+        return {
+            x: (clientX - rect.left) * scaleX,
+            y: (clientY - rect.top) * scaleY
+        };
+    },
+
     init() {
         this.canvas = document.getElementById('gameCanvas');
         this.ctx = this.canvas.getContext('2d');
@@ -67,21 +79,21 @@ const game = {
         Terrain.generate(this.mapInfo.seed);
         this._updateMapDisplay();
 
-        // Mouse tracking
-        this.canvas.addEventListener('mousemove', (e) => {
-            const rect = this.canvas.getBoundingClientRect();
-            this.mouseX = e.clientX - rect.left;
-            this.mouseY = e.clientY - rect.top;
+        // Pointer/touch-safe input mapping
+        this.canvas.addEventListener('pointermove', (e) => {
+            const pos = this.getCanvasPoint(e);
+            this.mouseX = pos.x;
+            this.mouseY = pos.y;
         });
 
-        this.canvas.addEventListener('click', (e) => {
+        this.canvas.addEventListener('pointerdown', (e) => {
+            const pos = this.getCanvasPoint(e);
+            const mx = pos.x;
+            const my = pos.y;
             if (this.levelTransition) {
                 this._confirmLevelAdvance();
                 return;
             }
-            const rect = this.canvas.getBoundingClientRect();
-            const mx = e.clientX - rect.left;
-            const my = e.clientY - rect.top;
             if (this.perkChoiceActive) {
                 this.handlePerkClick(mx, my);
                 return;
