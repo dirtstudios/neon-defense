@@ -30,6 +30,8 @@ const game = {
     showFPS: false,
 
     mapInfo: null,
+    bossBannerTimer: 0,
+    bossBannerText: '',
     
     init() {
         this.canvas = document.getElementById('gameCanvas');
@@ -183,6 +185,8 @@ const game = {
         this.wavesStacked = 0;
         this.levelTransition = false;
         this.levelStats = null;
+        this.bossBannerTimer = 0;
+        this.bossBannerText = '';
         ParticlePool.active = [];
         ProjectilePool.active = [];
         ProjectilePool.rings = [];
@@ -452,6 +456,13 @@ const game = {
         document.getElementById(`speed${s}`).classList.add('active');
     },
 
+    showBossBanner(text = 'BOSS INCOMING') {
+        this.bossBannerText = text;
+        this.bossBannerTimer = 2.6;
+        this.shake(3);
+        if (Audio.bossAlert) Audio.bossAlert();
+    },
+
     wavesStacked: 0,
 
     startWave() {
@@ -462,6 +473,9 @@ const game = {
         
         // No wave cap — stack as many as you dare
         
+        const nextWaveDef = WaveManager.getWaveDef(WaveManager.currentWave);
+        const hasBossNext = nextWaveDef.some(g => g.type === 'boss' && g.count > 0);
+
         if (WaveManager.waveActive) {
             // Early wave! Enemies still alive + still spawning from current wave
             const aliveEnemies = this.enemies.filter(e => e.alive).length;
@@ -491,6 +505,7 @@ const game = {
         }
         
         Audio.waveStart();
+        if (hasBossNext) this.showBossBanner(`BOSS WAVE ${WaveManager.currentWave + 1}`);
         UI.updateWavePreview('');
         this.updateUI();
     },
@@ -689,10 +704,19 @@ const game = {
                 this.score += e.gold;
                 e.scored = true;
                 Audio.kill();
-                ParticlePool.spawn(e.x, e.y, e.color, e.type === 'boss' ? 25 : 10);
+                ParticlePool.explosion(e.x, e.y, e.color, e.type === 'boss');
+                this._floatingTexts.push({
+                    text: `-${e.lastDamage || 0}`,
+                    x: e.x,
+                    y: e.y - 10,
+                    life: 0.45,
+                    maxLife: 0.45,
+                    color: '#ffffff'
+                });
                 if (e.type === 'boss') {
                     this.shake(5);
                     Audio.bossKill();
+                    this.showBossBanner('BOSS DESTROYED');
                 }
                 this.updateUI();
             }
@@ -728,6 +752,8 @@ const game = {
             ft.y -= 30 * dt; // Float upward
             if (ft.life <= 0) this._floatingTexts.splice(i, 1);
         }
+
+        if (this.bossBannerTimer > 0) this.bossBannerTimer -= dt;
 
         // Screen shake
         if (this.shakeTimer > 0) this.shakeTimer -= dt;
@@ -1050,6 +1076,25 @@ const game = {
                 ctx.fillText('Press SPACE or click to continue', 400, 460);
             }
             
+            ctx.textAlign = 'start';
+        }
+
+        if (this.bossBannerTimer > 0) {
+            const alpha = Math.min(1, this.bossBannerTimer / 0.4, (2.6 - this.bossBannerTimer) / 0.4);
+            ctx.save();
+            ctx.globalAlpha = Math.max(0, alpha);
+            ctx.fillStyle = 'rgba(30, 0, 8, 0.88)';
+            ctx.fillRect(160, 26, 480, 54);
+            ctx.strokeStyle = 'rgba(255, 80, 110, 0.9)';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(160, 26, 480, 54);
+            ctx.fillStyle = '#ff667a';
+            ctx.font = 'bold 24px monospace';
+            ctx.textAlign = 'center';
+            ctx.shadowColor = '#ff3355';
+            ctx.shadowBlur = 16;
+            ctx.fillText(this.bossBannerText, 400, 60);
+            ctx.restore();
             ctx.textAlign = 'start';
         }
 

@@ -20,6 +20,11 @@ const Audio = {
     place() { this._play(600, 0.08, 'sine', 0.08); },
     shoot() { this._play(800, 0.04, 'square', 0.03); },
     kill() { this._play(1200, 0.1, 'sine', 0.06); this._play(900, 0.15, 'sine', 0.04); },
+    bossAlert() {
+        this._play(180, 0.18, 'sawtooth', 0.08);
+        setTimeout(() => this._play(140, 0.18, 'sawtooth', 0.07), 120);
+        setTimeout(() => this._play(220, 0.22, 'square', 0.05), 240);
+    },
     bossKill() {
         this._play(200, 0.3, 'sawtooth', 0.1);
         setTimeout(() => this._play(400, 0.2, 'sine', 0.08), 100);

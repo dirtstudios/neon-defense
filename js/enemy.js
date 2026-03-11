@@ -61,12 +61,16 @@ function createEnemy(type, waveNum) {
         poisonDamage: 0,
         poisonTimer: 0,
         poisonTick: 0,
+        hitFlash: 0,
+        lastDamage: 0,
 
         // Apply resistance to damage based on tower's damage type
         takeDamage(dmg, damageType) {
             const mult = this.resist[damageType] || 1.0;
             const actualDmg = Math.max(1, Math.floor(dmg * mult));
             this.hp -= actualDmg;
+            this.hitFlash = 0.12;
+            this.lastDamage = actualDmg;
             if (this.hp <= 0) {
                 this.hp = 0;
                 this.alive = false;
@@ -76,6 +80,8 @@ function createEnemy(type, waveNum) {
 
         update(dt, speedMult) {
             if (!this.alive) return;
+
+            if (this.hitFlash > 0) this.hitFlash -= dt;
 
             // Slow effect
             if (this.slowed) {
@@ -153,7 +159,7 @@ function createEnemy(type, waveNum) {
             ctx.shadowBlur = isBoss ? 18 : 10;
             ctx.lineWidth = 2;
             ctx.strokeStyle = 'rgba(255,255,255,0.3)';
-            ctx.fillStyle = effectColor;
+            ctx.fillStyle = this.hitFlash > 0 ? '#ffffff' : effectColor;
 
             if (this.shape === 'circle') {
                 ctx.beginPath();
@@ -239,15 +245,31 @@ function createEnemy(type, waveNum) {
             ctx.globalAlpha = 1;
 
             // HP bar
-            if (this.hp < this.maxHp) {
-                const barW = s * 2;
-                const barH = 3;
+            if (this.hp < this.maxHp || isBoss) {
+                const barW = isBoss ? s * 3.2 : s * 2;
+                const barH = isBoss ? 5 : 3;
                 const barX = this.x - barW / 2;
-                const barY = this.y - s - 6;
+                const barY = this.y - s - (isBoss ? 12 : 6);
                 ctx.fillStyle = 'rgba(255,255,255,0.15)';
                 ctx.fillRect(barX, barY, barW, barH);
                 ctx.fillStyle = this.hp / this.maxHp > 0.3 ? '#00ff66' : '#ff3333';
                 ctx.fillRect(barX, barY, barW * (this.hp / this.maxHp), barH);
+                if (isBoss) {
+                    ctx.strokeStyle = 'rgba(255,255,255,0.45)';
+                    ctx.strokeRect(barX - 1, barY - 1, barW + 2, barH + 2);
+                    ctx.fillStyle = '#ffcc44';
+                    ctx.font = 'bold 10px monospace';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('BOSS', this.x, barY - 4);
+                }
+            }
+
+            if (isBoss) {
+                ctx.strokeStyle = 'rgba(255,80,120,0.25)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y + bob, s * 1.45, 0, Math.PI * 2);
+                ctx.stroke();
             }
             
             // Resistance indicator icon above enemy

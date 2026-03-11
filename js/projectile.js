@@ -63,8 +63,18 @@ const ProjectilePool = {
             if (dist < 10) {
                 if (p.target && p.target.alive) {
                     const bonusMult = p.target.slowed ? 1.5 : 1;
-                    p.target.takeDamage(p.damage * bonusMult, p.damageType);
-                    ParticlePool.spawn(p.x, p.y, p.color, 3);
+                    const dealt = p.target.takeDamage(p.damage * bonusMult, p.damageType);
+                    ParticlePool.impact(p.x, p.y, p.color, angle);
+                    if (dealt >= 12 && game && game._floatingTexts) {
+                        game._floatingTexts.push({
+                            text: `${dealt}`,
+                            x: p.x,
+                            y: p.y - 8,
+                            life: 0.35,
+                            maxLife: 0.35,
+                            color: '#ffffff'
+                        });
+                    }
                 }
                 this.pool.push(p);
                 this.active.splice(i, 1);
@@ -86,13 +96,23 @@ const ProjectilePool = {
                 // Enemy is within the ring band (current radius ± tolerance)
                 if (d <= r.currentRadius + 15 && d >= r.currentRadius - 15) {
                     const bonusMult = e.slowed ? 1.5 : 1;
-                    e.takeDamage(r.damage * bonusMult, r.damageType);
+                    const dealt = e.takeDamage(r.damage * bonusMult, r.damageType);
                     if (r.aoeSlow) {
                         e.slowed = true;
                         e.slowTimer = 2;
                     }
                     r.hit.add(e);
-                    ParticlePool.spawn(e.x, e.y, r.color, 3);
+                    ParticlePool.impact(e.x, e.y, r.color, Math.atan2(e.y - r.y, e.x - r.x));
+                    if (dealt >= 12 && game && game._floatingTexts) {
+                        game._floatingTexts.push({
+                            text: `${dealt}`,
+                            x: e.x,
+                            y: e.y - 8,
+                            life: 0.35,
+                            maxLife: 0.35,
+                            color: '#ffffff'
+                        });
+                    }
                 }
             }
             
