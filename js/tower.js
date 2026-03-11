@@ -176,6 +176,17 @@ function createTower(type, x, y) {
             const ox = Math.cos(a) * recoilPx * -1;
             const oy = Math.sin(a) * recoilPx * -1;
 
+            // === POWER AURA for tier 2+ towers ===
+            if (this.tier >= 2) {
+                const auraPulse = 0.5 + Math.sin(performance.now() * 0.004) * 0.25;
+                const auraColor = this.tier === 3 ? 'rgba(255,220,100,' : 'rgba(100,200,255,';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, s * 1.4, 0, Math.PI * 2);
+                ctx.strokeStyle = auraColor + (auraPulse * 0.4) + ')';
+                ctx.lineWidth = this.tier === 3 ? 3 : 2;
+                ctx.stroke();
+            }
+
             // === STRONGER SILHOUETTE: Dark underlayer for contrast ===
             ctx.save();
             ctx.translate(ox, oy);
