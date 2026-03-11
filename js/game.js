@@ -1194,19 +1194,27 @@ const game = {
 
         if (this.bossBannerTimer > 0) {
             const alpha = Math.min(1, this.bossBannerTimer / 0.4, (2.6 - this.bossBannerTimer) / 0.4);
+            const pulse = 1 + Math.sin(performance.now() * 0.015) * 0.08;
             ctx.save();
             ctx.globalAlpha = Math.max(0, alpha);
-            ctx.fillStyle = 'rgba(30, 0, 8, 0.82)';
-            ctx.fillRect(200, 548, 400, 28);
-            ctx.strokeStyle = 'rgba(255, 80, 110, 0.9)';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(200, 548, 400, 28);
-            ctx.fillStyle = '#ff8898';
-            ctx.font = 'bold 14px monospace';
+            // Dramatic gradient background
+            const grad = ctx.createLinearGradient(200, 548, 600, 548);
+            grad.addColorStop(0, 'rgba(60, 0, 15, 0.9)');
+            grad.addColorStop(0.5, 'rgba(100, 0, 20, 0.92)');
+            grad.addColorStop(1, 'rgba(60, 0, 15, 0.9)');
+            ctx.fillStyle = grad;
+            ctx.fillRect(200, 548, 400, 32);
+            // Glowing border
+            ctx.strokeStyle = `rgba(255, 80, 110, ${0.7 + Math.sin(performance.now() * 0.01) * 0.3})`;
+            ctx.lineWidth = 3;
+            ctx.strokeRect(200, 548, 400, 32);
+            // Pulsing text
+            ctx.fillStyle = '#ffaabb';
+            ctx.font = `bold ${16 * pulse}px monospace`;
             ctx.textAlign = 'center';
             ctx.shadowColor = '#ff3355';
-            ctx.shadowBlur = 10;
-            ctx.fillText(this.bossBannerText, 400, 567);
+            ctx.shadowBlur = 20;
+            ctx.fillText(this.bossBannerText, 400, 571);
             ctx.restore();
             ctx.textAlign = 'start';
         }

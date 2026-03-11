@@ -70,6 +70,7 @@ function createEnemy(type, waveNum) {
         bossRole: def.bossRole || null,
         bossSpawnCooldown: def.bossRole ? 3.2 : 0,
         bossPulseCooldown: def.bossRole === 'war' ? 5.5 : 0,
+        bossIntroShown: def.bossRole ? false : true, // show intro when boss spawns
 
         // Apply resistance to damage based on tower's damage type
         takeDamage(dmg, damageType) {
@@ -130,6 +131,17 @@ function createEnemy(type, waveNum) {
 
             // Boss mechanics
             if (this.bossRole && game && game.enemies) {
+                // Show boss intro on first spawn
+                if (!this.bossIntroShown) {
+                    this.bossIntroShown = true;
+                    if (game.showBossBanner) {
+                        const bossName = this.bossRole === 'brood' ? '🐞 BROOD KING' : 
+                                        this.bossRole === 'war' ? '⚔️ WAR TITAN' : '👹 TITAN';
+                        game.showBossBanner(bossName + ' APPEARS!');
+                        game.shake(8);
+                    }
+                }
+                
                 this.bossSpawnCooldown -= dt;
                 if (this.bossSpawnCooldown <= 0) {
                     const lowHp = this.hp / this.maxHp < 0.5;
