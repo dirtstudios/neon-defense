@@ -951,6 +951,44 @@ const game = {
         const theme = this.getCurrentTheme();
         Terrain.draw(ctx, theme);
 
+        // Water zone indicator - highlight when placing boat or hovering water
+        if (this.state === 'playing') {
+            const snap = Utils.snapToGrid(this.mouseX, this.mouseY);
+            const isWater = Terrain.isWaterTile(snap.x, snap.y);
+            const isBoatSelected = this.selectedTower === 'boat';
+            if (isWater && (isBoatSelected || this.selectedTower === null)) {
+                ctx.save();
+                ctx.fillStyle = 'rgba(0, 136, 255, 0.12)';
+                ctx.strokeStyle = 'rgba(0, 200, 255, 0.4)';
+                ctx.lineWidth = 2;
+                // Draw subtle highlight over water area
+                const ts = Terrain.TILE_SIZE;
+                for (let r = 0; r < Terrain.ROWS; r++) {
+                    for (let c = 0; c < Terrain.COLS; c++) {
+                        if (Terrain.grid[r][c] === 'water') {
+                            const wx = c * ts;
+                            const wy = r * ts;
+                            // Highlight water tiles near mouse
+                            if (Utils.dist(this.mouseX, this.mouseY, wx + ts/2, wy + ts/2) < 80) {
+                                ctx.fillRect(wx + 2, wy + 2, ts - 4, ts - 4);
+                                ctx.strokeRect(wx + 2, wy + 2, ts - 4, ts - 4);
+                            }
+                        }
+                    }
+                }
+                // Show "BOAT ZONE" text when placing boat
+                if (isBoatSelected) {
+                    ctx.font = 'bold 11px monospace';
+                    ctx.textAlign = 'center';
+                    ctx.fillStyle = '#00ccff';
+                    ctx.shadowColor = '#00ccff';
+                    ctx.shadowBlur = 8;
+                    ctx.fillText('🚢 BOAT ZONE', this.mouseX, this.mouseY - 25);
+                }
+                ctx.restore();
+            }
+        }
+
         // Tower/trap placement preview
         if (this.state === 'playing' && this.selectedTower && this.selectedTower !== 'sell') {
             const snap = Utils.snapToGrid(this.mouseX, this.mouseY);
