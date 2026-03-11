@@ -366,19 +366,22 @@ function createEnemy(type, waveNum) {
             }
 
             if (isBoss) {
+                // Pulsing boss aura
+                const pulse = 0.7 + Math.sin(performance.now() * 0.005) * 0.3;
+                
                 // Different boss types have different aura colors
                 let auraColor, auraWidth;
                 if (this.bossRole === 'brood') {
                     // Brood: orange/red aggressive glow
-                    auraColor = 'rgba(255,120,30,0.3)';
+                    auraColor = `rgba(255,120,30,${pulse * 0.4})`;
                     auraWidth = 3;
                 } else if (this.bossRole === 'war') {
                     // War: purple/royal glow
-                    auraColor = 'rgba(180,80,255,0.35)';
+                    auraColor = `rgba(180,80,255,${pulse * 0.45})`;
                     auraWidth = 4;
                 } else {
                     // Titan: classic red glow
-                    auraColor = 'rgba(255,80,120,0.25)';
+                    auraColor = `rgba(255,80,120,${pulse * 0.35})`;
                     auraWidth = 2;
                 }
                 ctx.strokeStyle = auraColor;
@@ -389,7 +392,7 @@ function createEnemy(type, waveNum) {
                 
                 // Extra ring for war boss
                 if (this.bossRole === 'war') {
-                    ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+                    ctx.strokeStyle = `rgba(255,255,255,${pulse * 0.2})`;
                     ctx.lineWidth = 1;
                     ctx.beginPath();
                     ctx.arc(this.x, this.y + bob, s * 1.7, 0, Math.PI * 2);
