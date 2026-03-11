@@ -162,6 +162,18 @@ body {
     color: #00f3ff;
     text-shadow: 0 0 30px rgba(0, 243, 255, 0.5);
     margin-bottom: 8px;
+    animation: titlePulse 2.5s ease-in-out infinite;
+}
+
+@keyframes titlePulse {
+    0%, 100% { 
+        text-shadow: 0 0 20px rgba(0, 243, 255, 0.4), 0 0 40px rgba(0, 243, 255, 0.2);
+        letter-spacing: 12px;
+    }
+    50% { 
+        text-shadow: 0 0 35px rgba(0, 243, 255, 0.7), 0 0 60px rgba(0, 243, 255, 0.4);
+        letter-spacing: 14px;
+    }
 }
 
 .subtitle {
@@ -175,16 +187,23 @@ body {
     background: transparent;
     border: 1px solid #00f3ff;
     color: #00f3ff;
-    padding: 12px 48px;
+    padding: 14px 56px;
     font-size: 18px;
     letter-spacing: 6px;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.25s ease;
+    position: relative;
+    overflow: hidden;
 }
 
 #play-btn:hover, #game-over-screen button:hover {
-    background: rgba(0, 243, 255, 0.1);
-    box-shadow: 0 0 20px rgba(0, 243, 255, 0.3);
+    background: rgba(0, 243, 255, 0.15);
+    box-shadow: 0 0 25px rgba(0, 243, 255, 0.5), inset 0 0 15px rgba(0, 243, 255, 0.1);
+    transform: scale(1.03);
+}
+
+#play-btn:active, #game-over-screen button:active {
+    transform: scale(0.98);
 }
 
 #new-map-btn {
@@ -210,9 +229,18 @@ body {
     font-size: 13px;
     color: #666;
     letter-spacing: 2px;
+    padding: 12px 20px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 136, 0, 0.2);
+    border-radius: 4px;
 }
-#map-name { color: #ff8800; }
-#map-seed { color: #555; }
+#map-name { 
+    color: #ff8800; 
+    text-shadow: 0 0 8px rgba(255, 136, 0, 0.3);
+}
+#map-seed { 
+    color: #888; 
+}
 
 #seed-input-row {
     display: flex;
@@ -245,9 +273,10 @@ body {
 #seed-input-row button:hover { background: rgba(0, 243, 255, 0.1); }
 
 .controls-hint {
-    color: #444;
+    color: #556;
     font-size: 12px;
     margin-top: 24px;
+    letter-spacing: 1px;
 }
 
 #end-title { margin-bottom: 16px; }
