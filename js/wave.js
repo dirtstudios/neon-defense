@@ -121,14 +121,23 @@ const WaveManager = {
         if (this.currentWave >= this.waves.length) this.endless = true;
     },
 
-    update(dt, enemies, speedMult) {
+    update(dt, enemies, speedMult, overlapDepth = 0) {
         if (!this.waveActive || this.spawnQueue.length === 0) return;
 
-        this.spawnTimer -= dt * speedMult;
-        if (this.spawnTimer <= 0 && this.spawnQueue.length > 0) {
+        const spawnRateMult = 1 + Math.max(0, overlapDepth) * 1.5;
+        this.spawnTimer -= dt * speedMult * spawnRateMult;
+
+        let spawnsThisTick = 0;
+        const spawnCap = Math.min(10, 2 + Math.max(0, overlapDepth) * 2);
+        while (this.spawnTimer <= 0 && this.spawnQueue.length > 0 && spawnsThisTick < spawnCap) {
             const type = this.spawnQueue.shift();
             enemies.push(createEnemy(type, this.currentWave));
-            this.spawnTimer = this.spawnInterval;
+            this.spawnTimer += this.spawnInterval;
+            spawnsThisTick++;
+        }
+
+        if (this.spawnQueue.length === 0) {
+            this.spawnTimer = 0;
         }
     },
 

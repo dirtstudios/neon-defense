@@ -32,6 +32,22 @@ const game = {
     mapInfo: null,
     bossBannerTimer: 0,
     bossBannerText: '',
+    perkChoiceActive: false,
+    perkOptions: [],
+    perkHistory: [],
+    perkState: {
+        globalDamageMult: 1,
+        blasterDamageMult: 1,
+        sniperDamageMult: 1,
+        aoeDamageMult: 1,
+        boatDamageMult: 1,
+        trapDamageMult: 1,
+        sentinelBonusCount: 0,
+        sentinelHpMult: 1,
+        economyBonusGold: 0,
+        waveBonusMult: 1,
+        healAfterLevel: 0
+    },
     
     init() {
         this.canvas = document.getElementById('gameCanvas');
@@ -62,10 +78,14 @@ const game = {
                 this._confirmLevelAdvance();
                 return;
             }
-            if (this.state !== 'playing') return;
             const rect = this.canvas.getBoundingClientRect();
             const mx = e.clientX - rect.left;
             const my = e.clientY - rect.top;
+            if (this.perkChoiceActive) {
+                this.handlePerkClick(mx, my);
+                return;
+            }
+            if (this.state !== 'playing') return;
             this.handleClick(mx, my);
         });
 
@@ -80,6 +100,12 @@ const game = {
             if (this.levelTransition && (e.key === ' ' || e.key === 'Enter')) {
                 e.preventDefault();
                 this._confirmLevelAdvance();
+                return;
+            }
+            if (this.perkChoiceActive) {
+                if (e.key === '1') this.choosePerk(0);
+                else if (e.key === '2') this.choosePerk(1);
+                else if (e.key === '3') this.choosePerk(2);
                 return;
             }
             if (this.state !== 'playing') return;
@@ -187,6 +213,22 @@ const game = {
         this.levelStats = null;
         this.bossBannerTimer = 0;
         this.bossBannerText = '';
+        this.perkChoiceActive = false;
+        this.perkOptions = [];
+        this.perkHistory = [];
+        this.perkState = {
+            globalDamageMult: 1,
+            blasterDamageMult: 1,
+            sniperDamageMult: 1,
+            aoeDamageMult: 1,
+            boatDamageMult: 1,
+            trapDamageMult: 1,
+            sentinelBonusCount: 0,
+            sentinelHpMult: 1,
+            economyBonusGold: 0,
+            waveBonusMult: 1,
+            healAfterLevel: 0
+        };
         ParticlePool.active = [];
         ProjectilePool.active = [];
         ProjectilePool.rings = [];
@@ -255,9 +297,61 @@ const game = {
     },
 
     _confirmLevelAdvance() {
-        this.levelTransition = false;
-        this.levelStats = null;
+        if (!this.perkChoiceActive) {
+            this.levelTransition = false;
+            this.perkChoiceActive = true;
+            this.perkOptions = this._generatePerkOptions();
+            return;
+        }
+    },
+
+    _allPerks() {
+        return [
+            { id: 'kinetic_boost', name: 'Kinetic Overdrive', desc: '+20% Blaster and Boat damage', apply: () => { this.perkState.blasterDamageMult *= 1.2; this.perkState.boatDamageMult *= 1.2; } },
+            { id: 'sniper_focus', name: 'Sniper Focus', desc: '+35% Sniper damage', apply: () => { this.perkState.sniperDamageMult *= 1.35; } },
+            { id: 'reactor_core', name: 'Reactor Core', desc: '+25% AOE damage', apply: () => { this.perkState.aoeDamageMult *= 1.25; } },
+            { id: 'sentinel_drill', name: 'Sentinel Drill', desc: '+1 sentinel per barracks', apply: () => { this.perkState.sentinelBonusCount += 1; } },
+            { id: 'reinforced_armor', name: 'Reinforced Armor', desc: '+25% sentinel HP', apply: () => { this.perkState.sentinelHpMult *= 1.25; } },
+            { id: 'trap_engineering', name: 'Trap Engineering', desc: '+25% trap damage', apply: () => { this.perkState.trapDamageMult *= 1.25; } },
+            { id: 'war_chest', name: 'War Chest', desc: '+75 gold now and +25 each level', apply: () => { this.gold += 75; this.perkState.economyBonusGold += 25; } },
+            { id: 'blood_sport', name: 'Blood Sport', desc: '+30% early-wave bonus gold', apply: () => { this.perkState.waveBonusMult *= 1.3; } },
+            { id: 'field_repairs', name: 'Field Repairs', desc: '+3 lives after each level', apply: () => { this.perkState.healAfterLevel += 3; } }
+        ];
+    },
+
+    _generatePerkOptions() {
+        const used = new Set(this.perkHistory);
+        const pool = this._allPerks().filter(p => !used.has(p.id));
+        const source = pool.length >= 3 ? pool : this._allPerks();
+        const shuffled = [...source];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Utils.randInt(0, i);
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled.slice(0, 3);
+    },
+
+    choosePerk(index) {
+        const perk = this.perkOptions[index];
+        if (!perk) return;
+        perk.apply();
+        this.perkHistory.push(perk.id);
+        this.perkChoiceActive = false;
+        this.perkOptions = [];
         try { this.__doAdvanceLevel(); } catch(e) { console.error('Level advance error:', e); }
+    },
+
+    applyPerkModifiersToTower(tower) {
+        tower.damage *= this.perkState.globalDamageMult;
+        if (tower.type === 'blaster') tower.damage *= this.perkState.blasterDamageMult;
+        if (tower.type === 'sniper') tower.damage *= this.perkState.sniperDamageMult;
+        if (tower.type === 'aoe') tower.damage *= this.perkState.aoeDamageMult;
+        if (tower.type === 'boat') tower.damage *= this.perkState.boatDamageMult;
+        if (tower.type === 'sentinel') {
+            tower.maxSentinels += this.perkState.sentinelBonusCount;
+            tower.sentinelHp = Math.round(tower.sentinelHp * this.perkState.sentinelHpMult);
+        }
+        tower.damage = Math.round(tower.damage || 0);
     },
     
     // Waves per level: 5, 10, 15, 20, 20, 20...
@@ -269,8 +363,11 @@ const game = {
         this.level++;
         
         // Level bonus: +50 gold per level cleared
-        const levelBonus = 50 * (this.level - 1);
+        const levelBonus = 50 * (this.level - 1) + this.perkState.economyBonusGold;
         this.gold += levelBonus;
+        if (this.perkState.healAfterLevel > 0) {
+            this.lives += this.perkState.healAfterLevel;
+        }
         
         // Full reset — new map, clear towers, fresh start
         this.towers = [];
@@ -483,7 +580,7 @@ const game = {
             const totalRemaining = aliveEnemies + unspawned;
             if (totalRemaining > 0) {
                 // Bigger bonus when called during spawning (more risk = more reward)
-                const bonus = totalRemaining * 5 + (unspawned > 0 ? unspawned * 3 : 0);
+                const bonus = Math.floor((totalRemaining * 5 + (unspawned > 0 ? unspawned * 3 : 0)) * this.perkState.waveBonusMult);
                 this.gold += bonus;
                 this.score += bonus;
                 const label = unspawned > 0 ? 'WAVE OVERLAP!' : 'EARLY WAVE!';
@@ -658,6 +755,21 @@ const game = {
         }
     },
 
+    handlePerkClick(mx, my) {
+        const cards = [
+            { x: 110, y: 210, w: 180, h: 150 },
+            { x: 310, y: 210, w: 180, h: 150 },
+            { x: 510, y: 210, w: 180, h: 150 }
+        ];
+        for (let i = 0; i < cards.length; i++) {
+            const c = cards[i];
+            if (mx >= c.x && mx <= c.x + c.w && my >= c.y && my <= c.y + c.h) {
+                this.choosePerk(i);
+                return;
+            }
+        }
+    },
+
     shake(intensity) {
         this.shakeTimer = 0.15;
         this.shakeIntensity = intensity;
@@ -678,12 +790,12 @@ const game = {
     },
 
     update(dt) {
-        if (this.state !== 'playing' || this.levelTransition) return;
+        if (this.state !== 'playing' || this.levelTransition || this.perkChoiceActive) return;
 
         const speedMult = this.speed;
 
         // Spawn enemies
-        WaveManager.update(dt, this.enemies, speedMult);
+        WaveManager.update(dt, this.enemies, speedMult, this.wavesStacked);
 
         // Update enemies
         for (const e of this.enemies) {
@@ -1095,6 +1207,52 @@ const game = {
             ctx.shadowBlur = 10;
             ctx.fillText(this.bossBannerText, 400, 567);
             ctx.restore();
+            ctx.textAlign = 'start';
+        }
+
+        if (this.perkChoiceActive) {
+            ctx.fillStyle = 'rgba(2, 2, 8, 0.9)';
+            ctx.fillRect(0, 0, 800, 600);
+            ctx.textAlign = 'center';
+            ctx.fillStyle = '#00ffcc';
+            ctx.font = 'bold 28px monospace';
+            ctx.fillText('CHOOSE A PERK', 400, 120);
+            ctx.fillStyle = '#aab7c7';
+            ctx.font = '13px monospace';
+            ctx.fillText('Pick 1 reward to carry into the next level', 400, 150);
+            const cards = [110, 310, 510];
+            for (let i = 0; i < this.perkOptions.length; i++) {
+                const perk = this.perkOptions[i];
+                const x = cards[i];
+                const y = 210;
+                ctx.fillStyle = 'rgba(10, 16, 30, 0.96)';
+                ctx.strokeStyle = 'rgba(0, 243, 255, 0.45)';
+                ctx.lineWidth = 2;
+                ctx.fillRect(x, y, 180, 150);
+                ctx.strokeRect(x, y, 180, 150);
+                ctx.fillStyle = '#00f3ff';
+                ctx.font = 'bold 14px monospace';
+                ctx.fillText(`${i + 1}. ${perk.name}`, x + 90, y + 34);
+                ctx.fillStyle = '#d9e6f2';
+                ctx.font = '12px monospace';
+                const words = perk.desc.split(' ');
+                let line = '';
+                let cy = y + 72;
+                for (const word of words) {
+                    const test = line ? `${line} ${word}` : word;
+                    if (ctx.measureText(test).width > 150) {
+                        ctx.fillText(line, x + 90, cy);
+                        line = word;
+                        cy += 18;
+                    } else {
+                        line = test;
+                    }
+                }
+                if (line) ctx.fillText(line, x + 90, cy);
+            }
+            ctx.fillStyle = '#778899';
+            ctx.font = '12px monospace';
+            ctx.fillText('Press 1 / 2 / 3 or click a card', 400, 405);
             ctx.textAlign = 'start';
         }
 

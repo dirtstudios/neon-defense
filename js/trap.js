@@ -7,10 +7,10 @@ const TrapTypes = {
 
 function createTrap(type, x, y) {
     const def = TrapTypes[type];
-    return {
+    const trap = {
         type,
         x, y,
-        damage: def.damage,
+        damage: def.damage * ((typeof game !== 'undefined' && game.perkState) ? game.perkState.trapDamageMult : 1),
         color: def.color,
         uses: def.uses,
         maxUses: def.uses,
@@ -148,4 +148,6 @@ function createTrap(type, x, y) {
             }
         }
     };
+    trap.damage = Math.round(trap.damage || 0);
+    return trap;
 }

@@ -41,7 +41,7 @@ const TowerUpgrades = {
 
 function createTower(type, x, y) {
     const def = TowerTypes[type];
-    return {
+    const tower = {
         type: type,
         x: x,
         y: y,
@@ -100,6 +100,9 @@ function createTower(type, x, y) {
             this.totalInvested += up.cost;
             this.sellValue = Math.floor(this.totalInvested * 0.5);
             // Notify sentinel manager of upgrade
+            if (typeof game !== 'undefined' && game.applyPerkModifiersToTower) {
+                game.applyPerkModifiersToTower(this);
+            }
             if (this.isSentinel) SentinelManager.onTowerUpgrade(this);
             return true;
         },
@@ -372,4 +375,8 @@ function createTower(type, x, y) {
             }
         }
     };
+    if (typeof game !== 'undefined' && game.applyPerkModifiersToTower) {
+        game.applyPerkModifiersToTower(tower);
+    }
+    return tower;
 }
