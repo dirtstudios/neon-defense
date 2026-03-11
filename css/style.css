@@ -51,10 +51,25 @@ body {
     border: 1px solid rgba(255,255,255,0.04);
 }
 
-#gold { color: #ffdc73; }
-#wave-info { color: #8be7ff; }
-#lives { color: #ff8aa0; }
-#score { color: #c4d7ff; }
+#gold { 
+    color: #ffdc73; 
+    font-weight: bold;
+    font-size: 14px;
+    text-shadow: 0 0 8px rgba(255, 220, 115, 0.4);
+}
+#wave-info { 
+    color: #8be7ff; 
+    font-weight: 600;
+}
+#lives { 
+    color: #ff8aa0; 
+    font-weight: bold;
+    text-shadow: 0 0 6px rgba(255, 138, 160, 0.3);
+}
+#score { 
+    color: #c4d7ff; 
+    font-weight: 500;
+}
 
 #hud-bottom {
     display: flex;
@@ -93,8 +108,11 @@ body {
 .sell-btn.active { border-color: #ff0055; background: rgba(255, 0, 85, 0.25); box-shadow: 0 0 8px rgba(255, 0, 85, 0.3); }
 
 .tower-icon { font-size: 16px; }
-.blaster-icon { color: #00f3ff; }
-.sniper-icon { color: #aa88ff; }
+.blaster-icon { color: #00f3ff; text-shadow: 0 0 6px rgba(0, 243, 255, 0.5); }
+.sniper-icon { color: #aa88ff; text-shadow: 0 0 6px rgba(170, 136, 255, 0.5); }
+.aoe-icon { color: #ff8800; text-shadow: 0 0 6px rgba(255, 136, 0, 0.5); }
+.boat-icon { color: #0088ff; text-shadow: 0 0 6px rgba(0, 136, 255, 0.5); }
+.sentinel-icon { color: #00ff88; text-shadow: 0 0 6px rgba(0, 255, 136, 0.5); }
 .aoe-icon { color: #ff8800; }
 .boat-icon { color: #0088ff; }
 .mine-icon { color: #ff3333; }
