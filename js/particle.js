@@ -32,8 +32,11 @@ const ParticlePool = {
     },
 
     impact(x, y, color, angle = 0) {
-        this.spawn(x, y, color, 5, { directional: true, angle, minSpeed: 2, maxSpeed: 5, minLife: 0.12, maxLife: 0.3, minSize: 2, maxSize: 4, shape: 3, stroke: true, shrink: 0.92 });
-        this.spawn(x, y, '#ffffff', 2, { directional: true, angle, minSpeed: 1, maxSpeed: 3, minLife: 0.08, maxLife: 0.18, minSize: 1, maxSize: 2, shape: 2 });
+        // More dramatic impact: larger spark burst + glow
+        this.spawn(x, y, color, 8, { directional: true, angle, minSpeed: 3, maxSpeed: 7, minLife: 0.15, maxLife: 0.4, minSize: 2, maxSize: 5, shape: 3, stroke: true, shrink: 0.9 });
+        this.spawn(x, y, '#ffffff', 4, { directional: true, angle, minSpeed: 2, maxSpeed: 5, minLife: 0.1, maxLife: 0.25, minSize: 1.5, maxSize: 3, shape: 2 });
+        // Secondary burst at angle
+        this.spawn(x, y, color, 5, { directional: true, angle: angle + Math.PI * 0.5, minSpeed: 1.5, maxSpeed: 4, minLife: 0.1, maxLife: 0.25, minSize: 1.5, maxSize: 3, shape: 3, stroke: true, shrink: 0.88 });
     },
 
     explosion(x, y, color, big = false) {
