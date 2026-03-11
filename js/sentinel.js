@@ -213,48 +213,61 @@ const SentinelManager = {
                 continue;
             }
             
-            // Sentinel body — compact armored unit
+            // Sentinel body — compact armored trooper with shield
             const engaged = !!s.engagedEnemy;
 
             ctx.shadowColor = '#00ff88';
             ctx.shadowBlur = engaged ? 10 : 5;
 
-            // shield/body block
-            ctx.fillStyle = engaged ? '#38ffc0' : '#4fffb5';
+            // torso armor
+            ctx.fillStyle = engaged ? '#3dffbf' : '#59ffc1';
+            ctx.fillRect(s.x - 3.5, s.y - 1, 7, 7);
+            ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(s.x - 3.5, s.y - 1, 7, 7);
+
+            // helmet
+            ctx.fillStyle = '#25323b';
+            ctx.fillRect(s.x - 3, s.y - 6, 6, 4);
+            ctx.fillStyle = '#d8fff6';
+            ctx.fillRect(s.x - 1.5, s.y - 4.5, 3, 1.5);
+
+            // shield arm
+            ctx.fillStyle = '#1f2b34';
             ctx.beginPath();
-            ctx.moveTo(s.x - 4, s.y - 2);
-            ctx.lineTo(s.x + 4, s.y - 2);
-            ctx.lineTo(s.x + 5, s.y + 4);
-            ctx.lineTo(s.x, s.y + 8);
-            ctx.lineTo(s.x - 5, s.y + 4);
+            ctx.moveTo(s.x - 5, s.y - 1);
+            ctx.lineTo(s.x - 1.5, s.y - 1);
+            ctx.lineTo(s.x - 2.5, s.y + 5);
+            ctx.lineTo(s.x - 6, s.y + 4);
             ctx.closePath();
             ctx.fill();
-
-            // helmet/visor
-            ctx.fillStyle = 'rgba(20,30,35,0.95)';
-            ctx.fillRect(s.x - 3, s.y - 5, 6, 4);
-            ctx.fillStyle = '#d9fff1';
-            ctx.fillRect(s.x - 2, s.y - 4, 4, 1.5);
-
-            // legs
-            ctx.strokeStyle = '#0f3';
-            ctx.lineWidth = 1.5;
-            ctx.beginPath();
-            ctx.moveTo(s.x - 1.5, s.y + 8);
-            ctx.lineTo(s.x - 2.5, s.y + 11);
-            ctx.moveTo(s.x + 1.5, s.y + 8);
-            ctx.lineTo(s.x + 2.5, s.y + 11);
             ctx.stroke();
 
-            // weapon when engaged
+            // weapon arm / blade
+            ctx.strokeStyle = engaged ? '#ffffff' : '#9ef7ff';
+            ctx.lineWidth = 1.8;
+            ctx.beginPath();
+            ctx.moveTo(s.x + 2, s.y + 1);
+            ctx.lineTo(s.x + 6.5, s.y - 1.5);
+            ctx.stroke();
             if (engaged) {
                 ctx.strokeStyle = '#ffffff';
-                ctx.lineWidth = 2;
+                ctx.lineWidth = 1;
                 ctx.beginPath();
-                ctx.moveTo(s.x + 1, s.y + 1);
-                ctx.lineTo(s.x + 7, s.y - 3);
+                ctx.moveTo(s.x + 6.5, s.y - 1.5);
+                ctx.lineTo(s.x + 8.2, s.y - 4.2);
                 ctx.stroke();
             }
+
+            // legs
+            ctx.strokeStyle = '#34ff9a';
+            ctx.lineWidth = 1.4;
+            ctx.beginPath();
+            ctx.moveTo(s.x - 1.5, s.y + 6);
+            ctx.lineTo(s.x - 2.5, s.y + 10);
+            ctx.moveTo(s.x + 1.5, s.y + 6);
+            ctx.lineTo(s.x + 2.5, s.y + 10);
+            ctx.stroke();
 
             ctx.shadowBlur = 0;
             

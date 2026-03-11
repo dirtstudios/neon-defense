@@ -24,7 +24,11 @@ const EnemyTypes = {
     stealth: { hp: 35,  speed: 2.2, gold: 20,  color: '#8844aa', size: 7,  shape: 'diamond',
                resist: { fire: 0.5, kinetic: 0.7 }, stealth: true }, // partially invisible, resists most
     boss:    { hp: 500, speed: 0.5, gold: 100, color: '#ff0055', size: 18, shape: 'hexagon',
-               resist: { kinetic: 0.7, fire: 0.7 } } // bosses resist everything a bit
+               resist: { kinetic: 0.7, fire: 0.7 }, bossRole: 'titan' },
+    broodBoss:{ hp: 420, speed: 0.65, gold: 115, color: '#ff7a22', size: 16, shape: 'circle',
+               resist: { kinetic: 0.8, fire: 0.8 }, bossRole: 'brood' },
+    warBoss: { hp: 620, speed: 0.42, gold: 130, color: '#c44dff', size: 20, shape: 'shield',
+               resist: { kinetic: 0.6, fire: 0.75 }, bossRole: 'war' }
 };
 
 function createEnemy(type, waveNum) {
@@ -63,7 +67,9 @@ function createEnemy(type, waveNum) {
         poisonTick: 0,
         hitFlash: 0,
         lastDamage: 0,
-        bossSpawnCooldown: def.shape === 'hexagon' && type === 'boss' ? 3.2 : 0,
+        bossRole: def.bossRole || null,
+        bossSpawnCooldown: def.bossRole ? 3.2 : 0,
+        bossPulseCooldown: def.bossRole === 'war' ? 5.5 : 0,
 
         // Apply resistance to damage based on tower's damage type
         takeDamage(dmg, damageType) {
@@ -122,14 +128,14 @@ function createEnemy(type, waveNum) {
                 }
             }
 
-            // Boss mechanic: periodically dump weak reinforcements to tie up sentinels
-            if (this.type === 'boss' && game && game.enemies) {
+            // Boss mechanics
+            if (this.bossRole && game && game.enemies) {
                 this.bossSpawnCooldown -= dt;
                 if (this.bossSpawnCooldown <= 0) {
                     const lowHp = this.hp / this.maxHp < 0.5;
-                    this.bossSpawnCooldown = lowHp ? 2.6 : 3.8;
-                    const supportType = lowHp ? 'fast' : 'swarm';
-                    const spawnCount = lowHp ? 8 : 6;
+                    this.bossSpawnCooldown = 2.6;
+                    const supportType = this.bossRole === 'brood' ? 'swarm' : (lowHp ? 'fast' : 'swarm');
+                    const spawnCount = this.bossRole === 'brood' ? (lowHp ? 10 : 6) : (lowHp ? 8 : 4);
                     for (let i = 0; i < spawnCount; i++) {
                         const add = createEnemy(supportType, waveNum);
                         add.pathProgress = Math.max(0, this.pathProgress - 0.018 - i * 0.006);
@@ -140,8 +146,34 @@ function createEnemy(type, waveNum) {
                         add.y = pos.y + 4 + row * 2;
                         game.enemies.push(add);
                     }
-                    ParticlePool.explosion(this.x, this.y, '#ff8844', false);
-                    if (game.showBossBanner) game.showBossBanner(lowHp ? 'BOSS UNLEASHES A SWARM' : 'BOSS CALLS REINFORCEMENTS');
+                    ParticlePool.explosion(this.x, this.y, this.bossRole === 'brood' ? '#ffb044' : '#ff8844', false);
+                    if (game.showBossBanner) {
+                        const text = this.bossRole === 'brood'
+                            ? 'BROOD BOSS SPITS A SWARM'
+                            : (lowHp ? 'BOSS UNLEASHES A SWARM' : 'BOSS CALLS REINFORCEMENTS');
+                        game.showBossBanner(text);
+                    }
+                }
+
+                if (this.bossRole === 'war') {
+                    this.bossPulseCooldown -= dt;
+                    if (this.bossPulseCooldown <= 0) {
+                        this.bossPulseCooldown = 5.5;
+                        ParticlePool.explosion(this.x, this.y, '#c44dff', false);
+                        for (const s of (SentinelManager.sentinels || [])) {
+                            if (!s.alive) continue;
+                            if (Utils.dist(this.x, this.y, s.x, s.y) <= 95) {
+                                s.hp = Math.max(0, s.hp - 18);
+                                if (s.hp <= 0) {
+                                    s.alive = false;
+                                    s.respawnTimer = s.respawnTime;
+                                    if (s.engagedEnemy) s.engagedEnemy._blockedBySentinel = false;
+                                    s.engagedEnemy = null;
+                                }
+                            }
+                        }
+                        if (game.showBossBanner) game.showBossBanner('WAR BOSS SHOCKWAVE');
+                    }
                 }
             }
 
@@ -173,7 +205,7 @@ function createEnemy(type, waveNum) {
         draw(ctx) {
             if (!this.alive) return;
             const s = this.size;
-            const isBoss = this.type === 'boss';
+            const isBoss = !!this.bossRole;
             const bob = Math.sin(performance.now() * 0.008 + this.x * 0.03) * (this.type === 'fast' ? 2 : 1);
 
             if (this.stealthed) ctx.globalAlpha = 0.3;

@@ -1083,17 +1083,17 @@ const game = {
             const alpha = Math.min(1, this.bossBannerTimer / 0.4, (2.6 - this.bossBannerTimer) / 0.4);
             ctx.save();
             ctx.globalAlpha = Math.max(0, alpha);
-            ctx.fillStyle = 'rgba(30, 0, 8, 0.88)';
-            ctx.fillRect(170, 92, 460, 44);
+            ctx.fillStyle = 'rgba(30, 0, 8, 0.82)';
+            ctx.fillRect(200, 548, 400, 28);
             ctx.strokeStyle = 'rgba(255, 80, 110, 0.9)';
             ctx.lineWidth = 2;
-            ctx.strokeRect(170, 92, 460, 44);
-            ctx.fillStyle = '#ff667a';
-            ctx.font = 'bold 19px monospace';
+            ctx.strokeRect(200, 548, 400, 28);
+            ctx.fillStyle = '#ff8898';
+            ctx.font = 'bold 14px monospace';
             ctx.textAlign = 'center';
             ctx.shadowColor = '#ff3355';
-            ctx.shadowBlur = 16;
-            ctx.fillText(this.bossBannerText, 400, 120);
+            ctx.shadowBlur = 10;
+            ctx.fillText(this.bossBannerText, 400, 567);
             ctx.restore();
             ctx.textAlign = 'start';
         }

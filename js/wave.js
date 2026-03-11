@@ -83,12 +83,18 @@ const WaveManager = {
         const queue = [];
         for (const group of def) {
             for (let i = 0; i < group.count; i++) {
-                queue.push(group.type);
+                if (group.type === 'boss') {
+                    const bossTypes = ['boss', 'broodBoss'];
+                    if (this.currentLevel >= 3) bossTypes.push('warBoss');
+                    queue.push(bossTypes[Utils.randInt(0, bossTypes.length - 1)]);
+                } else {
+                    queue.push(group.type);
+                }
             }
         }
         // Shuffle non-boss enemies, keep bosses last
-        const bosses = queue.filter(t => t === 'boss');
-        const others = queue.filter(t => t !== 'boss');
+        const bosses = queue.filter(t => t === 'boss' || t === 'broodBoss' || t === 'warBoss');
+        const others = queue.filter(t => t !== 'boss' && t !== 'broodBoss' && t !== 'warBoss');
         for (let i = others.length - 1; i > 0; i--) {
             const j = Utils.randInt(0, i);
             [others[i], others[j]] = [others[j], others[i]];
@@ -107,7 +113,9 @@ const WaveManager = {
     // Append next wave's enemies onto the existing spawn queue (wave overlap)
     appendWave() {
         const newEnemies = this._buildSpawnList(this.currentWave);
-        this.spawnQueue = [...this.spawnQueue, ...newEnemies];
+        // Queue the new wave immediately, ahead of leftover spawns, so overlap feels real.
+        this.spawnQueue = [...newEnemies, ...this.spawnQueue];
+        this.spawnTimer = 0;
         this.waveActive = true;
         this.earlyAdvanced = true;
         if (this.currentWave >= this.waves.length) this.endless = true;
