@@ -86,6 +86,7 @@ const WaveManager = {
                 if (group.type === 'boss') {
                     const bossTypes = ['boss', 'broodBoss'];
                     if (this.currentLevel >= 3) bossTypes.push('warBoss');
+                    if (this.currentLevel >= 4) bossTypes.push('voidBoss');
                     queue.push(bossTypes[Utils.randInt(0, bossTypes.length - 1)]);
                 } else {
                     queue.push(group.type);

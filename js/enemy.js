@@ -28,7 +28,10 @@ const EnemyTypes = {
     broodBoss:{ hp: 420, speed: 0.65, gold: 115, color: '#ff7a22', size: 16, shape: 'circle',
                resist: { kinetic: 0.8, fire: 0.8 }, bossRole: 'brood' },
     warBoss: { hp: 620, speed: 0.42, gold: 130, color: '#c44dff', size: 20, shape: 'shield',
-               resist: { kinetic: 0.6, fire: 0.75 }, bossRole: 'war' }
+               resist: { kinetic: 0.6, fire: 0.75 }, bossRole: 'war' },
+    voidBoss:{ hp: 380, speed: 0.55, gold: 140, color: '#aa44ff', size: 17, shape: 'circle',
+               resist: { kinetic: 0.5, fire: 0.5, pierce: 0.5 }, bossRole: 'void', 
+               teleportCooldown: 4, lifeDrainRate: 3, lifeDrainRadius: 80 }
 };
 
 function createEnemy(type, waveNum) {
@@ -70,6 +73,14 @@ function createEnemy(type, waveNum) {
         bossRole: def.bossRole || null,
         bossSpawnCooldown: def.bossRole ? 3.2 : 0,
         bossPulseCooldown: def.bossRole === 'war' ? 5.5 : 0,
+        // Void boss properties
+        teleportCooldown: def.teleportCooldown || 0,
+        teleportTimer: def.teleportCooldown || 0,
+        lifeDrainRate: def.lifeDrainRate || 0,
+        lifeDrainRadius: def.lifeDrainRadius || 0,
+        lifeDrainTimer: 0,
+        originalX: 0,
+        originalY: 0,
         bossIntroShown: def.bossRole ? false : true, // show intro when boss spawns
 
         // Apply resistance to damage based on tower's damage type
@@ -136,7 +147,8 @@ function createEnemy(type, waveNum) {
                     this.bossIntroShown = true;
                     if (game.showBossBanner) {
                         const bossName = this.bossRole === 'brood' ? '🐞 BROOD KING' : 
-                                        this.bossRole === 'war' ? '⚔️ WAR TITAN' : '👹 TITAN';
+                                        this.bossRole === 'war' ? '⚔️ WAR TITAN' :
+                                        this.bossRole === 'void' ? '👻 VOID WALKER' : '👹 TITAN';
                         game.showBossBanner(bossName + ' APPEARS!');
                         game.shake(8);
                     }
@@ -185,6 +197,44 @@ function createEnemy(type, waveNum) {
                             }
                         }
                         if (game.showBossBanner) game.showBossBanner('WAR BOSS SHOCKWAVE');
+                    }
+                }
+                
+                // VOID BOSS: Teleport + life drain
+                if (this.bossRole === 'void') {
+                    // Track original spawn position
+                    if (this.originalX === 0) {
+                        this.originalX = this.x;
+                        this.originalY = this.y;
+                    }
+                    
+                    // Teleport periodically
+                    this.teleportTimer -= dt;
+                    if (this.teleportTimer <= 0) {
+                        this.teleportTimer = this.teleportCooldown;
+                        // Teleport to a random position ahead on path
+                        const teleportProgress = Math.min(0.85, this.pathProgress + 0.15 + Math.random() * 0.1);
+                        const newPos = Path.getPositionAtProgress(teleportProgress);
+                        this.x = newPos.x;
+                        this.y = newPos.y;
+                        this.pathProgress = teleportProgress;
+                        ParticlePool.explosion(this.x, this.y, '#aa44ff', true);
+                        if (game.showBossBanner) game.showBossBanner('👻 VOID PORTAL');
+                        if (game.shake) game.shake(4);
+                    }
+                    
+                    // Life drain: heal boss, damage player lives
+                    this.lifeDrainTimer -= dt;
+                    if (this.lifeDrainTimer <= 0) {
+                        this.lifeDrainTimer = 1.5;
+                        // Drain from player lives (not towers)
+                        if (game && game.lives > 1) {
+                            game.lives -= 1;
+                            // Heal boss slightly
+                            this.hp = Math.min(this.maxHp, this.hp + this.lifeDrainRate * 15);
+                            if (game.updateUI) game.updateUI();
+                            ParticlePool.explosion(this.x, this.y, '#aa44ff', false);
+                        }
                     }
                 }
             }
