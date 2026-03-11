@@ -138,142 +138,123 @@ function createTower(type, x, y) {
         draw(ctx) {
             const s = 14 + (this.tier - 1) * 1.5;
             const pulse = 0.7 + Math.sin(performance.now() * 0.006 + this.x * 0.03) * 0.08;
-
-            // base pad
-            ctx.fillStyle = 'rgba(20, 24, 34, 0.95)';
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, s * 0.95, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.strokeStyle = `${this.color}55`;
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, s * 0.8, 0, Math.PI * 2);
-            ctx.stroke();
+            const dark = 'rgba(24,28,38,0.98)';
+            const panel = 'rgba(60,72,92,0.95)';
 
             ctx.shadowColor = this.color;
-            ctx.shadowBlur = this.selected ? 22 : 12;
-            ctx.lineWidth = 2;
-            ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+            ctx.shadowBlur = this.selected ? 18 : 10;
+            ctx.lineWidth = 1.5;
+            ctx.strokeStyle = 'rgba(255,255,255,0.28)';
 
-            // Tower body with stronger silhouettes
             if (this.shape === 'triangle') {
-                // blaster: forward gun turret
+                // blaster: squat turret with twin barrels
+                ctx.fillStyle = dark;
+                ctx.fillRect(this.x - s * 0.6, this.y - s * 0.15, s * 1.2, s * 0.9);
+                ctx.strokeRect(this.x - s * 0.6, this.y - s * 0.15, s * 1.2, s * 0.9);
+                ctx.fillStyle = panel;
+                ctx.fillRect(this.x - s * 0.36, this.y - s * 0.65, s * 0.72, s * 0.55);
                 ctx.fillStyle = this.color;
-                ctx.beginPath();
-                ctx.moveTo(this.x, this.y - s * 0.95);
-                ctx.lineTo(this.x - s * 0.7, this.y + s * 0.55);
-                ctx.lineTo(this.x + s * 0.7, this.y + s * 0.55);
-                ctx.closePath();
-                ctx.fill();
-                ctx.stroke();
-                ctx.fillStyle = 'rgba(255,255,255,0.22)';
-                ctx.fillRect(this.x - 2, this.y - s * 0.6, 4, s * 0.7);
+                ctx.fillRect(this.x - 2, this.y - s * 1.05, 4, s * 0.7);
+                ctx.fillRect(this.x - s * 0.24, this.y - s * 0.82, 3, s * 0.55);
+                ctx.fillRect(this.x + s * 0.12, this.y - s * 0.82, 3, s * 0.55);
                 if (this.tier >= 2) {
-                    ctx.fillStyle = 'rgba(255,255,255,0.18)';
-                    ctx.fillRect(this.x - s * 0.42, this.y - s * 0.1, s * 0.18, s * 0.48);
-                    ctx.fillRect(this.x + s * 0.24, this.y - s * 0.1, s * 0.18, s * 0.48);
+                    ctx.fillStyle = this.color;
+                    ctx.fillRect(this.x - s * 0.55, this.y + s * 0.05, 3, s * 0.38);
+                    ctx.fillRect(this.x + s * 0.52, this.y + s * 0.05, 3, s * 0.38);
                 }
                 if (this.tier >= 3) {
                     ctx.strokeStyle = `${this.color}aa`;
                     ctx.beginPath();
-                    ctx.arc(this.x, this.y, s * 1.08, -Math.PI * 0.15, Math.PI * 1.15);
+                    ctx.moveTo(this.x - s * 0.62, this.y - s * 0.2);
+                    ctx.lineTo(this.x - s * 0.95, this.y - s * 0.55);
+                    ctx.moveTo(this.x + s * 0.62, this.y - s * 0.2);
+                    ctx.lineTo(this.x + s * 0.95, this.y - s * 0.55);
                     ctx.stroke();
                 }
             } else if (this.shape === 'diamond') {
-                // sniper: crystal/railgun shape
+                // sniper: long rail cannon on compact base
+                ctx.fillStyle = dark;
+                ctx.fillRect(this.x - s * 0.52, this.y - s * 0.05, s * 1.04, s * 0.78);
+                ctx.strokeRect(this.x - s * 0.52, this.y - s * 0.05, s * 1.04, s * 0.78);
+                ctx.fillStyle = panel;
+                ctx.fillRect(this.x - s * 0.18, this.y - s * 0.62, s * 0.36, s * 0.55);
                 ctx.fillStyle = this.color;
-                ctx.beginPath();
-                ctx.moveTo(this.x, this.y - s);
-                ctx.lineTo(this.x + s * 0.55, this.y - 2);
-                ctx.lineTo(this.x, this.y + s * 0.95);
-                ctx.lineTo(this.x - s * 0.55, this.y - 2);
-                ctx.closePath();
-                ctx.fill();
-                ctx.stroke();
-                ctx.strokeStyle = 'rgba(255,255,255,0.55)';
-                ctx.beginPath();
-                ctx.moveTo(this.x, this.y - s * 0.8);
-                ctx.lineTo(this.x, this.y + s * 0.55);
-                ctx.stroke();
+                ctx.fillRect(this.x - 2, this.y - s * 1.15, 4, s * 0.95);
+                ctx.fillRect(this.x - s * 0.06, this.y - s * 1.25, s * 0.12, s * 0.22);
                 if (this.tier >= 2) {
-                    ctx.strokeStyle = `${this.color}cc`;
-                    ctx.beginPath();
-                    ctx.moveTo(this.x - s * 0.55, this.y + s * 0.45);
-                    ctx.lineTo(this.x + s * 0.55, this.y + s * 0.45);
-                    ctx.stroke();
+                    ctx.fillStyle = this.color;
+                    ctx.fillRect(this.x - s * 0.5, this.y - s * 0.52, s, 3);
                 }
                 if (this.tier >= 3) {
-                    ctx.fillStyle = 'rgba(255,255,255,0.26)';
-                    ctx.beginPath();
-                    ctx.arc(this.x, this.y - s * 0.35, s * 0.16, 0, Math.PI * 2);
-                    ctx.fill();
+                    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+                    ctx.fillRect(this.x - 1, this.y - s * 1.35, 2, 6);
                 }
             } else if (this.shape === 'hexagon') {
-                // aoe: chunky reactor core
+                // aoe: reactor/mortar assembly
+                ctx.fillStyle = dark;
+                ctx.fillRect(this.x - s * 0.68, this.y - s * 0.1, s * 1.36, s * 0.92);
+                ctx.strokeRect(this.x - s * 0.68, this.y - s * 0.1, s * 1.36, s * 0.92);
+                ctx.fillStyle = panel;
+                ctx.fillRect(this.x - s * 0.4, this.y - s * 0.6, s * 0.8, s * 0.5);
                 ctx.fillStyle = this.color;
                 ctx.beginPath();
-                for (let i = 0; i < 6; i++) {
-                    const a = (Math.PI / 3) * i - Math.PI / 6;
-                    const px = this.x + Math.cos(a) * s * 0.82;
-                    const py = this.y + Math.sin(a) * s * 0.82;
-                    if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
-                }
-                ctx.closePath();
+                ctx.arc(this.x, this.y - s * 0.18, s * 0.3, 0, Math.PI * 2);
                 ctx.fill();
-                ctx.stroke();
                 ctx.fillStyle = `rgba(255,255,255,${0.18 * pulse})`;
                 ctx.beginPath();
-                ctx.arc(this.x, this.y, s * 0.32, 0, Math.PI * 2);
+                ctx.arc(this.x, this.y - s * 0.18, s * 0.14, 0, Math.PI * 2);
                 ctx.fill();
                 if (this.tier >= 2) {
                     ctx.strokeStyle = `${this.color}bb`;
-                    ctx.beginPath();
-                    ctx.arc(this.x, this.y, s * 0.58, 0, Math.PI * 2);
-                    ctx.stroke();
+                    ctx.strokeRect(this.x - s * 0.52, this.y - s * 0.34, s * 1.04, s * 0.36);
                 }
                 if (this.tier >= 3) {
                     for (let i = 0; i < 3; i++) {
                         const a = performance.now() * 0.002 + i * (Math.PI * 2 / 3);
                         ctx.fillStyle = 'rgba(255,240,200,0.55)';
                         ctx.beginPath();
-                        ctx.arc(this.x + Math.cos(a) * s * 0.55, this.y + Math.sin(a) * s * 0.55, 2.2, 0, Math.PI * 2);
+                        ctx.arc(this.x + Math.cos(a) * s * 0.55, this.y - s * 0.18 + Math.sin(a) * s * 0.2, 2.2, 0, Math.PI * 2);
                         ctx.fill();
                     }
                 }
             } else if (this.shape === 'sentinel') {
-                // sentinel: barracks with banner + gate
-                ctx.fillStyle = this.color;
-                ctx.fillRect(this.x - s * 0.8, this.y - s * 0.15, s * 1.6, s * 0.95);
-                ctx.strokeRect(this.x - s * 0.8, this.y - s * 0.15, s * 1.6, s * 0.95);
-                ctx.fillStyle = 'rgba(20,20,20,0.45)';
-                ctx.fillRect(this.x - s * 0.22, this.y + s * 0.15, s * 0.44, s * 0.65);
+                // sentinel: little barracks building
+                ctx.fillStyle = 'rgba(70,78,92,0.98)';
+                ctx.fillRect(this.x - s * 0.85, this.y - s * 0.05, s * 1.7, s * 0.92);
+                ctx.strokeRect(this.x - s * 0.85, this.y - s * 0.05, s * 1.7, s * 0.92);
                 ctx.fillStyle = this.color;
                 ctx.beginPath();
-                ctx.moveTo(this.x - s * 0.55, this.y - s * 0.15);
-                ctx.lineTo(this.x - s * 0.55, this.y - s * 1.05);
-                ctx.lineTo(this.x + s * 0.35, this.y - s * 0.7);
-                ctx.lineTo(this.x - s * 0.55, this.y - s * 0.42);
+                ctx.moveTo(this.x - s * 0.95, this.y - s * 0.05);
+                ctx.lineTo(this.x, this.y - s * 0.7);
+                ctx.lineTo(this.x + s * 0.95, this.y - s * 0.05);
                 ctx.closePath();
                 ctx.fill();
+                ctx.stroke();
+                ctx.fillStyle = 'rgba(20,20,20,0.5)';
+                ctx.fillRect(this.x - s * 0.18, this.y + s * 0.18, s * 0.36, s * 0.64);
                 if (this.tier >= 2) {
-                    ctx.fillStyle = 'rgba(255,255,255,0.25)';
-                    ctx.fillRect(this.x - s * 0.55, this.y + s * 0.08, s * 0.22, s * 0.22);
-                    ctx.fillRect(this.x + s * 0.33, this.y + s * 0.08, s * 0.22, s * 0.22);
+                    ctx.fillStyle = 'rgba(255,240,150,0.4)';
+                    ctx.fillRect(this.x - s * 0.6, this.y + s * 0.12, s * 0.18, s * 0.18);
+                    ctx.fillRect(this.x + s * 0.42, this.y + s * 0.12, s * 0.18, s * 0.18);
                 }
                 if (this.tier >= 3) {
                     ctx.strokeStyle = `${this.color}aa`;
                     ctx.beginPath();
-                    ctx.moveTo(this.x - s * 0.9, this.y - s * 0.2);
-                    ctx.lineTo(this.x - s * 0.9, this.y - s * 0.95);
+                    ctx.moveTo(this.x - s * 0.95, this.y - s * 0.05);
+                    ctx.lineTo(this.x - s * 0.95, this.y - s * 0.9);
                     ctx.stroke();
                 }
             } else if (this.shape === 'boat') {
-                // boat: stronger hull + cabin + wake
+                // boat: hull + bridge, no weird platform circle
                 ctx.fillStyle = 'rgba(255,255,255,0.12)';
                 ctx.beginPath();
-                ctx.ellipse(this.x, this.y + s * 0.65, s * 0.9, s * 0.28, 0, 0, Math.PI * 2);
+                ctx.moveTo(this.x - s * 0.5, this.y + s * 0.72);
+                ctx.lineTo(this.x + s * 0.5, this.y + s * 0.72);
+                ctx.lineTo(this.x + s * 0.85, this.y + s * 0.95);
+                ctx.lineTo(this.x - s * 0.85, this.y + s * 0.95);
+                ctx.closePath();
                 ctx.fill();
-                ctx.fillStyle = this.color;
+                ctx.fillStyle = dark;
                 ctx.beginPath();
                 ctx.moveTo(this.x, this.y - s * 0.95);
                 ctx.lineTo(this.x + s * 0.78, this.y - s * 0.05);
@@ -283,17 +264,14 @@ function createTower(type, x, y) {
                 ctx.closePath();
                 ctx.fill();
                 ctx.stroke();
-                ctx.fillStyle = 'rgba(255,255,255,0.25)';
+                ctx.fillStyle = this.color;
+                ctx.fillRect(this.x - 2, this.y - s * 0.95, 4, s * 0.72);
+                ctx.fillStyle = panel;
                 ctx.fillRect(this.x - s * 0.18, this.y - s * 0.25, s * 0.36, s * 0.42);
-                ctx.strokeStyle = this.color;
-                ctx.beginPath();
-                ctx.moveTo(this.x, this.y - s * 0.25);
-                ctx.lineTo(this.x, this.y - s * 1.15);
-                ctx.stroke();
                 if (this.tier >= 2) {
-                    ctx.fillStyle = 'rgba(255,255,255,0.28)';
-                    ctx.fillRect(this.x - s * 0.42, this.y - s * 0.05, s * 0.16, s * 0.3);
-                    ctx.fillRect(this.x + s * 0.26, this.y - s * 0.05, s * 0.16, s * 0.3);
+                    ctx.fillStyle = this.color;
+                    ctx.fillRect(this.x - s * 0.42, this.y - s * 0.02, s * 0.16, s * 0.22);
+                    ctx.fillRect(this.x + s * 0.26, this.y - s * 0.02, s * 0.16, s * 0.22);
                 }
                 if (this.tier >= 3) {
                     ctx.strokeStyle = 'rgba(255,255,255,0.35)';
