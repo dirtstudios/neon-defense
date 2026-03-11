@@ -105,12 +105,49 @@ const ProjectilePool = {
     draw(ctx) {
         // Draw projectiles
         for (const p of this.active) {
-            ctx.fillStyle = '#ffffff';
+            const angle = Math.atan2(p.ty - p.y, p.tx - p.x);
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            ctx.rotate(angle);
             ctx.shadowColor = p.color;
-            ctx.shadowBlur = 8;
+            ctx.shadowBlur = 10;
+
+            if (p.damageType === 'pierce') {
+                // sniper bolt
+                ctx.fillStyle = p.color;
+                ctx.fillRect(-8, -1.5, 16, 3);
+                ctx.fillStyle = 'rgba(255,255,255,0.9)';
+                ctx.fillRect(-2, -1, 8, 2);
+            } else if (p.damageType === 'fire') {
+                // aoe ember/orb
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(0, 0, 4, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = 'rgba(255,220,120,0.9)';
+                ctx.beginPath();
+                ctx.arc(0, 0, 2, 0, Math.PI * 2);
+                ctx.fill();
+            } else {
+                // kinetic round
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(0, 0, 3.2, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = 'rgba(255,255,255,0.85)';
+                ctx.beginPath();
+                ctx.arc(-1, -1, 1.2, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // trail
+            ctx.strokeStyle = `${p.color}88`;
+            ctx.lineWidth = 2;
             ctx.beginPath();
-            ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
-            ctx.fill();
+            ctx.moveTo(-10, 0);
+            ctx.lineTo(-3, 0);
+            ctx.stroke();
+            ctx.restore();
         }
         ctx.shadowBlur = 0;
         

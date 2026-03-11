@@ -144,72 +144,95 @@ function createEnemy(type, waveNum) {
             if (!this.alive) return;
             const s = this.size;
             const isBoss = this.type === 'boss';
+            const bob = Math.sin(performance.now() * 0.008 + this.x * 0.03) * (this.type === 'fast' ? 2 : 1);
 
-            // Glow
-            // Stealth: draw semi-transparent
-            if (this.stealthed) {
-                ctx.globalAlpha = 0.3;
-            }
+            if (this.stealthed) ctx.globalAlpha = 0.3;
 
             const effectColor = this.poisoned ? '#44ff44' : (this.slowed ? '#4488ff' : this.color);
             ctx.shadowColor = effectColor;
-            ctx.shadowBlur = isBoss ? 15 : 8;
-
-            // Shape
+            ctx.shadowBlur = isBoss ? 18 : 10;
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = 'rgba(255,255,255,0.3)';
             ctx.fillStyle = effectColor;
 
             if (this.shape === 'circle') {
                 ctx.beginPath();
-                ctx.arc(this.x, this.y, s, 0, Math.PI * 2);
+                ctx.arc(this.x, this.y + bob, s, 0, Math.PI * 2);
                 ctx.fill();
+                ctx.stroke();
+                if (this.type === 'swarm') {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y + bob, s * 0.35, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(255,255,255,0.45)';
+                    ctx.fill();
+                }
             } else if (this.shape === 'diamond') {
                 ctx.beginPath();
-                ctx.moveTo(this.x, this.y - s);
-                ctx.lineTo(this.x + s, this.y);
-                ctx.lineTo(this.x, this.y + s);
-                ctx.lineTo(this.x - s, this.y);
+                ctx.moveTo(this.x, this.y - s + bob);
+                ctx.lineTo(this.x + s, this.y + bob);
+                ctx.lineTo(this.x, this.y + s + bob);
+                ctx.lineTo(this.x - s, this.y + bob);
                 ctx.closePath();
                 ctx.fill();
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(this.x, this.y - s * 0.65 + bob);
+                ctx.lineTo(this.x, this.y + s * 0.65 + bob);
+                ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+                ctx.stroke();
             } else if (this.shape === 'hexagon') {
                 ctx.beginPath();
                 for (let i = 0; i < 6; i++) {
                     const a = (Math.PI / 3) * i - Math.PI / 6;
                     const px = this.x + Math.cos(a) * s;
-                    const py = this.y + Math.sin(a) * s;
-                    if (i === 0) ctx.moveTo(px, py);
-                    else ctx.lineTo(px, py);
+                    const py = this.y + Math.sin(a) * s + bob;
+                    if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
                 }
                 ctx.closePath();
                 ctx.fill();
-            } else if (this.shape === 'shield') {
-                // Shield shape — rounded top, pointed bottom
+                ctx.stroke();
+                ctx.fillStyle = 'rgba(255,255,255,0.18)';
                 ctx.beginPath();
-                ctx.moveTo(this.x - s, this.y - s * 0.5);
-                ctx.lineTo(this.x - s, this.y + s * 0.2);
-                ctx.lineTo(this.x, this.y + s);
-                ctx.lineTo(this.x + s, this.y + s * 0.2);
-                ctx.lineTo(this.x + s, this.y - s * 0.5);
-                ctx.arc(this.x, this.y - s * 0.5, s, 0, Math.PI, true);
+                ctx.arc(this.x, this.y + bob, s * 0.35, 0, Math.PI * 2);
+                ctx.fill();
+            } else if (this.shape === 'shield') {
+                ctx.beginPath();
+                ctx.moveTo(this.x - s, this.y - s * 0.5 + bob);
+                ctx.lineTo(this.x - s, this.y + s * 0.2 + bob);
+                ctx.lineTo(this.x, this.y + s + bob);
+                ctx.lineTo(this.x + s, this.y + s * 0.2 + bob);
+                ctx.lineTo(this.x + s, this.y - s * 0.5 + bob);
+                ctx.arc(this.x, this.y - s * 0.5 + bob, s, 0, Math.PI, true);
                 ctx.closePath();
                 ctx.fill();
+                ctx.stroke();
+                ctx.strokeStyle = 'rgba(255,255,255,0.45)';
+                ctx.beginPath();
+                ctx.moveTo(this.x, this.y - s * 0.7 + bob);
+                ctx.lineTo(this.x, this.y + s * 0.55 + bob);
+                ctx.stroke();
             } else if (this.shape === 'cross') {
-                // Plus/cross shape for healer
                 const w = s * 0.4;
                 ctx.beginPath();
-                ctx.moveTo(this.x - w, this.y - s);
-                ctx.lineTo(this.x + w, this.y - s);
-                ctx.lineTo(this.x + w, this.y - w);
-                ctx.lineTo(this.x + s, this.y - w);
-                ctx.lineTo(this.x + s, this.y + w);
-                ctx.lineTo(this.x + w, this.y + w);
-                ctx.lineTo(this.x + w, this.y + s);
-                ctx.lineTo(this.x - w, this.y + s);
-                ctx.lineTo(this.x - w, this.y + w);
-                ctx.lineTo(this.x - s, this.y + w);
-                ctx.lineTo(this.x - s, this.y - w);
-                ctx.lineTo(this.x - w, this.y - w);
+                ctx.moveTo(this.x - w, this.y - s + bob);
+                ctx.lineTo(this.x + w, this.y - s + bob);
+                ctx.lineTo(this.x + w, this.y - w + bob);
+                ctx.lineTo(this.x + s, this.y - w + bob);
+                ctx.lineTo(this.x + s, this.y + w + bob);
+                ctx.lineTo(this.x + w, this.y + w + bob);
+                ctx.lineTo(this.x + w, this.y + s + bob);
+                ctx.lineTo(this.x - w, this.y + s + bob);
+                ctx.lineTo(this.x - w, this.y + w + bob);
+                ctx.lineTo(this.x - s, this.y + w + bob);
+                ctx.lineTo(this.x - s, this.y - w + bob);
+                ctx.lineTo(this.x - w, this.y - w + bob);
                 ctx.closePath();
                 ctx.fill();
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.arc(this.x, this.y + bob, s * 1.2, 0, Math.PI * 2);
+                ctx.strokeStyle = 'rgba(120,255,180,0.18)';
+                ctx.stroke();
             }
 
             ctx.shadowBlur = 0;

@@ -136,73 +136,109 @@ function createTower(type, x, y) {
         },
 
         draw(ctx) {
-            const s = 14;
-            ctx.shadowColor = this.color;
-            ctx.shadowBlur = this.selected ? 16 : 10;
+            const s = 14 + (this.tier - 1) * 1.5;
+            const pulse = 0.7 + Math.sin(performance.now() * 0.006 + this.x * 0.03) * 0.08;
 
-            // Tower body
-            ctx.fillStyle = this.color;
+            // base pad
+            ctx.fillStyle = 'rgba(20, 24, 34, 0.95)';
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, s * 0.95, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = `${this.color}55`;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, s * 0.8, 0, Math.PI * 2);
+            ctx.stroke();
+
+            ctx.shadowColor = this.color;
+            ctx.shadowBlur = this.selected ? 22 : 12;
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+
+            // Tower body with stronger silhouettes
             if (this.shape === 'triangle') {
+                // blaster: forward gun turret
+                ctx.fillStyle = this.color;
                 ctx.beginPath();
-                ctx.moveTo(this.x, this.y - s);
-                ctx.lineTo(this.x - s * 0.8, this.y + s * 0.6);
-                ctx.lineTo(this.x + s * 0.8, this.y + s * 0.6);
+                ctx.moveTo(this.x, this.y - s * 0.95);
+                ctx.lineTo(this.x - s * 0.7, this.y + s * 0.55);
+                ctx.lineTo(this.x + s * 0.7, this.y + s * 0.55);
                 ctx.closePath();
                 ctx.fill();
+                ctx.stroke();
+                ctx.fillStyle = 'rgba(255,255,255,0.22)';
+                ctx.fillRect(this.x - 2, this.y - s * 0.6, 4, s * 0.7);
             } else if (this.shape === 'diamond') {
+                // sniper: crystal/railgun shape
+                ctx.fillStyle = this.color;
                 ctx.beginPath();
                 ctx.moveTo(this.x, this.y - s);
-                ctx.lineTo(this.x + s * 0.7, this.y);
-                ctx.lineTo(this.x, this.y + s);
-                ctx.lineTo(this.x - s * 0.7, this.y);
+                ctx.lineTo(this.x + s * 0.55, this.y - 2);
+                ctx.lineTo(this.x, this.y + s * 0.95);
+                ctx.lineTo(this.x - s * 0.55, this.y - 2);
                 ctx.closePath();
                 ctx.fill();
+                ctx.stroke();
+                ctx.strokeStyle = 'rgba(255,255,255,0.55)';
+                ctx.beginPath();
+                ctx.moveTo(this.x, this.y - s * 0.8);
+                ctx.lineTo(this.x, this.y + s * 0.55);
+                ctx.stroke();
             } else if (this.shape === 'hexagon') {
+                // aoe: chunky reactor core
+                ctx.fillStyle = this.color;
                 ctx.beginPath();
                 for (let i = 0; i < 6; i++) {
                     const a = (Math.PI / 3) * i - Math.PI / 6;
-                    const px = this.x + Math.cos(a) * s * 0.8;
-                    const py = this.y + Math.sin(a) * s * 0.8;
-                    if (i === 0) ctx.moveTo(px, py);
-                    else ctx.lineTo(px, py);
+                    const px = this.x + Math.cos(a) * s * 0.82;
+                    const py = this.y + Math.sin(a) * s * 0.82;
+                    if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
                 }
                 ctx.closePath();
                 ctx.fill();
-            } else if (this.shape === 'sentinel') {
-                // Flag/banner shape for barracks
-                ctx.beginPath();
-                ctx.moveTo(this.x - s * 0.6, this.y + s * 0.6);
-                ctx.lineTo(this.x - s * 0.6, this.y - s);
-                ctx.lineTo(this.x + s * 0.6, this.y - s * 0.4);
-                ctx.lineTo(this.x - s * 0.6, this.y + s * 0.1);
-                ctx.closePath();
-                ctx.fill();
-                // Base
-                ctx.fillRect(this.x - s * 0.7, this.y + s * 0.4, s * 1.4, s * 0.25);
-            } else if (this.shape === 'boat') {
-                // Boat hull shape
-                ctx.beginPath();
-                ctx.moveTo(this.x, this.y - s);           // bow (front)
-                ctx.lineTo(this.x + s * 0.7, this.y);     // right side
-                ctx.lineTo(this.x + s * 0.5, this.y + s * 0.6); // right stern
-                ctx.lineTo(this.x - s * 0.5, this.y + s * 0.6); // left stern
-                ctx.lineTo(this.x - s * 0.7, this.y);     // left side
-                ctx.closePath();
-                ctx.fill();
-                // Mast
-                ctx.strokeStyle = this.color;
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.moveTo(this.x, this.y - s * 0.3);
-                ctx.lineTo(this.x, this.y - s * 1.2);
                 ctx.stroke();
-                // Flag
-                ctx.fillStyle = '#0055aa';
+                ctx.fillStyle = `rgba(255,255,255,${0.18 * pulse})`;
                 ctx.beginPath();
-                ctx.moveTo(this.x, this.y - s * 1.2);
-                ctx.lineTo(this.x + s * 0.4, this.y - s);
-                ctx.lineTo(this.x, this.y - s * 0.8);
+                ctx.arc(this.x, this.y, s * 0.32, 0, Math.PI * 2);
                 ctx.fill();
+            } else if (this.shape === 'sentinel') {
+                // sentinel: barracks with banner + gate
+                ctx.fillStyle = this.color;
+                ctx.fillRect(this.x - s * 0.8, this.y - s * 0.15, s * 1.6, s * 0.95);
+                ctx.strokeRect(this.x - s * 0.8, this.y - s * 0.15, s * 1.6, s * 0.95);
+                ctx.fillStyle = 'rgba(20,20,20,0.45)';
+                ctx.fillRect(this.x - s * 0.22, this.y + s * 0.15, s * 0.44, s * 0.65);
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.moveTo(this.x - s * 0.55, this.y - s * 0.15);
+                ctx.lineTo(this.x - s * 0.55, this.y - s * 1.05);
+                ctx.lineTo(this.x + s * 0.35, this.y - s * 0.7);
+                ctx.lineTo(this.x - s * 0.55, this.y - s * 0.42);
+                ctx.closePath();
+                ctx.fill();
+            } else if (this.shape === 'boat') {
+                // boat: stronger hull + cabin + wake
+                ctx.fillStyle = 'rgba(255,255,255,0.12)';
+                ctx.beginPath();
+                ctx.ellipse(this.x, this.y + s * 0.65, s * 0.9, s * 0.28, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.moveTo(this.x, this.y - s * 0.95);
+                ctx.lineTo(this.x + s * 0.78, this.y - s * 0.05);
+                ctx.lineTo(this.x + s * 0.55, this.y + s * 0.6);
+                ctx.lineTo(this.x - s * 0.55, this.y + s * 0.6);
+                ctx.lineTo(this.x - s * 0.78, this.y - s * 0.05);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+                ctx.fillStyle = 'rgba(255,255,255,0.25)';
+                ctx.fillRect(this.x - s * 0.18, this.y - s * 0.25, s * 0.36, s * 0.42);
+                ctx.strokeStyle = this.color;
+                ctx.beginPath();
+                ctx.moveTo(this.x, this.y - s * 0.25);
+                ctx.lineTo(this.x, this.y - s * 1.15);
+                ctx.stroke();
             }
 
             ctx.shadowBlur = 0;
