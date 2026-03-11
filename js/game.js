@@ -89,7 +89,6 @@ const game = {
             else if (e.key === '6') this.selectTower('poison');
             else if (e.key === '7') this.selectTower('ice');
             else if (e.key === '8') this.selectTower('sentinel');
-            else if (e.key === '9') this.selectFortification('barricade');
             else if (e.key === 's' || e.key === 'S') this.selectTower('sell');
             else if (e.key === ' ') { e.preventDefault(); this.startWave(); }
             else if (e.key === 'p' || e.key === 'P') this.togglePause();
@@ -108,6 +107,8 @@ const game = {
                             life: 1.2, maxLife: 1.2,
                             color: t.tier === 3 ? '#ffdd00' : '#ffffff'
                         });
+                        ParticlePool.spawn(t.x, t.y, t.color, t.tier === 3 ? 18 : 10);
+                        this.shake(t.tier === 3 ? 3 : 1.5);
                         this.updateUI();
                     } else if (cost !== null) {
                         Audio.noMoney();
@@ -440,27 +441,9 @@ const game = {
     },
     
     selectFortification(mode) {
-        if (!Fortification.unlocked && mode === 'wall') {
-            this._floatingTexts.push({
-                text: 'Walls unlock at level 2!',
-                x: 400, y: 280,
-                life: 1.5, maxLife: 1.5,
-                color: '#ff4444'
-            });
-            return;
-        }
-        this.selectedTower = null;
-        this.selectedPlacedTower = null;
-        this.towers.forEach(tw => tw.selected = false);
-        UI.setTowerActive(null);
-        
-        if (Fortification.placementMode === mode) {
-            Fortification.placementMode = null;
-            UI.setFortificationActive(null);
-        } else {
-            Fortification.placementMode = mode;
-            UI.setFortificationActive(mode);
-        }
+        // Barricades/fortifications removed.
+        Fortification.placementMode = null;
+        UI.setFortificationActive(null);
     },
 
     setSpeed(s) {
@@ -476,9 +459,6 @@ const game = {
         if (WaveManager.waveActive && WaveManager.currentWave >= WaveManager.waves.length - 1 && !WaveManager.endless) {
             return; // Must finish the boss wave naturally
         }
-        
-        // Reset barricade stock for new wave
-        Fortification.onWaveStart();
         
         // No wave cap — stack as many as you dare
         
@@ -521,37 +501,6 @@ const game = {
         const gx = Math.floor(mx / Utils.GRID);
         const gy = Math.floor(my / Utils.GRID);
 
-        // Fortification placement
-        if (Fortification.placementMode === 'barricade') {
-            if (!WaveManager.waveActive) {
-                this._floatingTexts.push({
-                    text: 'Barricades during waves only!',
-                    x: mx, y: my - 15,
-                    life: 1, maxLife: 1,
-                    color: '#ff4444'
-                });
-                return;
-            }
-            if (this.gold < Fortification.BARRICADE_COST) {
-                Audio.noMoney();
-                return;
-            }
-            const result = Fortification.placeBarricade(gx, gy);
-            if (result.ok) {
-                this.gold -= Fortification.BARRICADE_COST;
-                Audio.trapPlace();
-                this.updateUI();
-            } else {
-                this._floatingTexts.push({
-                    text: result.reason,
-                    x: mx, y: my - 15,
-                    life: 1, maxLife: 1,
-                    color: '#ff4444'
-                });
-            }
-            return;
-        }
-        
         // Check if clicking existing tower
         for (const t of this.towers) {
             if (Utils.dist(mx, my, t.x, t.y) < Utils.GRID * 1.5) {
@@ -579,6 +528,8 @@ const game = {
                             life: 1.2, maxLife: 1.2,
                             color: t.tier === 3 ? '#ffdd00' : '#ffffff'
                         });
+                        ParticlePool.spawn(t.x, t.y, t.color, t.tier === 3 ? 18 : 10);
+                        this.shake(t.tier === 3 ? 3 : 1.5);
                         this.updateUI();
                         return;
                     } else if (upgradeCost !== null) {
@@ -761,9 +712,6 @@ const game = {
         }
         this.traps = this.traps.filter(t => t.alive);
 
-        // Update fortifications
-        Fortification.update(dt, this.enemies, speedMult);
-
         // Update sentinels
         SentinelManager.update(dt, this.enemies, speedMult);
 
@@ -826,14 +774,6 @@ const game = {
         // Draw terrain (cached offscreen canvas + water animation + flow arrows)
         const theme = this.getCurrentTheme();
         Terrain.draw(ctx, theme);
-
-        // Draw fortifications (walls + barricades)
-        Fortification.draw(ctx, theme);
-        
-        // Fortification placement preview
-        if (this.state === 'playing' && Fortification.placementMode) {
-            Fortification.drawPreview(ctx, this.mouseX, this.mouseY, theme);
-        }
 
         // Tower/trap placement preview
         if (this.state === 'playing' && this.selectedTower && this.selectedTower !== 'sell') {

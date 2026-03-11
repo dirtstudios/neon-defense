@@ -168,6 +168,17 @@ function createTower(type, x, y) {
                 ctx.stroke();
                 ctx.fillStyle = 'rgba(255,255,255,0.22)';
                 ctx.fillRect(this.x - 2, this.y - s * 0.6, 4, s * 0.7);
+                if (this.tier >= 2) {
+                    ctx.fillStyle = 'rgba(255,255,255,0.18)';
+                    ctx.fillRect(this.x - s * 0.42, this.y - s * 0.1, s * 0.18, s * 0.48);
+                    ctx.fillRect(this.x + s * 0.24, this.y - s * 0.1, s * 0.18, s * 0.48);
+                }
+                if (this.tier >= 3) {
+                    ctx.strokeStyle = `${this.color}aa`;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, s * 1.08, -Math.PI * 0.15, Math.PI * 1.15);
+                    ctx.stroke();
+                }
             } else if (this.shape === 'diamond') {
                 // sniper: crystal/railgun shape
                 ctx.fillStyle = this.color;
@@ -184,6 +195,19 @@ function createTower(type, x, y) {
                 ctx.moveTo(this.x, this.y - s * 0.8);
                 ctx.lineTo(this.x, this.y + s * 0.55);
                 ctx.stroke();
+                if (this.tier >= 2) {
+                    ctx.strokeStyle = `${this.color}cc`;
+                    ctx.beginPath();
+                    ctx.moveTo(this.x - s * 0.55, this.y + s * 0.45);
+                    ctx.lineTo(this.x + s * 0.55, this.y + s * 0.45);
+                    ctx.stroke();
+                }
+                if (this.tier >= 3) {
+                    ctx.fillStyle = 'rgba(255,255,255,0.26)';
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y - s * 0.35, s * 0.16, 0, Math.PI * 2);
+                    ctx.fill();
+                }
             } else if (this.shape === 'hexagon') {
                 // aoe: chunky reactor core
                 ctx.fillStyle = this.color;
@@ -201,6 +225,21 @@ function createTower(type, x, y) {
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, s * 0.32, 0, Math.PI * 2);
                 ctx.fill();
+                if (this.tier >= 2) {
+                    ctx.strokeStyle = `${this.color}bb`;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, s * 0.58, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+                if (this.tier >= 3) {
+                    for (let i = 0; i < 3; i++) {
+                        const a = performance.now() * 0.002 + i * (Math.PI * 2 / 3);
+                        ctx.fillStyle = 'rgba(255,240,200,0.55)';
+                        ctx.beginPath();
+                        ctx.arc(this.x + Math.cos(a) * s * 0.55, this.y + Math.sin(a) * s * 0.55, 2.2, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
             } else if (this.shape === 'sentinel') {
                 // sentinel: barracks with banner + gate
                 ctx.fillStyle = this.color;
@@ -216,6 +255,18 @@ function createTower(type, x, y) {
                 ctx.lineTo(this.x - s * 0.55, this.y - s * 0.42);
                 ctx.closePath();
                 ctx.fill();
+                if (this.tier >= 2) {
+                    ctx.fillStyle = 'rgba(255,255,255,0.25)';
+                    ctx.fillRect(this.x - s * 0.55, this.y + s * 0.08, s * 0.22, s * 0.22);
+                    ctx.fillRect(this.x + s * 0.33, this.y + s * 0.08, s * 0.22, s * 0.22);
+                }
+                if (this.tier >= 3) {
+                    ctx.strokeStyle = `${this.color}aa`;
+                    ctx.beginPath();
+                    ctx.moveTo(this.x - s * 0.9, this.y - s * 0.2);
+                    ctx.lineTo(this.x - s * 0.9, this.y - s * 0.95);
+                    ctx.stroke();
+                }
             } else if (this.shape === 'boat') {
                 // boat: stronger hull + cabin + wake
                 ctx.fillStyle = 'rgba(255,255,255,0.12)';
@@ -239,6 +290,20 @@ function createTower(type, x, y) {
                 ctx.moveTo(this.x, this.y - s * 0.25);
                 ctx.lineTo(this.x, this.y - s * 1.15);
                 ctx.stroke();
+                if (this.tier >= 2) {
+                    ctx.fillStyle = 'rgba(255,255,255,0.28)';
+                    ctx.fillRect(this.x - s * 0.42, this.y - s * 0.05, s * 0.16, s * 0.3);
+                    ctx.fillRect(this.x + s * 0.26, this.y - s * 0.05, s * 0.16, s * 0.3);
+                }
+                if (this.tier >= 3) {
+                    ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+                    ctx.beginPath();
+                    ctx.moveTo(this.x - s * 0.55, this.y + s * 0.72);
+                    ctx.lineTo(this.x - s * 0.95, this.y + s * 1.02);
+                    ctx.moveTo(this.x + s * 0.55, this.y + s * 0.72);
+                    ctx.lineTo(this.x + s * 0.95, this.y + s * 1.02);
+                    ctx.stroke();
+                }
             }
 
             ctx.shadowBlur = 0;

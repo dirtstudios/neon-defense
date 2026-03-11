@@ -36,18 +36,9 @@ const UI = {
             const def = TowerTypes[type] || (typeof TrapTypes !== 'undefined' && TrapTypes[type]);
             if (def) btn.classList.toggle('disabled', gold < def.cost);
         });
-        // Fortification affordability
-        const barricadeBtn = document.getElementById('barricade-btn');
-        if (barricadeBtn) {
-            barricadeBtn.classList.toggle('disabled', gold < Fortification.BARRICADE_COST || Fortification.barricadesRemaining <= 0);
-            barricadeBtn.textContent = `🧱 Barricade $${Fortification.BARRICADE_COST} (${Fortification.barricadesRemaining})`;
-        }
     },
     
-    setFortificationActive(mode) {
-        const barricadeBtn = document.getElementById('barricade-btn');
-        if (barricadeBtn) barricadeBtn.classList.toggle('active', mode === 'barricade');
-    },
+    setFortificationActive(mode) {},
     // Bestiary
     bestiaryData: [
         { name: 'Basic', color: '#ff0055', shape: '●', hp: 30, speed: 2, gold: 10, resist: 'None', tip: 'No resistances — any tower works' },
