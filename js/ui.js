@@ -16,7 +16,13 @@ const UI = {
         document.getElementById('score').textContent = `Score: ${score}`;
     },
     updateWavePreview(text) {
-        document.getElementById('wave-preview').textContent = text ? `Next: ${text}` : '';
+        let displayText = text ? `Next: ${text}` : '';
+        // Add boss warning
+        if (WaveManager.hasBoss()) {
+            const bossCount = WaveManager.getBossCount();
+            displayText = `⚠️ BOSS INCOMING (${bossCount}) ⚠️\n` + displayText;
+        }
+        document.getElementById('wave-preview').textContent = displayText;
     },
     setStartWaveEnabled(enabled) {
         const btn = document.getElementById('start-wave-btn');

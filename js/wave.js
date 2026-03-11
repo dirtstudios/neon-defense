@@ -151,6 +151,24 @@ const WaveManager = {
         return def.map(g => `${g.count} ${g.type}`).join(' + ');
     },
 
+    // Check if current wave will have a boss
+    hasBoss() {
+        const def = this.getWaveDef(this.currentWave);
+        return def.some(g => g.type === 'boss' || g.type === 'broodBoss' || g.type === 'warBoss');
+    },
+
+    // Get boss count for current wave
+    getBossCount() {
+        const def = this.getWaveDef(this.currentWave);
+        let count = 0;
+        for (const g of def) {
+            if (g.type === 'boss' || g.type === 'broodBoss' || g.type === 'warBoss') {
+                count += g.count;
+            }
+        }
+        return count;
+    },
+
     reset() {
         this.currentWave = 0;
         this.spawnQueue = [];
