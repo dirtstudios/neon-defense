@@ -47,7 +47,9 @@ const game = {
         sentinelHpMult: 1,
         economyBonusGold: 0,
         waveBonusMult: 1,
-        healAfterLevel: 0
+        healAfterLevel: 0,
+        sellValueMult: 1,
+        fireRateMult: 1
     },
     
     getCanvasPoint(e) {
@@ -328,7 +330,10 @@ const game = {
             { id: 'trap_engineering', name: 'Trap Engineering', desc: '+25% trap damage', apply: () => { this.perkState.trapDamageMult *= 1.25; } },
             { id: 'war_chest', name: 'War Chest', desc: '+75 gold now and +25 each level', apply: () => { this.gold += 75; this.perkState.economyBonusGold += 25; } },
             { id: 'blood_sport', name: 'Blood Sport', desc: '+30% early-wave bonus gold', apply: () => { this.perkState.waveBonusMult *= 1.3; } },
-            { id: 'field_repairs', name: 'Field Repairs', desc: '+3 lives after each level', apply: () => { this.perkState.healAfterLevel += 3; } }
+            { id: 'field_repairs', name: 'Field Repairs', desc: '+3 lives after each level', apply: () => { this.perkState.healAfterLevel += 3; } },
+            { id: 'scavenger', name: 'Scavenger', desc: '+25% sell value', apply: () => { this.perkState.sellValueMult *= 1.25; } },
+            { id: 'quick_reflexes', name: 'Quick Reflexes', desc: '+15% attack speed all towers', apply: () => { this.perkState.fireRateMult *= 1.15; } },
+            { id: 'glass_cannon', name: 'Glass Cannon', desc: '+40% all damage, -10 starting lives', apply: () => { this.perkState.damageMultGlobal *= 1.4; this.lives = Math.max(1, this.lives - 10); } }
         ];
     },
 
@@ -355,11 +360,16 @@ const game = {
     },
 
     applyPerkModifiersToTower(tower) {
+        // Global damage bonus (from Glass Cannon perk)
         tower.damage *= this.perkState.globalDamageMult;
         if (tower.type === 'blaster') tower.damage *= this.perkState.blasterDamageMult;
         if (tower.type === 'sniper') tower.damage *= this.perkState.sniperDamageMult;
         if (tower.type === 'aoe') tower.damage *= this.perkState.aoeDamageMult;
         if (tower.type === 'boat') tower.damage *= this.perkState.boatDamageMult;
+        // Fire rate bonus (from Quick Reflexes perk)
+        tower.fireRate *= this.perkState.fireRateMult;
+        // Sell value bonus (from Scavenger perk)
+        tower.sellValue = Math.round(tower.sellValue * this.perkState.sellValueMult);
         if (tower.type === 'sentinel') {
             tower.maxSentinels += this.perkState.sentinelBonusCount;
             tower.sentinelHp = Math.round(tower.sentinelHp * this.perkState.sentinelHpMult);
