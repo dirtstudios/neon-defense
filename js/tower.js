@@ -176,6 +176,35 @@ function createTower(type, x, y) {
             const ox = Math.cos(a) * recoilPx * -1;
             const oy = Math.sin(a) * recoilPx * -1;
 
+            // === STRONGER SILHOUETTE: Dark underlayer for contrast ===
+            ctx.save();
+            ctx.translate(ox, oy);
+            
+            // Shadow silhouette behind tower (stronger silhouette)
+            ctx.fillStyle = 'rgba(8,10,15,0.85)';
+            ctx.beginPath();
+            if (this.shape === 'triangle') {
+                ctx.fillRect(this.x - s * 0.6 + 3, this.y - s * 0.15 + 3, s * 1.2, s * 0.9);
+            } else if (this.shape === 'diamond') {
+                ctx.fillRect(this.x - s * 0.52 + 3, this.y - s * 0.05 + 3, s * 1.04, s * 0.78);
+            } else if (this.shape === 'hexagon') {
+                ctx.fillRect(this.x - s * 0.68 + 3, this.y - s * 0.1 + 3, s * 1.36, s * 0.92);
+            } else if (this.shape === 'sentinel') {
+                ctx.fillRect(this.x - s * 0.85 + 3, this.y - s * 0.05 + 3, s * 1.7, s * 0.92);
+            } else if (this.shape === 'boat') {
+                ctx.beginPath();
+                ctx.moveTo(this.x + 3, this.y - s * 0.95 + 3);
+                ctx.lineTo(this.x + s * 0.78 + 3, this.y - s * 0.05 + 3);
+                ctx.lineTo(this.x + s * 0.55 + 3, this.y + s * 0.6 + 3);
+                ctx.lineTo(this.x - s * 0.55 + 3, this.y + s * 0.6 + 3);
+                ctx.lineTo(this.x - s * 0.78 + 3, this.y - s * 0.05 + 3);
+                ctx.closePath();
+                ctx.fill();
+            }
+            ctx.fill();
+            ctx.restore();
+
+            // === MAIN TOWER ===
             ctx.save();
             ctx.translate(ox, oy);
             ctx.shadowColor = this.color;
@@ -343,20 +372,36 @@ function createTower(type, x, y) {
             ctx.shadowBlur = 0;
             ctx.restore();
 
-            // Tier pips (dots below tower)
+            // Tier pips (dots below tower) - MORE PROMINENT
             if (this.tier >= 2) {
-                const pipY = this.y + s + 4;
+                const pipY = this.y + s + 6;
                 for (let i = 0; i < this.tier - 1; i++) {
-                    const pipX = this.x + (i - (this.tier - 2) * 0.5) * 6;
+                    const pipX = this.x + (i - (this.tier - 2) * 0.5) * 8;
+                    // Glow behind pip
                     ctx.beginPath();
-                    ctx.arc(pipX, pipY, 2, 0, Math.PI * 2);
-                    ctx.fillStyle = this.tier === 3 ? '#ffdd00' : '#ffffff';
+                    ctx.arc(pipX, pipY, 5, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(8,10,15,0.9)';
                     ctx.fill();
+                    // Pip itself
+                    ctx.beginPath();
+                    ctx.arc(pipX, pipY, 3, 0, Math.PI * 2);
+                    ctx.fillStyle = this.tier === 3 ? '#ffdd00' : this.color;
+                    ctx.shadowColor = this.tier === 3 ? '#ffdd00' : this.color;
+                    ctx.shadowBlur = 8;
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
                 }
             }
 
-            // Range indicator when selected
+            // === SELECTED TOWER: Strong outer ring ===
             if (this.selected) {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, s * 1.3, 0, Math.PI * 2);
+                ctx.strokeStyle = `${this.color}66`;
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // Range indicator
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.range, 0, Math.PI * 2);
                 ctx.strokeStyle = `${this.color}33`;

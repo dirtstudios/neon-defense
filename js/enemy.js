@@ -210,6 +210,51 @@ function createEnemy(type, waveNum) {
 
             if (this.stealthed) ctx.globalAlpha = 0.3;
 
+            // === STRONGER SILHOUETTE: Dark underlayer ===
+            ctx.fillStyle = 'rgba(8,10,15,0.85)';
+            ctx.beginPath();
+            if (this.shape === 'circle') {
+                ctx.arc(this.x + 2, this.y + bob + 2, s, 0, Math.PI * 2);
+            } else if (this.shape === 'diamond') {
+                ctx.moveTo(this.x + 2, this.y - s + bob + 2);
+                ctx.lineTo(this.x + s + 2, this.y + bob + 2);
+                ctx.lineTo(this.x + 2, this.y + s + bob + 2);
+                ctx.lineTo(this.x - s + 2, this.y + bob + 2);
+                ctx.closePath();
+            } else if (this.shape === 'hexagon') {
+                for (let i = 0; i < 6; i++) {
+                    const a = (Math.PI / 3) * i - Math.PI / 6;
+                    const px = this.x + Math.cos(a) * s + 2;
+                    const py = this.y + Math.sin(a) * s + bob + 2;
+                    if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+                }
+                ctx.closePath();
+            } else if (this.shape === 'shield') {
+                ctx.moveTo(this.x - s + 2, this.y - s * 0.5 + bob + 2);
+                ctx.lineTo(this.x - s + 2, this.y + s * 0.2 + bob + 2);
+                ctx.lineTo(this.x + 2, this.y + s + bob + 2);
+                ctx.lineTo(this.x + s + 2, this.y + s * 0.2 + bob + 2);
+                ctx.lineTo(this.x + s + 2, this.y - s * 0.5 + bob + 2);
+                ctx.arc(this.x + 2, this.y - s * 0.5 + bob + 2, s, 0, Math.PI, true);
+                ctx.closePath();
+            } else if (this.shape === 'cross') {
+                const w = s * 0.4;
+                ctx.moveTo(this.x - w + 2, this.y - s + bob + 2);
+                ctx.lineTo(this.x + w + 2, this.y - s + bob + 2);
+                ctx.lineTo(this.x + w + 2, this.y - w + bob + 2);
+                ctx.lineTo(this.x + s + 2, this.y - w + bob + 2);
+                ctx.lineTo(this.x + s + 2, this.y + w + bob + 2);
+                ctx.lineTo(this.x + w + 2, this.y + w + bob + 2);
+                ctx.lineTo(this.x + w + 2, this.y + s + bob + 2);
+                ctx.lineTo(this.x - w + 2, this.y + s + bob + 2);
+                ctx.lineTo(this.x - w + 2, this.y + w + bob + 2);
+                ctx.lineTo(this.x - s + 2, this.y + w + bob + 2);
+                ctx.lineTo(this.x - s + 2, this.y - w + bob + 2);
+                ctx.lineTo(this.x - w + 2, this.y - w + bob + 2);
+                ctx.closePath();
+            }
+            ctx.fill();
+
             const effectColor = this.poisoned ? '#44ff44' : (this.slowed ? '#4488ff' : this.color);
             ctx.shadowColor = effectColor;
             ctx.shadowBlur = isBoss ? 18 : 10;
