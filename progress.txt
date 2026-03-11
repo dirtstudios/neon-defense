@@ -32,3 +32,12 @@ Started: Sunday, February 15th, 2026 — 4:59 AM
 - All tests pass, enemies now move smoothly along the S-curve path
 - **Learnings:** Smooth movement requires interpolation between path points rather than discrete waypoint jumping; pathProgress system scales better than pathIndex for complex curves; comprehensive path testing essential for game feel
 ---
+
+## March 11, 2026 4:15 AM - Silhouette Pass (Sprint 1)
+- Added dark underlayer behind all towers for stronger silhouette contrast
+- Made tier pips more prominent (larger, with glow, better positioning)
+- Added outer ring indicator for selected towers
+- Added dark underlayer behind all enemy types (circle, diamond, hexagon, shield, cross)
+- All changes committed and pushed to GitHub Pages
+- **Learnings:** Simple dark offset creates immediate silhouette pop; canvas translation makes offset easy
+---

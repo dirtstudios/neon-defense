@@ -53,8 +53,8 @@
 - [ ] Itch.io packaging
 
 ## Current implementation order
-1. Tower silhouette pass
-2. Enemy silhouette pass
+1. ~~Tower silhouette pass~~ - DONE: dark underlayer + tier pips + selected ring
+2. ~~Enemy silhouette pass~~ - DONE: dark underlayer for all enemy shapes
 3. Projectile / hit VFX pass
 4. Perk system
 5. Boss / elite pass
