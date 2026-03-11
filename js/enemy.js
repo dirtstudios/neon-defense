@@ -63,6 +63,7 @@ function createEnemy(type, waveNum) {
         poisonTick: 0,
         hitFlash: 0,
         lastDamage: 0,
+        bossSpawnCooldown: def.shape === 'hexagon' && type === 'boss' ? 4.5 : 0,
 
         // Apply resistance to damage based on tower's damage type
         takeDamage(dmg, damageType) {
@@ -118,6 +119,25 @@ function createEnemy(type, waveNum) {
                             other.hp = Math.min(other.maxHp, other.hp + healAmt);
                         }
                     }
+                }
+            }
+
+            // Boss mechanic: periodically spawn support enemies
+            if (this.type === 'boss' && game && game.enemies) {
+                this.bossSpawnCooldown -= dt;
+                if (this.bossSpawnCooldown <= 0) {
+                    this.bossSpawnCooldown = this.hp / this.maxHp < 0.5 ? 3.5 : 5.5;
+                    const supportType = this.hp / this.maxHp < 0.5 ? 'fast' : 'swarm';
+                    for (let i = 0; i < 2; i++) {
+                        const add = createEnemy(supportType, waveNum);
+                        add.pathProgress = Math.max(0, this.pathProgress - 0.02 - i * 0.01);
+                        const pos = Path.getPositionAtProgress(add.pathProgress);
+                        add.x = pos.x + (i === 0 ? -8 : 8);
+                        add.y = pos.y + 6;
+                        game.enemies.push(add);
+                    }
+                    ParticlePool.explosion(this.x, this.y, this.color, false);
+                    if (game.showBossBanner) game.showBossBanner('BOSS SUMMONS REINFORCEMENTS');
                 }
             }
 

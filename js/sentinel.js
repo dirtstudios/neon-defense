@@ -213,23 +213,51 @@ const SentinelManager = {
                 continue;
             }
             
-            // Sentinel body — small filled circle
+            // Sentinel body — tiny soldier, not a dot
             const engaged = !!s.engagedEnemy;
-            
+            const bob = Math.sin(performance.now() * 0.01 + s.index) * 0.6;
+
             ctx.shadowColor = '#00ff88';
             ctx.shadowBlur = engaged ? 10 : 5;
-            
-            ctx.fillStyle = engaged ? '#00ffaa' : '#00ff88';
+
+            // head
+            ctx.fillStyle = engaged ? '#66ffcc' : '#88ffcc';
             ctx.beginPath();
-            ctx.arc(s.x, s.y, 5, 0, Math.PI * 2);
+            ctx.arc(s.x, s.y - 4 + bob, 2.2, 0, Math.PI * 2);
             ctx.fill();
-            
-            // Inner dot
-            ctx.fillStyle = '#ffffff';
+
+            // body
+            ctx.strokeStyle = engaged ? '#00ffaa' : '#00ff88';
+            ctx.lineWidth = 2;
             ctx.beginPath();
-            ctx.arc(s.x, s.y, 2, 0, Math.PI * 2);
-            ctx.fill();
-            
+            ctx.moveTo(s.x, s.y - 1 + bob);
+            ctx.lineTo(s.x, s.y + 5 + bob);
+            ctx.stroke();
+
+            // arms
+            ctx.beginPath();
+            ctx.moveTo(s.x - 3, s.y + 1 + bob);
+            ctx.lineTo(s.x + 3, s.y + 1 + bob);
+            ctx.stroke();
+
+            // legs
+            ctx.beginPath();
+            ctx.moveTo(s.x, s.y + 5 + bob);
+            ctx.lineTo(s.x - 3, s.y + 9 + bob);
+            ctx.moveTo(s.x, s.y + 5 + bob);
+            ctx.lineTo(s.x + 3, s.y + 9 + bob);
+            ctx.stroke();
+
+            // sword / spear when engaged
+            if (engaged) {
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.moveTo(s.x + 2, s.y - 1 + bob);
+                ctx.lineTo(s.x + 6, s.y - 5 + bob);
+                ctx.stroke();
+            }
+
             ctx.shadowBlur = 0;
             
             // HP bar
