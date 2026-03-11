@@ -42,9 +42,9 @@
 
 ### Sprint 6: UI / presentation
 - [x] Better title/menu flow (pulsing title, better buttons)
-- [ ] Cleaner HUD hierarchy
+- [x] Cleaner HUD hierarchy (better typography, icon glow)
 - [ ] Better buttons/icons
-- [ ] Better upgrade panel presentation (glow added)
+- [x] Better upgrade panel presentation (glow added)
 
 ### Sprint 7: Audio / launch polish
 - [ ] Distinct tower sounds
