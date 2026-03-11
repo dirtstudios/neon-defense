@@ -36,7 +36,7 @@
 - [x] Elite wave warnings (boss warning shown in wave preview)
 - [x] Boss intros
 - [x] Boss mechanics beyond raw HP
-- [ ] Better reward moments
+- [x] Better reward moments (gold flash + floating +X gold text)
 
 ## LATER — Product polish
 
