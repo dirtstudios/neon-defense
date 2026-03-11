@@ -41,10 +41,10 @@
 ## LATER — Product polish
 
 ### Sprint 6: UI / presentation
+- [x] Better title/menu flow (pulsing title, better buttons)
 - [ ] Cleaner HUD hierarchy
 - [ ] Better buttons/icons
-- [ ] Better title/menu flow
-- [ ] Better upgrade panel presentation
+- [ ] Better upgrade panel presentation (glow added)
 
 ### Sprint 7: Audio / launch polish
 - [ ] Distinct tower sounds
