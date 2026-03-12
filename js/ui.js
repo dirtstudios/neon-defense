@@ -104,6 +104,13 @@ const UI = {
     showMenu() {
         document.getElementById('menu-screen').style.display = 'flex';
         document.getElementById('game-over-screen').style.display = 'none';
+        // Show high score on menu
+        const highScoreEl = document.getElementById('menu-high-score');
+        if (game.highScore > 0) {
+            highScoreEl.textContent = `🏆 Best Score: ${game.highScore}`;
+        } else {
+            highScoreEl.textContent = '';
+        }
     },
     hideMenu() {
         document.getElementById('menu-screen').style.display = 'none';
@@ -118,6 +125,14 @@ const UI = {
         document.getElementById('end-message').textContent = won ?
             'All waves defeated!' : `Defeated on wave ${wave + 1}`;
         document.getElementById('end-score').textContent = `Score: ${score}`;
+        // High score
+        const highScoreEl = document.getElementById('end-high-score');
+        if (score >= game.highScore && score > 0) {
+            highScoreEl.textContent = '🏆 NEW HIGH SCORE!';
+            highScoreEl.style.textShadow = '0 0 10px rgba(255,170,0,0.5)';
+        } else {
+            highScoreEl.textContent = `Best: ${game.highScore}`;
+        }
         if (game.mapInfo) {
             document.getElementById('end-map-info').textContent = `${game.mapInfo.name} • Seed: ${game.mapInfo.seed}`;
         }

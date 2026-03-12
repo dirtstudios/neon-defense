@@ -6,6 +6,7 @@ const game = {
     gold: 200,
     lives: 20,
     score: 0,
+    highScore: parseInt(localStorage.getItem('neonDefenseHighScore') || '0'),
     speed: 1,
     selectedTower: null,
     selectedPlacedTower: null,
@@ -834,6 +835,11 @@ const game = {
                 e.reachedEnd = false;
                 this.shake(4); // Screen shake when enemy reaches end
                 if (this.lives <= 0) {
+                    // Save high score
+                    if (this.score > this.highScore) {
+                        this.highScore = this.score;
+                        localStorage.setItem('neonDefenseHighScore', this.highScore.toString());
+                    }
                     this.setState('gameover');
                     Audio.gameOver();
                     UI.showGameOver(false, this.score, WaveManager.currentWave);
