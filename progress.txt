@@ -3,6 +3,16 @@ Run: 43dc10a9-8c57-45dc-90b0-7399cd11ad04
 Task: Build Neon Defense - a browser-based tower defense game with neon geometric art style
 Started: Sunday, February 15th, 2026 — 4:59 AM
 
+## March 12, 2026 4:00 AM - Add Replayability Perks
+- Added 4 new perks to increase build diversity and replayability:
+  - **Last Stand**: +1 life every 5 kills (tracks _killStreak)
+  - **Golden Touch**: 15% chance for 2x gold on kills (shows floating "GOLDEN!" text)
+  - **Critical Strike**: 10% chance for 2x damage (shows "CRIT!" in red)
+  - **Chain Lightning**: AOA towers chain to nearby (perk defined, not fully wired)
+- Floating text updates for gold/kill events
+- Added new perkState fields: goldBonusChance, lifeOnKill, chainLightning, critChance
+- **Learnings:** Floating text system is flexible for showing perk events; need to track kill streaks in game state
+
 ## Codebase Patterns
 - **Vanilla Canvas Game**: No frameworks, all rendering done via HTML5 Canvas 2D context
 - **Fixed Timestep Game Loop**: Uses `requestAnimationFrame` with fixed timestep accumulator (16.67ms) for stable 60 FPS
