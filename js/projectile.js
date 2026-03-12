@@ -70,6 +70,9 @@ const ProjectilePool = {
                         isCrit = true;
                     }
                     const dealt = p.target.takeDamage(p.damage * bonusMult, p.damageType);
+                    if (isCrit && p.target) {
+                        p.target.critFlash = 0.25;
+                    }
                     ParticlePool.impact(p.x, p.y, p.color, angle);
                     if (dealt >= 8 && game && game._floatingTexts) {
                         // Color-code damage numbers: weak=yellow, normal=white, heavy=orange, crit=red

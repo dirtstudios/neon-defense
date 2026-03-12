@@ -69,6 +69,7 @@ function createEnemy(type, waveNum) {
         poisonTimer: 0,
         poisonTick: 0,
         hitFlash: 0,
+        critFlash: 0,
         lastDamage: 0,
         bossRole: def.bossRole || null,
         bossSpawnCooldown: def.bossRole ? 3.2 : 0,
@@ -101,6 +102,7 @@ function createEnemy(type, waveNum) {
             if (!this.alive) return;
 
             if (this.hitFlash > 0) this.hitFlash -= dt;
+            if (this.critFlash > 0) this.critFlash -= dt;
 
             // Slow effect
             if (this.slowed) {
@@ -322,7 +324,7 @@ function createEnemy(type, waveNum) {
             ctx.shadowBlur = isBoss ? 18 : 10;
             ctx.lineWidth = 2;
             ctx.strokeStyle = 'rgba(255,255,255,0.3)';
-            ctx.fillStyle = this.hitFlash > 0 ? '#ffffff' : effectColor;
+            ctx.fillStyle = this.critFlash > 0 ? '#ff3366' : (this.hitFlash > 0 ? '#ffffff' : effectColor);
 
             if (this.shape === 'circle') {
                 ctx.beginPath();
