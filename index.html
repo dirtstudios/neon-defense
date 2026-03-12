@@ -49,45 +49,45 @@
             </span>
         </div>
         <div id="hud-bottom">
-            <button class="tower-btn" data-tower="blaster" onclick="game.selectTower('blaster')">
-                <span class="tower-icon blaster-icon">△</span>
-                Blaster $50
-            </button>
-            <button class="tower-btn" data-tower="sniper" onclick="game.selectTower('sniper')">
-                <span class="tower-icon sniper-icon">◇</span>
-                Sniper $100
-            </button>
-            <button class="tower-btn" data-tower="aoe" onclick="game.selectTower('aoe')">
-                <span class="tower-icon aoe-icon">⬡</span>
-                AOE $150
-            </button>
-            <button class="tower-btn" data-tower="boat" id="boat-btn" onclick="game.selectTower('boat')" style="display:none">
-                <span class="tower-icon boat-icon">⛵</span>
-                Boat $75
-            </button>
-            <button class="tower-btn" data-tower="sentinel" onclick="game.selectTower('sentinel')">
-                <span class="tower-icon sentinel-icon">⚔️</span>
-                Sentinel $75
-            </button>
-            <span class="separator">|</span>
-            <button class="tower-btn trap-btn" data-tower="mine" onclick="game.selectTower('mine')">
-                <span class="tower-icon mine-icon">💣</span>
-                Mine $30
-            </button>
-            <button class="tower-btn trap-btn" data-tower="poison" onclick="game.selectTower('poison')">
-                <span class="tower-icon poison-icon">☠️</span>
-                Poison $40
-            </button>
-            <button class="tower-btn trap-btn" data-tower="ice" onclick="game.selectTower('ice')">
-                <span class="tower-icon ice-icon">❄️</span>
-                Ice $25
-            </button>
-            <span class="separator">|</span>
-            <button class="tower-btn sell-btn" onclick="game.selectTower('sell')">
-                Sell
-            </button>
-            <button id="start-wave-btn" onclick="game.startWave()">▶ Start Wave</button>
-            <button id="bestiary-btn" onclick="UI.toggleBestiary()">❓</button>
+            <div class="hud-build-row">
+                <button class="tower-btn" data-tower="blaster" onclick="game.selectTower('blaster')">
+                    <span class="tower-icon blaster-icon">△</span>
+                    Blaster $50
+                </button>
+                <button class="tower-btn" data-tower="sniper" onclick="game.selectTower('sniper')">
+                    <span class="tower-icon sniper-icon">◇</span>
+                    Sniper $100
+                </button>
+                <button class="tower-btn" data-tower="aoe" onclick="game.selectTower('aoe')">
+                    <span class="tower-icon aoe-icon">⬡</span>
+                    AOE $150
+                </button>
+                <button class="tower-btn" data-tower="boat" id="boat-btn" onclick="game.selectTower('boat')" style="display:none">
+                    <span class="tower-icon boat-icon">⛵</span>
+                    Boat $75
+                </button>
+                <button class="tower-btn" data-tower="sentinel" onclick="game.selectTower('sentinel')">
+                    <span class="tower-icon sentinel-icon">⚔️</span>
+                    Sentinel $75
+                </button>
+                <button class="tower-btn trap-btn" data-tower="mine" onclick="game.selectTower('mine')">
+                    <span class="tower-icon mine-icon">💣</span>
+                    Mine $30
+                </button>
+                <button class="tower-btn trap-btn" data-tower="poison" onclick="game.selectTower('poison')">
+                    <span class="tower-icon poison-icon">☠️</span>
+                    Poison $40
+                </button>
+                <button class="tower-btn trap-btn" data-tower="ice" onclick="game.selectTower('ice')">
+                    <span class="tower-icon ice-icon">❄️</span>
+                    Ice $25
+                </button>
+            </div>
+            <div class="hud-action-row">
+                <button class="tower-btn sell-btn" onclick="game.selectTower('sell')">Sell</button>
+                <button id="start-wave-btn" onclick="game.startWave()">▶ Start Wave</button>
+                <button id="bestiary-btn" onclick="UI.toggleBestiary()">❓</button>
+            </div>
         </div>
         <div id="menu-screen">
             <h1>NEON DEFENSE</h1>
