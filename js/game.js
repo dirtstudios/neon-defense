@@ -264,6 +264,7 @@ const game = {
         WaveManager.reset();
         Fortification.reset();
         SentinelManager.reset();
+        UI.updateActivePerks(this.perkState, this.perkHistory);
     },
 
     restart() {
@@ -375,6 +376,7 @@ const game = {
         this.perkHistory.push(perk.id);
         this.perkChoiceActive = false;
         this.perkOptions = [];
+        UI.updateActivePerks(this.perkState, this.perkHistory);
         try { this.__doAdvanceLevel(); } catch(e) { console.error('Level advance error:', e); }
     },
 

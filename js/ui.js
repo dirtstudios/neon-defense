@@ -53,6 +53,44 @@ const UI = {
         });
     },
     
+    updateActivePerks(perkState, perkHistory) {
+        const container = document.getElementById('active-perks');
+        if (!container) return;
+        
+        const activePerks = [];
+        // Map perk IDs to their colors
+        const perkColors = {
+            'kinetic_boost': '#00f3ff',
+            'sniper_focus': '#aa88ff',
+            'reactor_core': '#ff9a3d',
+            'sentinel_drill': '#44ffbb',
+            'reinforced_armor': '#7dd3fc',
+            'trap_engineering': '#ffd166',
+            'war_chest': '#facc15',
+            'blood_sport': '#fb7185',
+            'field_repairs': '#4ade80',
+            'scavenger': '#f59e0b',
+            'quick_reflexes': '#60a5fa',
+            'glass_cannon': '#ff6677',
+            'last_stand': '#22d3d3',
+            'golden_touch': '#ffd700',
+            'chain_lightning': '#a855f7',
+            'critical_strike': '#f43f5e'
+        };
+        
+        // Check which perks are active based on perkState
+        if (perkState.goldBonusChance > 0) activePerks.push({ color: perkColors.golden_touch, title: 'Golden Touch' });
+        if (perkState.lifeOnKill) activePerks.push({ color: perkColors.last_stand, title: 'Last Stand' });
+        if (perkState.chainLightning) activePerks.push({ color: perkColors.chain_lightning, title: 'Chain Lightning' });
+        if (perkState.critChance > 0) activePerks.push({ color: perkColors.critical_strike, title: 'Critical Strike' });
+        if (perkState.globalDamageMult > 1) activePerks.push({ color: perkColors.glass_cannon, title: 'Glass Cannon' });
+        if (perkState.economyBonusGold > 0) activePerks.push({ color: perkColors.war_chest, title: 'War Chest' });
+        
+        container.innerHTML = activePerks.map(p => 
+            `<span class="perk-dot" style="color: ${p.color}; background: ${p.color};" title="${p.title}"></span>`
+        ).join('');
+    },
+    
     setFortificationActive(mode) {},
     // Bestiary
     bestiaryData: [
