@@ -72,6 +72,7 @@ const ProjectilePool = {
                     const dealt = p.target.takeDamage(p.damage * bonusMult, p.damageType);
                     if (isCrit && p.target) {
                         p.target.critFlash = 0.25;
+                        p.target.critHit = true; // Track for achievements
                     }
                     ParticlePool.impact(p.x, p.y, p.color, angle);
                     if (dealt >= 8 && game && game._floatingTexts) {

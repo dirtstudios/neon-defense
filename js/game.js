@@ -38,6 +38,19 @@ const game = {
     perkChoiceActive: false,
     perkOptions: [],
     perkHistory: [],
+    achievements: [],
+    _achievementDefinitions: [
+        { id: 'first_blood', name: 'First Blood', desc: 'Kill your first enemy', icon: '🗡️' },
+        { id: 'tower_killer', name: 'Tower Killer', desc: 'Kill 100 enemies', icon: '🏰' },
+        { id: 'slaughter', name: 'Slaughter', desc: 'Kill 500 enemies', icon: '💀' },
+        { id: 'wave_5', name: 'Rising Tide', desc: 'Complete wave 5', icon: '🌊' },
+        { id: 'wave_10', name: 'Unstoppable', desc: 'Complete wave 10', icon: '🚀' },
+        { id: 'wave_25', name: 'Legend', desc: 'Complete wave 25', icon: '👑' },
+        { id: 'perfect_wave', name: 'Perfect Defense', desc: 'Complete a wave with no lives lost', icon: '🛡️' },
+        { id: 'banker', name: 'Banker', desc: 'Accumulate 1000 gold', icon: '💰' },
+        { id: 'rich', name: 'Tycoon', desc: 'Accumulate 5000 gold', icon: '🤑' },
+        { id: 'crit_master', name: 'Critical Master', desc: 'Land 50 critical hits', icon: '⚡' }
+    ],
     perkState: {
         globalDamageMult: 1,
         blasterDamageMult: 1,
@@ -238,6 +251,11 @@ const game = {
         this.perkChoiceActive = false;
         this.perkOptions = [];
         this.perkHistory = [];
+        this.achievements = [];
+        this._killCount = 0;
+        this._critCount = 0;
+        this._killStreak = 0;
+        this._livesAtWaveStart = 20;
         this.perkState = {
             globalDamageMult: 1,
             blasterDamageMult: 1,
@@ -378,6 +396,52 @@ const game = {
         this.perkOptions = [];
         UI.updateActivePerks(this.perkState, this.perkHistory);
         try { this.__doAdvanceLevel(); } catch(e) { console.error('Level advance error:', e); }
+    },
+
+    _checkAchievement(id) {
+        if (this.achievements.includes(id)) return false;
+        const ach = this._achievementDefinitions.find(a => a.id === id);
+        if (!ach) return false;
+        this.achievements.push(id);
+        // Show achievement popup
+        this._floatingTexts.push({
+            text: `${ach.icon} ${ach.name}!`,
+            x: this.canvas.width / 2,
+            y: this.canvas.height / 2 - 60,
+            life: 2.5,
+            maxLife: 2.5,
+            color: '#ffd700'
+        });
+        console.log('Achievement unlocked:', ach.name);
+        return true;
+    },
+
+    _onEnemyKilled(e) {
+        // Track kills for achievements
+        this._killCount = (this._killCount || 0) + 1;
+        if (this._killCount === 1) this._checkAchievement('first_blood');
+        if (this._killCount >= 100) this._checkAchievement('tower_killer');
+        if (this._killCount >= 500) this._checkAchievement('slaughter');
+        // Track crits
+        if (e.critHit) {
+            this._critCount = (this._critCount || 0) + 1;
+            if (this._critCount >= 50) this._checkAchievement('crit_master');
+        }
+    },
+
+    _onWaveComplete(waveNum) {
+        if (waveNum >= 5) this._checkAchievement('wave_5');
+        if (waveNum >= 10) this._checkAchievement('wave_10');
+        if (waveNum >= 25) this._checkAchievement('wave_25');
+        // Perfect wave (no lives lost this wave)
+        const livesBefore = this._livesAtWaveStart || this.lives;
+        if (this.lives >= livesBefore) this._checkAchievement('perfect_wave');
+        this._livesAtWaveStart = this.lives;
+    },
+
+    _onGoldChange() {
+        if (this.gold >= 1000) this._checkAchievement('banker');
+        if (this.gold >= 5000) this._checkAchievement('rich');
     },
 
     applyPerkModifiersToTower(tower) {
@@ -924,6 +988,9 @@ const game = {
                     Audio.bossKill();
                     this.showBossBanner('BOSS DESTROYED');
                 }
+                // Track achievements
+                this._onEnemyKilled(e);
+                this._onGoldChange();
                 this.updateUI();
             }
         }
@@ -997,6 +1064,9 @@ const game = {
             WaveManager.earlyAdvanced = false;
             WaveManager.waveActive = false;
             this.wavesStacked = 0;
+            
+            // Check wave achievements
+            this._onWaveComplete(WaveManager.currentWave);
 
             // Level progression: after all waves for this level, advance
             if (WaveManager.currentWave >= WaveManager.waves.length && !WaveManager.endless) {
