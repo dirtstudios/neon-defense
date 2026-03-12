@@ -236,6 +236,19 @@ const SentinelManager = {
             ctx.lineWidth = 1;
             ctx.strokeRect(s.x - 3.5, s.y - 1, 7, 7);
 
+            // HP bar for damaged sentinels
+            if (s.hp < s.maxHp) {
+                const hpPct = s.hp / s.maxHp;
+                const barW = 12;
+                const barH = 2;
+                const barX = s.x - barW / 2;
+                const barY = s.y - 12;
+                ctx.fillStyle = 'rgba(0,0,0,0.6)';
+                ctx.fillRect(barX, barY, barW, barH);
+                ctx.fillStyle = hpPct > 0.5 ? '#00ff66' : hpPct > 0.25 ? '#ffaa00' : '#ff4444';
+                ctx.fillRect(barX, barY, barW * hpPct, barH);
+            }
+
             // helmet
             ctx.fillStyle = '#25323b';
             ctx.fillRect(s.x - 3, s.y - 6, 6, 4);
