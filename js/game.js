@@ -322,18 +322,18 @@ const game = {
 
     _allPerks() {
         return [
-            { id: 'kinetic_boost', name: 'Kinetic Overdrive', desc: '+20% Blaster and Boat damage', apply: () => { this.perkState.blasterDamageMult *= 1.2; this.perkState.boatDamageMult *= 1.2; } },
-            { id: 'sniper_focus', name: 'Sniper Focus', desc: '+35% Sniper damage', apply: () => { this.perkState.sniperDamageMult *= 1.35; } },
-            { id: 'reactor_core', name: 'Reactor Core', desc: '+25% AOE damage', apply: () => { this.perkState.aoeDamageMult *= 1.25; } },
-            { id: 'sentinel_drill', name: 'Sentinel Drill', desc: '+1 sentinel per barracks', apply: () => { this.perkState.sentinelBonusCount += 1; } },
-            { id: 'reinforced_armor', name: 'Reinforced Armor', desc: '+25% sentinel HP', apply: () => { this.perkState.sentinelHpMult *= 1.25; } },
-            { id: 'trap_engineering', name: 'Trap Engineering', desc: '+25% trap damage', apply: () => { this.perkState.trapDamageMult *= 1.25; } },
-            { id: 'war_chest', name: 'War Chest', desc: '+75 gold now and +25 each level', apply: () => { this.gold += 75; this.perkState.economyBonusGold += 25; } },
-            { id: 'blood_sport', name: 'Blood Sport', desc: '+30% early-wave bonus gold', apply: () => { this.perkState.waveBonusMult *= 1.3; } },
-            { id: 'field_repairs', name: 'Field Repairs', desc: '+3 lives after each level', apply: () => { this.perkState.healAfterLevel += 3; } },
-            { id: 'scavenger', name: 'Scavenger', desc: '+25% sell value', apply: () => { this.perkState.sellValueMult *= 1.25; } },
-            { id: 'quick_reflexes', name: 'Quick Reflexes', desc: '+15% attack speed all towers', apply: () => { this.perkState.fireRateMult *= 1.15; } },
-            { id: 'glass_cannon', name: 'Glass Cannon', desc: '+40% all damage, -10 starting lives', apply: () => { this.perkState.damageMultGlobal *= 1.4; this.lives = Math.max(1, this.lives - 10); } }
+            { id: 'kinetic_boost', name: 'Kinetic Overdrive', desc: '+20% Blaster and Boat damage', tag: 'DAMAGE', color: '#00f3ff', apply: () => { this.perkState.blasterDamageMult *= 1.2; this.perkState.boatDamageMult *= 1.2; } },
+            { id: 'sniper_focus', name: 'Sniper Focus', desc: '+35% Sniper damage', tag: 'DAMAGE', color: '#aa88ff', apply: () => { this.perkState.sniperDamageMult *= 1.35; } },
+            { id: 'reactor_core', name: 'Reactor Core', desc: '+25% AOE damage', tag: 'DAMAGE', color: '#ff9a3d', apply: () => { this.perkState.aoeDamageMult *= 1.25; } },
+            { id: 'sentinel_drill', name: 'Sentinel Drill', desc: '+1 sentinel per barracks', tag: 'SUMMON', color: '#44ffbb', apply: () => { this.perkState.sentinelBonusCount += 1; } },
+            { id: 'reinforced_armor', name: 'Reinforced Armor', desc: '+25% sentinel HP', tag: 'DEFENSE', color: '#7dd3fc', apply: () => { this.perkState.sentinelHpMult *= 1.25; } },
+            { id: 'trap_engineering', name: 'Trap Engineering', desc: '+25% trap damage', tag: 'UTILITY', color: '#ffd166', apply: () => { this.perkState.trapDamageMult *= 1.25; } },
+            { id: 'war_chest', name: 'War Chest', desc: '+75 gold now and +25 each level', tag: 'ECON', color: '#facc15', apply: () => { this.gold += 75; this.perkState.economyBonusGold += 25; } },
+            { id: 'blood_sport', name: 'Blood Sport', desc: '+30% early-wave bonus gold', tag: 'ECON', color: '#fb7185', apply: () => { this.perkState.waveBonusMult *= 1.3; } },
+            { id: 'field_repairs', name: 'Field Repairs', desc: '+3 lives after each level', tag: 'DEFENSE', color: '#4ade80', apply: () => { this.perkState.healAfterLevel += 3; } },
+            { id: 'scavenger', name: 'Scavenger', desc: '+25% sell value', tag: 'ECON', color: '#f59e0b', apply: () => { this.perkState.sellValueMult *= 1.25; } },
+            { id: 'quick_reflexes', name: 'Quick Reflexes', desc: '+15% attack speed all towers', tag: 'DAMAGE', color: '#60a5fa', apply: () => { this.perkState.fireRateMult *= 1.15; } },
+            { id: 'glass_cannon', name: 'Glass Cannon', desc: '+40% all damage, -10 starting lives', tag: 'RISK', color: '#ff6677', apply: () => { this.perkState.globalDamageMult *= 1.4; this.lives = Math.max(1, this.lives - 10); } }
         ];
     },
 
@@ -1315,19 +1315,31 @@ const game = {
                 const perk = this.perkOptions[i];
                 const x = cards[i];
                 const y = 210;
+                const perkColor = perk.color || '#00f3ff';
+                const perkTag = perk.tag || 'BOOST';
+                ctx.shadowColor = perkColor;
+                ctx.shadowBlur = 12;
                 ctx.fillStyle = 'rgba(10, 16, 30, 0.96)';
-                ctx.strokeStyle = 'rgba(0, 243, 255, 0.45)';
+                ctx.strokeStyle = `${perkColor}88`;
                 ctx.lineWidth = 2;
                 ctx.fillRect(x, y, 180, 150);
                 ctx.strokeRect(x, y, 180, 150);
-                ctx.fillStyle = '#00f3ff';
+                ctx.shadowBlur = 0;
+
+                ctx.fillStyle = `${perkColor}22`;
+                ctx.fillRect(x + 1, y + 1, 178, 24);
+                ctx.fillStyle = perkColor;
+                ctx.font = 'bold 10px monospace';
+                ctx.fillText(perkTag, x + 90, y + 17);
+
+                ctx.fillStyle = perkColor;
                 ctx.font = 'bold 14px monospace';
-                ctx.fillText(`${i + 1}. ${perk.name}`, x + 90, y + 34);
+                ctx.fillText(`${i + 1}. ${perk.name}`, x + 90, y + 46);
                 ctx.fillStyle = '#d9e6f2';
                 ctx.font = '12px monospace';
                 const words = perk.desc.split(' ');
                 let line = '';
-                let cy = y + 72;
+                let cy = y + 82;
                 for (const word of words) {
                     const test = line ? `${line} ${word}` : word;
                     if (ctx.measureText(test).width > 150) {
