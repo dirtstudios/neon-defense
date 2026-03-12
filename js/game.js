@@ -21,6 +21,7 @@ const game = {
     mouseY: 0,
     traps: [],
     _floatingTexts: [],
+    _lightningBolts: [],
     level: 1,
     
     // FPS tracking and targeting
@@ -240,6 +241,7 @@ const game = {
         this.enemies = [];
         this.traps = [];
         this._floatingTexts = [];
+        this._lightningBolts = [];
         this.selectedTower = null;
         this.selectedPlacedTower = null;
         this.shakeTimer = 0;
@@ -485,6 +487,7 @@ const game = {
         this.traps = [];
         this.enemies = [];
         this._floatingTexts = [];
+        this._lightningBolts = [];
         this.selectedTower = null;
         this.selectedPlacedTower = null;
         ParticlePool.active = [];
@@ -1028,6 +1031,13 @@ const game = {
             if (ft.life <= 0) this._floatingTexts.splice(i, 1);
         }
 
+        // Update lightning bolts
+        for (let i = this._lightningBolts.length - 1; i >= 0; i--) {
+            const lb = this._lightningBolts[i];
+            lb.life -= dt;
+            if (lb.life <= 0) this._lightningBolts.splice(i, 1);
+        }
+
         if (this.bossBannerTimer > 0) this.bossBannerTimer -= dt;
 
         // Screen shake
@@ -1266,6 +1276,30 @@ const game = {
             ctx.shadowBlur = 0;
             ctx.globalAlpha = 1;
             ctx.textAlign = 'start';
+        }
+
+        // Lightning bolts (Chain Lightning perk)
+        for (const lb of this._lightningBolts) {
+            const alpha = lb.life / lb.maxLife;
+            ctx.globalAlpha = alpha;
+            ctx.strokeStyle = lb.color;
+            ctx.lineWidth = 3;
+            ctx.shadowColor = lb.color;
+            ctx.shadowBlur = 15;
+            ctx.beginPath();
+            ctx.moveTo(lb.sx, lb.sy);
+            // Jagged lightning path
+            const segments = 5;
+            const dx = (lb.tx - lb.sx) / segments;
+            const dy = (lb.ty - lb.sy) / segments;
+            for (let i = 1; i < segments; i++) {
+                const jag = (Math.random() - 0.5) * 20;
+                ctx.lineTo(lb.sx + dx * i + jag, lb.sy + dy * i + jag);
+            }
+            ctx.lineTo(lb.tx, lb.ty);
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+            ctx.globalAlpha = 1;
         }
 
         // Tower info tooltip (when a placed tower is selected)

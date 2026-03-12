@@ -47,6 +47,57 @@ const ProjectilePool = {
         });
     },
 
+    // Chain Lightning - chain damage to nearby enemies
+    _chainLightning(sourceEnemy, originalDamage, enemies, color) {
+        if (!game || !game.perkState || !game.perkState.chainLightning) return;
+        
+        const chainRange = 80;
+        const chainCount = 2;
+        const chainDamage = originalDamage * 0.5;
+        
+        // Find nearby enemies not already hit
+        const nearby = enemies
+            .filter(e => e.alive && e !== sourceEnemy)
+            .map(e => ({
+                enemy: e,
+                dist: Utils.dist(sourceEnemy.x, sourceEnemy.y, e.x, e.y)
+            }))
+            .filter(item => item.dist <= chainRange)
+            .sort((a, b) => a.dist - b.dist)
+            .slice(0, chainCount);
+        
+        for (const item of nearby) {
+            const target = item.enemy;
+            // Apply chain damage (50% of original AOE damage)
+            target.takeDamage(chainDamage, 'chain');
+            
+            // Draw lightning bolt
+            if (game && game._lightningBolts) {
+                game._lightningBolts.push({
+                    sx: sourceEnemy.x,
+                    sy: sourceEnemy.y,
+                    tx: target.x,
+                    ty: target.y,
+                    life: 0.2,
+                    maxLife: 0.2,
+                    color: '#a855f7'
+                });
+            }
+            
+            // Floating text for chain hit
+            if (game && game._floatingTexts) {
+                game._floatingTexts.push({
+                    text: `${Math.round(chainDamage)} ⚡`,
+                    x: target.x,
+                    y: target.y - 8,
+                    life: 0.4,
+                    maxLife: 0.4,
+                    color: '#a855f7'
+                });
+            }
+        }
+    },
+
     update(dt, enemies) {
         // Update normal projectiles
         for (let i = this.active.length - 1; i >= 0; i--) {
@@ -126,6 +177,8 @@ const ProjectilePool = {
                     }
                     r.hit.add(e);
                     ParticlePool.impact(e.x, e.y, r.color, Math.atan2(e.y - r.y, e.x - r.x));
+                    // Chain Lightning perk: chain to nearby enemies
+                    ProjectilePool._chainLightning(e, r.damage, enemies, r.color);
                     if (dealt >= 8 && game && game._floatingTexts) {
                         // Color-code AOE damage numbers
                         let dmgColor = '#ff8800'; // AOE is always orange-ish
