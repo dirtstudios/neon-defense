@@ -6,32 +6,51 @@
     <title>Neon Defense</title>
     <link rel="stylesheet" href="css/style.css?v=1771453500">
     <style>
-        /* Mobile responsive scaling */
         @media (max-width: 820px) {
             body {
                 align-items: flex-start !important;
-                overflow: auto !important;
+                justify-content: flex-start !important;
+                overflow: hidden !important;
             }
             #game-container {
-                transform-origin: top left;
+                transform-origin: top center;
                 position: absolute;
                 left: 50%;
+                top: 0;
             }
         }
     </style>
     <script>
         function scaleGame() {
             var container = document.getElementById('game-container');
-            if (!container || window.innerWidth > 820) {
-                if (container) { container.style.transform = ''; container.style.marginLeft = ''; }
-                return;
-            }
-            var scale = Math.min(window.innerWidth / 800, window.innerHeight / 700);
-            container.style.transform = 'scale(' + scale + ') translateX(-50%)';
-            container.style.marginLeft = '0';
+            if (!container) return;
+
+            // Reset before measuring
+            container.style.transform = '';
+            container.style.marginLeft = '';
+            container.style.top = '';
+            container.style.left = '';
+            container.style.position = '';
+
+            if (window.innerWidth > 820) return;
+
+            // Let mobile CSS reflow first, then measure actual rendered size
+            requestAnimationFrame(function () {
+                var rect = container.getBoundingClientRect();
+                var width = rect.width || container.offsetWidth || 800;
+                var height = rect.height || container.offsetHeight || 700;
+                var scale = Math.min(window.innerWidth / width, window.innerHeight / height, 1);
+
+                container.style.position = 'absolute';
+                container.style.left = '50%';
+                container.style.top = '0px';
+                container.style.transformOrigin = 'top center';
+                container.style.transform = 'translateX(-50%) scale(' + scale + ')';
+            });
         }
         window.addEventListener('load', scaleGame);
         window.addEventListener('resize', scaleGame);
+        window.addEventListener('orientationchange', scaleGame);
     </script>
 </head>
 <body>
