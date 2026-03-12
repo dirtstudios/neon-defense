@@ -145,7 +145,7 @@ function createTower(type, x, y) {
                 this.recoil = this.type === 'sniper' ? 1 : (this.type === 'aoe' ? 0.8 : 0.55);
                 this.muzzleFlash = 1;
                 this.cooldown = 1 / this.fireRate;
-                Audio.shoot();
+                Audio.shoot(this.type);
             }
         },
 

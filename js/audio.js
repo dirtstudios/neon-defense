@@ -18,7 +18,35 @@ const Audio = {
         osc.stop(this.ctx.currentTime + duration);
     },
     place() { this._play(600, 0.08, 'sine', 0.08); },
-    shoot() { this._play(800, 0.04, 'square', 0.03); },
+    
+    // Tower-specific shoot sounds
+    shoot(type) {
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        
+        // Different sound per tower type
+        const sounds = {
+            blaster: () => { // Quick pew
+                this._play(900, 0.04, 'square', 0.025);
+            },
+            sniper: () => { // Deep boom
+                this._play(180, 0.15, 'sine', 0.06);
+                this._play(80, 0.2, 'sine', 0.04);
+            },
+            aoe: () => { // Whoosh explosion
+                this._play(400, 0.08, 'sawtooth', 0.03);
+                this._play(200, 0.12, 'sine', 0.04);
+            },
+            boat: () => { // Water splash
+                this._play(600, 0.06, 'sine', 0.04);
+                this._play(300, 0.08, 'sine', 0.02);
+            }
+        };
+        
+        const fn = sounds[type] || sounds.blaster;
+        fn();
+    },
+    
     kill() { this._play(1200, 0.1, 'sine', 0.06); this._play(900, 0.15, 'sine', 0.04); },
     bossAlert() {
         this._play(180, 0.18, 'sawtooth', 0.08);
@@ -30,7 +58,12 @@ const Audio = {
         setTimeout(() => this._play(400, 0.2, 'sine', 0.08), 100);
         setTimeout(() => this._play(800, 0.15, 'sine', 0.06), 200);
     },
-    waveStart() { this._play(300, 0.15, 'sine', 0.06); this._play(450, 0.15, 'sine', 0.05); },
+    waveStart() { 
+        // Dramatic wave stinger
+        this._play(200, 0.1, 'sine', 0.06);
+        this._play(350, 0.1, 'sine', 0.05);
+        this._play(550, 0.15, 'sine', 0.04);
+    },
     sell() { this._play(400, 0.1, 'triangle', 0.06); },
     noMoney() { this._play(200, 0.15, 'square', 0.05); },
     earlyWave() { this._play(800, 0.1, 'sine', 0.07); this._play(1000, 0.1, 'sine', 0.05); },
