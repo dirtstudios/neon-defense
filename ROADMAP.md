@@ -47,7 +47,7 @@
 - [x] Better upgrade panel presentation (glow added)
 
 ### Sprint 7: Audio / launch polish
-- [ ] Distinct tower sounds
+- [x] Distinct tower sounds (blaster/sniper/aoe/boat each unique)
 - [ ] Better wave stingers
 - [ ] Trailer-worthy presentation moments
 - [ ] Itch.io packaging
