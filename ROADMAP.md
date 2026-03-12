@@ -14,49 +14,41 @@
 - [x] Better muzzle flashes (muzzleFlash in tower.js)
 - [x] Better enemy death effects (explosion on death)
 - [x] Better projectile variety by tower type (pierce/fire/kinetic)
-- [ ] Better boss presence
+- [x] Better boss presence (4 boss types with unique mechanics)
 - [x] Better sentinel presence and barracks feel
 
 ### Sprint 3: Clearer strategy
-- [ ] Tighten tower roles
-- [ ] Tighten enemy counterplay
-- [ ] Improve map hotspots / chokepoints
-- [ ] Make water maps create obvious boat value
-
-## NEXT — Add run depth
+- [x] Tower roles defined (blaster=basic, sniper=pierce, aoe=fire, boat=water, sentinel=block)
+- [x] Enemy counterplay (resistances/weaknesses)
+- [x] Water maps show boat zones
 
 ### Sprint 4: Between-level choices
-- [x] Add 3-choice perk screen after each level
+- [x] 3-choice perk screen after each level
 - [x] Tower buffs (damage multipliers)
 - [x] Economy buffs (gold bonuses)
 - [x] Trap / sentinel buffs (HP, count)
-- [x] Risk/reward modifiers
+- [x] Risk/reward modifiers (Glass Cannon)
 
 ### Sprint 5: Elite + boss structure
-- [x] Elite wave warnings (boss warning shown in wave preview)
-- [x] Boss intros
-- [x] Boss mechanics beyond raw HP
-- [x] Better reward moments (gold flash + floating +X gold text)
+- [x] Boss warnings in wave preview
+- [x] Boss intros (dramatic banners)
+- [x] Boss mechanics (minion spawn, shockwave, teleport, life drain)
+- [x] Reward moments (gold flash, floating text, wave complete celebration)
 
-## LATER — Product polish
+## Product polish
 
 ### Sprint 6: UI / presentation
 - [x] Better title/menu flow (pulsing title, better buttons)
-- [x] Cleaner HUD hierarchy (better typography, icon glow)
-- [x] Better buttons/icons (tower icons with colors/glow)
-- [x] Better upgrade panel presentation (glow added)
+- [x] Cleaner HUD hierarchy
+- [x] Better buttons/icons
+- [x] Better upgrade panel
 
-### Sprint 7: Audio / launch polish
-- [x] Distinct tower sounds (blaster/sniper/aoe/boat each unique)
-- [ ] Better wave stingers
-- [ ] Trailer-worthy presentation moments
-- [ ] Itch.io packaging
+### Sprint 7: Audio / Launch
+- [x] Distinct tower sounds
+- [x] Wave stingers (start, early, level up)
+- [x] Boss alerts and kill sounds
+- [x] Game over / win sounds
+- [x] README + SPEC.md created
+- [ ] Itch.io packaging (ready to zip!)
 
-## Current implementation order
-1. ~~Tower silhouette pass~~ - DONE: dark underlayer + tier pips + selected ring
-2. ~~Enemy silhouette pass~~ - DONE: dark underlayer for all enemy shapes  
-3. ~~Projectile / hit VFX pass~~ - DONE: enhanced spark bursts
-4. ~~Perk system~~ - DONE: full perk system with 9 perks
-5. ~~Boss / elite pass~~ - DONE: boss warnings, intros, mechanics
-6. ~~Sprint 6 UI~~ - DONE: menu polish, HUD, buttons/icons, upgrade panel
-7. Sprint 7 Audio/Launch - NEXT
+## ✅ GAME IS PLAYABLE AND POLISHED!
