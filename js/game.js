@@ -38,7 +38,7 @@ const game = {
     perkChoiceActive: false,
     perkOptions: [],
     perkHistory: [],
-    achievements: [],
+    achievements: JSON.parse(localStorage.getItem('neonDefenseAchievements') || '[]'),
     _achievementDefinitions: [
         { id: 'first_blood', name: 'First Blood', desc: 'Kill your first enemy', icon: '🗡️' },
         { id: 'tower_killer', name: 'Tower Killer', desc: 'Kill 100 enemies', icon: '🏰' },
@@ -251,7 +251,7 @@ const game = {
         this.perkChoiceActive = false;
         this.perkOptions = [];
         this.perkHistory = [];
-        this.achievements = [];
+        // Keep achievements across games (load from localStorage in init)
         this._killCount = 0;
         this._critCount = 0;
         this._killStreak = 0;
@@ -403,6 +403,8 @@ const game = {
         const ach = this._achievementDefinitions.find(a => a.id === id);
         if (!ach) return false;
         this.achievements.push(id);
+        // Save to localStorage
+        try { localStorage.setItem('neonDefenseAchievements', JSON.stringify(this.achievements)); } catch(e) {}
         // Show achievement popup
         this._floatingTexts.push({
             text: `${ach.icon} ${ach.name}!`,
