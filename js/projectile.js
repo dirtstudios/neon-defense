@@ -62,17 +62,23 @@ const ProjectilePool = {
             const dist = Utils.dist(p.x, p.y, p.tx, p.ty);
             if (dist < 10) {
                 if (p.target && p.target.alive) {
-                    const bonusMult = p.target.slowed ? 1.5 : 1;
+                    let bonusMult = p.target.slowed ? 1.5 : 1;
+                    // Critical Strike perk: 10% chance for 2x damage
+                    let isCrit = false;
+                    if (game && game.perkState && game.perkState.critChance && Math.random() < game.perkState.critChance) {
+                        bonusMult *= 2;
+                        isCrit = true;
+                    }
                     const dealt = p.target.takeDamage(p.damage * bonusMult, p.damageType);
                     ParticlePool.impact(p.x, p.y, p.color, angle);
                     if (dealt >= 12 && game && game._floatingTexts) {
                         game._floatingTexts.push({
-                            text: `${dealt}`,
+                            text: isCrit ? `${dealt} CRIT!` : `${dealt}`,
                             x: p.x,
                             y: p.y - 8,
                             life: 0.35,
                             maxLife: 0.35,
-                            color: '#ffffff'
+                            color: isCrit ? '#f43f5e' : '#ffffff'
                         });
                     }
                 }

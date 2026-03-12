@@ -51,7 +51,12 @@ const game = {
         waveBonusMult: 1,
         healAfterLevel: 0,
         sellValueMult: 1,
-        fireRateMult: 1
+        fireRateMult: 1,
+        // New perk states
+        goldBonusChance: 0,
+        lifeOnKill: false,
+        chainLightning: false,
+        critChance: 0
     },
     
     getCanvasPoint(e) {
@@ -246,8 +251,13 @@ const game = {
             waveBonusMult: 1,
             healAfterLevel: 0,
             sellValueMult: 1,
-            fireRateMult: 1
+            fireRateMult: 1,
+            goldBonusChance: 0,
+            lifeOnKill: false,
+            chainLightning: false,
+            critChance: 0
         };
+        this._killStreak = 0;
         ParticlePool.active = [];
         ProjectilePool.active = [];
         ProjectilePool.rings = [];
@@ -337,7 +347,12 @@ const game = {
             { id: 'field_repairs', name: 'Field Repairs', desc: '+3 lives after each level', tag: 'DEFENSE', color: '#4ade80', apply: () => { this.perkState.healAfterLevel += 3; } },
             { id: 'scavenger', name: 'Scavenger', desc: '+25% sell value', tag: 'ECON', color: '#f59e0b', apply: () => { this.perkState.sellValueMult *= 1.25; } },
             { id: 'quick_reflexes', name: 'Quick Reflexes', desc: '+15% attack speed all towers', tag: 'DAMAGE', color: '#60a5fa', apply: () => { this.perkState.fireRateMult *= 1.15; } },
-            { id: 'glass_cannon', name: 'Glass Cannon', desc: '+40% all damage, -10 starting lives', tag: 'RISK', color: '#ff6677', apply: () => { this.perkState.globalDamageMult *= 1.4; this.lives = Math.max(1, this.lives - 10); } }
+            { id: 'glass_cannon', name: 'Glass Cannon', desc: '+40% all damage, -10 starting lives', tag: 'RISK', color: '#ff6677', apply: () => { this.perkState.globalDamageMult *= 1.4; this.lives = Math.max(1, this.lives - 10); } },
+            // New perks for replayability
+            { id: 'last_stand', name: 'Last Stand', desc: '+1 life for every 5 kills', tag: 'DEFENSE', color: '#22d3d3', apply: () => { this.perkState.lifeOnKill = true; } },
+            { id: 'golden_touch', name: 'Golden Touch', desc: '15% chance for 2x gold on kills', tag: 'ECON', color: '#ffd700', apply: () => { this.perkState.goldBonusChance = 0.15; } },
+            { id: 'chain_lightning', name: 'Chain Lightning', desc: 'AOE towers chain to nearby enemies', tag: 'DAMAGE', color: '#a855f7', apply: () => { this.perkState.chainLightning = true; } },
+            { id: 'critical_strike', name: 'Critical Strike', desc: '10% chance for 2x damage', tag: 'DAMAGE', color: '#f43f5e', apply: () => { this.perkState.critChance = 0.10; } }
         ];
     },
 
@@ -848,14 +863,44 @@ const game = {
                 UI.updateLives(this.lives);
             }
             if (!e.alive && !e.scored && !e.reachedEnd) {
-                this.gold += e.gold;
-                this.score += e.gold;
+                // Golden Touch perk: 15% chance for 2x gold
+                let goldEarned = e.gold;
+                if (this.perkState.goldBonusChance && Math.random() < this.perkState.goldBonusChance) {
+                    goldEarned *= 2;
+                    this._floatingTexts.push({
+                        text: `+${goldEarned}💰 GOLDEN!`,
+                        x: e.x,
+                        y: e.y - 44,
+                        life: 1.0,
+                        maxLife: 1.0,
+                        color: '#ffd700'
+                    });
+                }
+                this.gold += goldEarned;
+                this.score += goldEarned;
+                // Last Stand perk: +1 life every 5 kills
+                if (this.perkState.lifeOnKill) {
+                    this._killStreak = (this._killStreak || 0) + 1;
+                    if (this._killStreak >= 5) {
+                        this.lives += 1;
+                        this._killStreak = 0;
+                        UI.updateLives(this.lives);
+                        this._floatingTexts.push({
+                            text: `+1 LIFE!`,
+                            x: e.x,
+                            y: e.y - 66,
+                            life: 1.0,
+                            maxLife: 1.0,
+                            color: '#22d3d3'
+                        });
+                    }
+                }
                 e.scored = true;
                 Audio.kill();
                 ParticlePool.explosion(e.x, e.y, e.color, e.type === 'boss');
                 // Gold earned floating text
                 this._floatingTexts.push({
-                    text: `+${e.gold}💰`,
+                    text: `+${goldEarned}💰`,
                     x: e.x,
                     y: e.y - 22,
                     life: 0.7,
