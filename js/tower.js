@@ -422,20 +422,14 @@ function createTower(type, x, y) {
                 if (this.range > 0) {
                     ctx.beginPath();
                     ctx.arc(this.x, this.y, this.range, 0, Math.PI * 2);
-                    ctx.strokeStyle = 'rgba(0, 0, 0, 0.95)';
-                    ctx.lineWidth = 6;
-                    ctx.stroke();
-
-                    ctx.beginPath();
-                    ctx.arc(this.x, this.y, this.range, 0, Math.PI * 2);
-                    ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+                    ctx.strokeStyle = 'rgba(0, 0, 0, 0.72)';
                     ctx.lineWidth = 3;
                     ctx.stroke();
 
                     ctx.beginPath();
                     ctx.arc(this.x, this.y, this.range, 0, Math.PI * 2);
-                    ctx.strokeStyle = `${this.color}dd`;
-                    ctx.lineWidth = 2;
+                    ctx.strokeStyle = `${this.color}aa`;
+                    ctx.lineWidth = 1.5;
                     ctx.stroke();
                 }
             }

@@ -242,7 +242,9 @@ const game = {
             sentinelHpMult: 1,
             economyBonusGold: 0,
             waveBonusMult: 1,
-            healAfterLevel: 0
+            healAfterLevel: 0,
+            sellValueMult: 1,
+            fireRateMult: 1
         };
         ParticlePool.active = [];
         ProjectilePool.active = [];
