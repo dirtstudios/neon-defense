@@ -43,7 +43,7 @@
 ### Sprint 6: UI / presentation
 - [x] Better title/menu flow (pulsing title, better buttons)
 - [x] Cleaner HUD hierarchy (better typography, icon glow)
-- [ ] Better buttons/icons
+- [x] Better buttons/icons (tower icons with colors/glow)
 - [x] Better upgrade panel presentation (glow added)
 
 ### Sprint 7: Audio / launch polish
@@ -58,3 +58,5 @@
 3. ~~Projectile / hit VFX pass~~ - DONE: enhanced spark bursts
 4. ~~Perk system~~ - DONE: full perk system with 9 perks
 5. ~~Boss / elite pass~~ - DONE: boss warnings, intros, mechanics
+6. ~~Sprint 6 UI~~ - DONE: menu polish, HUD, buttons/icons, upgrade panel
+7. Sprint 7 Audio/Launch - NEXT
