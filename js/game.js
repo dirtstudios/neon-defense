@@ -1163,16 +1163,35 @@ const game = {
             const lines = upgradeText ? 5 : 4;
             const boxH = lines * lineH + 12;
             
-            // Position tooltip above tower, within bounds
-            let tx = t.x;
-            let ty = t.y - 40;
-            
-            // Clamp x position to keep box on screen
-            tx = Math.max(boxW / 2 + 10, Math.min(800 - boxW / 2 - 10, tx));
-            // If too close to top, show below tower
-            if (ty - boxH < 10) ty = t.y + 30;
-            const bx = tx - boxW / 2;
-            const by = ty - boxH;
+            // Position tooltip intelligently so it never hides the selected tower
+            const margin = 10;
+            const towerPad = 28;
+            let bx = t.x - boxW / 2;
+            let by = t.y - boxH - towerPad;
+
+            // Prefer above; if not enough room, try below
+            if (by < margin) {
+                by = t.y + towerPad;
+            }
+
+            // If still overlapping the tower vertically, try the side with more space
+            const overlapsTower = !(by + boxH < t.y - 18 || by > t.y + 18 || bx + boxW < t.x - 18 || bx > t.x + 18);
+            if (overlapsTower) {
+                const roomRight = 800 - (t.x + towerPad);
+                const roomLeft = t.x - towerPad;
+                if (roomRight >= boxW + margin) {
+                    bx = t.x + towerPad;
+                    by = Math.max(margin, Math.min(600 - boxH - margin, t.y - boxH / 2));
+                } else if (roomLeft >= boxW + margin) {
+                    bx = t.x - towerPad - boxW;
+                    by = Math.max(margin, Math.min(600 - boxH - margin, t.y - boxH / 2));
+                }
+            }
+
+            // Final clamp to screen
+            bx = Math.max(margin, Math.min(800 - boxW - margin, bx));
+            by = Math.max(margin, Math.min(600 - boxH - margin, by));
+            const tx = bx + boxW / 2;
             
             // Background with rounded feel + glow
             ctx.shadowColor = t.color;
