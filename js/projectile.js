@@ -71,14 +71,27 @@ const ProjectilePool = {
                     }
                     const dealt = p.target.takeDamage(p.damage * bonusMult, p.damageType);
                     ParticlePool.impact(p.x, p.y, p.color, angle);
-                    if (dealt >= 12 && game && game._floatingTexts) {
+                    if (dealt >= 8 && game && game._floatingTexts) {
+                        // Color-code damage numbers: weak=yellow, normal=white, heavy=orange, crit=red
+                        let dmgColor = '#ffffff';
+                        let dmgText = `${dealt}`;
+                        if (isCrit) {
+                            dmgColor = '#f43f5e';
+                            dmgText = `${dealt} CRIT!`;
+                        } else if (dealt >= 40) {
+                            dmgColor = '#ff8800';  // heavy - orange
+                        } else if (dealt >= 20) {
+                            dmgColor = '#ffff88'; // medium - light yellow
+                        } else if (dealt < 12) {
+                            dmgColor = '#aaaaaa'; // weak - gray
+                        }
                         game._floatingTexts.push({
-                            text: isCrit ? `${dealt} CRIT!` : `${dealt}`,
+                            text: dmgText,
                             x: p.x,
                             y: p.y - 8,
                             life: 0.35,
                             maxLife: 0.35,
-                            color: isCrit ? '#f43f5e' : '#ffffff'
+                            color: dmgColor
                         });
                     }
                 }
@@ -109,14 +122,18 @@ const ProjectilePool = {
                     }
                     r.hit.add(e);
                     ParticlePool.impact(e.x, e.y, r.color, Math.atan2(e.y - r.y, e.x - r.x));
-                    if (dealt >= 12 && game && game._floatingTexts) {
+                    if (dealt >= 8 && game && game._floatingTexts) {
+                        // Color-code AOE damage numbers
+                        let dmgColor = '#ff8800'; // AOE is always orange-ish
+                        if (dealt >= 40) dmgColor = '#ff4400';
+                        else if (dealt >= 25) dmgColor = '#ff6622';
                         game._floatingTexts.push({
                             text: `${dealt}`,
                             x: e.x,
                             y: e.y - 8,
                             life: 0.35,
                             maxLife: 0.35,
-                            color: '#ffffff'
+                            color: dmgColor
                         });
                     }
                 }
