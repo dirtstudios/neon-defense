@@ -13,6 +13,7 @@ const game = {
     enemies: [],
     shakeTimer: 0,
     goldFlashTimer: 0,
+    waveCompleteTimer: 0,
     shakeIntensity: 0,
     lastTime: 0,
     mouseX: 0,
@@ -920,6 +921,23 @@ const game = {
             const bonus = 50 + WaveManager.currentWave * 10;
             this.gold += bonus;
             this.score += bonus;
+            this.goldFlashTimer = 0.5;
+            
+            // Wave complete celebration
+            this._floatingTexts.push({
+                text: `✅ WAVE ${WaveManager.currentWave + 1} COMPLETE!`,
+                x: 400, y: 280,
+                life: 2.0, maxLife: 2.0,
+                color: '#44ff88'
+            });
+            this._floatingTexts.push({
+                text: `+${bonus}💰`,
+                x: 400, y: 310,
+                life: 1.5, maxLife: 1.5,
+                color: '#ffdd44'
+            });
+            this.waveCompleteTimer = 1.5;
+            
             if (!WaveManager.earlyAdvanced) {
                 WaveManager.currentWave++;
             }
@@ -952,6 +970,14 @@ const game = {
         // Draw terrain (cached offscreen canvas + water animation + flow arrows)
         const theme = this.getCurrentTheme();
         Terrain.draw(ctx, theme);
+
+        // Wave complete celebration flash
+        if (this.waveCompleteTimer > 0) {
+            const flashAlpha = Math.min(0.25, this.waveCompleteTimer * 0.2);
+            ctx.fillStyle = `rgba(68, 255, 136, ${flashAlpha})`;
+            ctx.fillRect(0, 0, 800, 600);
+            this.waveCompleteTimer -= 0.016;
+        }
 
         // Water zone indicator - highlight when placing boat or hovering water
         if (this.state === 'playing') {
