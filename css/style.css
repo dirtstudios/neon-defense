@@ -97,35 +97,50 @@ body {
     background: linear-gradient(180deg, rgba(21, 34, 48, 0.96), rgba(12, 22, 34, 0.96));
     border: 1px solid rgba(90, 180, 220, 0.22);
     color: #d6efff;
-    padding: 5px 9px;
-    border-radius: 7px;
+    padding: 6px 10px;
+    border-radius: 8px;
     cursor: pointer;
     font-size: 11px;
-    transition: all 0.15s;
+    transition: all 0.2s ease;
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 6px;
     white-space: nowrap;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 2px 4px rgba(0,0,0,0.3);
+    position: relative;
+    overflow: hidden;
 }
 
-.tower-btn:hover { background: linear-gradient(180deg, rgba(28, 49, 68, 0.98), rgba(16, 30, 45, 0.98)); border-color: #00f3ff; transform: translateY(-1px); }
-.tower-btn.active { background: linear-gradient(180deg, rgba(0, 243, 255, 0.22), rgba(0, 140, 180, 0.18)); border-color: #00f3ff; box-shadow: 0 0 10px rgba(0, 243, 255, 0.22), inset 0 1px 0 rgba(255,255,255,0.09); }
+.tower-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    transition: left 0.4s;
+}
+
+.tower-btn:hover::before { left: 100%; }
+.tower-btn:hover { background: linear-gradient(180deg, rgba(28, 49, 68, 0.98), rgba(16, 30, 45, 0.98)); border-color: #00f3ff; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0, 243, 255, 0.2), inset 0 1px 0 rgba(255,255,255,0.06); }
+.tower-btn.active { background: linear-gradient(180deg, rgba(0, 243, 255, 0.28), rgba(0, 140, 180, 0.22)); border-color: #00f3ff; box-shadow: 0 0 15px rgba(0, 243, 255, 0.35), inset 0 1px 0 rgba(255,255,255,0.09); transform: scale(1.02); }
 .tower-btn.disabled { opacity: 0.3; cursor: not-allowed; }
 
 .sell-btn { border-color: rgba(255, 0, 85, 0.3); color: #ff9999; background: rgba(255, 0, 85, 0.08); }
-.sell-btn:hover { border-color: #ff0055; background: rgba(255, 0, 85, 0.15); }
-.sell-btn.active { border-color: #ff0055; background: rgba(255, 0, 85, 0.25); box-shadow: 0 0 8px rgba(255, 0, 85, 0.3); }
+.sell-btn:hover { border-color: #ff0055; background: rgba(255, 0, 85, 0.2); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(255, 0, 85, 0.25); }
+.sell-btn.active { border-color: #ff0055; background: rgba(255, 0, 85, 0.3); box-shadow: 0 0 15px rgba(255, 0, 85, 0.4); transform: scale(1.02); }
 
-.tower-icon { font-size: 16px; }
-.blaster-icon { color: #00f3ff; text-shadow: 0 0 6px rgba(0, 243, 255, 0.5); }
-.sniper-icon { color: #aa88ff; text-shadow: 0 0 6px rgba(170, 136, 255, 0.5); }
-.aoe-icon { color: #ff8800; text-shadow: 0 0 6px rgba(255, 136, 0, 0.5); }
-.boat-icon { color: #0088ff; text-shadow: 0 0 6px rgba(0, 136, 255, 0.5); }
-.sentinel-icon { color: #00ff88; text-shadow: 0 0 6px rgba(0, 255, 136, 0.5); }
-.mine-icon { color: #ff3333; }
-.poison-icon { color: #44ff44; }
-.ice-icon { color: #88ddff; }
+.tower-icon { font-size: 16px; transition: transform 0.2s; }
+.tower-btn.active .tower-icon { transform: scale(1.15); filter: brightness(1.3); }
+.blaster-icon { color: #00f3ff; text-shadow: 0 0 8px rgba(0, 243, 255, 0.6); }
+.sniper-icon { color: #aa88ff; text-shadow: 0 0 8px rgba(170, 136, 255, 0.6); }
+.aoe-icon { color: #ff8800; text-shadow: 0 0 8px rgba(255, 136, 0, 0.6); }
+.boat-icon { color: #0088ff; text-shadow: 0 0 8px rgba(0, 136, 255, 0.6); }
+.sentinel-icon { color: #00ff88; text-shadow: 0 0 8px rgba(0, 255, 136, 0.6); }
+.mine-icon { color: #ff3333; text-shadow: 0 0 6px rgba(255, 51, 51, 0.5); }
+.poison-icon { color: #44ff44; text-shadow: 0 0 6px rgba(68, 255, 68, 0.5); }
+.ice-icon { color: #88ddff; text-shadow: 0 0 6px rgba(136, 221, 255, 0.5); }
 
 .trap-btn { border-color: rgba(255, 255, 255, 0.2); font-size: 11px; padding: 4px 6px; }
 .trap-btn:hover { border-color: rgba(255, 255, 255, 0.4); }
