@@ -72,6 +72,8 @@ const game = {
         chainLightning: false,
         critChance: 0
     },
+    enemySpatial: new Map(),
+    enemyCellSize: 64,
     
     getCanvasPoint(e) {
         const rect = this.canvas.getBoundingClientRect();
@@ -83,6 +85,39 @@ const game = {
             x: (clientX - rect.left) * scaleX,
             y: (clientY - rect.top) * scaleY
         };
+    },
+
+    rebuildEnemySpatial() {
+        this.enemySpatial.clear();
+        const cs = this.enemyCellSize;
+        for (const e of this.enemies) {
+            if (!e.alive) continue;
+            const cx = Math.floor(e.x / cs);
+            const cy = Math.floor(e.y / cs);
+            const key = `${cx},${cy}`;
+            let bucket = this.enemySpatial.get(key);
+            if (!bucket) {
+                bucket = [];
+                this.enemySpatial.set(key, bucket);
+            }
+            bucket.push(e);
+        }
+    },
+
+    getNearbyEnemies(x, y, radius) {
+        const cs = this.enemyCellSize;
+        const minX = Math.floor((x - radius) / cs);
+        const maxX = Math.floor((x + radius) / cs);
+        const minY = Math.floor((y - radius) / cs);
+        const maxY = Math.floor((y + radius) / cs);
+        const out = [];
+        for (let cy = minY; cy <= maxY; cy++) {
+            for (let cx = minX; cx <= maxX; cx++) {
+                const bucket = this.enemySpatial.get(`${cx},${cy}`);
+                if (bucket) out.push(...bucket);
+            }
+        }
+        return out;
     },
 
     init() {
@@ -281,6 +316,7 @@ const game = {
         ParticlePool.active = [];
         ProjectilePool.active = [];
         ProjectilePool.rings = [];
+        this.enemySpatial.clear();
         WaveManager.reset();
         Fortification.reset();
         SentinelManager.reset();
@@ -1002,6 +1038,7 @@ const game = {
 
         // Clean dead enemies
         this.enemies = this.enemies.filter(e => e.alive || (!e.scored && e.reachedEnd));
+        this.rebuildEnemySpatial();
 
         // Update towers
         for (const t of this.towers) {

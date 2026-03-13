@@ -110,7 +110,10 @@ function createTower(type, x, y) {
         findTarget(enemies) {
             let closest = null;
             let closestDist = Infinity;
-            for (const e of enemies) {
+            const candidates = (typeof game !== 'undefined' && game.getNearbyEnemies)
+                ? game.getNearbyEnemies(this.x, this.y, this.range)
+                : enemies;
+            for (const e of candidates) {
                 if (!e.alive) continue;
                 const d = Utils.dist(this.x, this.y, e.x, e.y);
                 if (d <= this.range && d < closestDist) {

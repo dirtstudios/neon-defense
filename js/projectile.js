@@ -164,7 +164,10 @@ const ProjectilePool = {
             r.currentRadius += r.speed * dt;
             
             // Hit enemies as ring expands through them
-            for (const e of enemies) {
+            const candidates = (typeof game !== 'undefined' && game.getNearbyEnemies)
+                ? game.getNearbyEnemies(r.x, r.y, r.currentRadius + 16)
+                : enemies;
+            for (const e of candidates) {
                 if (!e.alive || r.hit.has(e)) continue;
                 const d = Utils.dist(r.x, r.y, e.x, e.y);
                 // Enemy is within the ring band (current radius ± tolerance)

@@ -115,7 +115,10 @@ const SentinelManager = {
                 let closestEnemy = null;
                 let closestDist = 25;
                 
-                for (const e of enemies) {
+                const candidates = (typeof game !== 'undefined' && game.getNearbyEnemies)
+                    ? game.getNearbyEnemies(s.x, s.y, 25)
+                    : enemies;
+                for (const e of candidates) {
                     if (!e.alive || e._blockedBySentinel || e.type === 'boss') continue;
                     const d = Utils.dist(s.x, s.y, e.x, e.y);
                     if (d < closestDist) {

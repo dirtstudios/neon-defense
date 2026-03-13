@@ -34,7 +34,10 @@ function createTrap(type, x, y) {
             }
             
             // Check for enemies in radius
-            for (const e of enemies) {
+            const candidates = (typeof game !== 'undefined' && game.getNearbyEnemies)
+                ? game.getNearbyEnemies(this.x, this.y, this.radius)
+                : enemies;
+            for (const e of candidates) {
                 if (!e.alive || this.hitEnemies.has(e)) continue;
                 const d = Utils.dist(this.x, this.y, e.x, e.y);
                 if (d > this.radius) continue;
@@ -44,7 +47,10 @@ function createTrap(type, x, y) {
                 
                 if (this.effect === 'explode') {
                     // Mine: big damage to all in radius, then gone
-                    for (const e2 of enemies) {
+                    const splashTargets = (typeof game !== 'undefined' && game.getNearbyEnemies)
+                        ? game.getNearbyEnemies(this.x, this.y, this.radius)
+                        : enemies;
+                    for (const e2 of splashTargets) {
                         if (e2.alive && Utils.dist(this.x, this.y, e2.x, e2.y) <= this.radius) {
                             e2.takeDamage(this.damage, 'fire');
                         }
