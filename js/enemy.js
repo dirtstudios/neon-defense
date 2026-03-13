@@ -34,7 +34,12 @@ const EnemyTypes = {
                teleportCooldown: 4, lifeDrainRate: 3, lifeDrainRadius: 80 },
     healerBoss:{ hp: 450, speed: 0.48, gold: 150, color: '#44ffaa', size: 18, shape: 'cross',
                resist: { kinetic: 0.6, fire: 0.6, pierce: 0.6 }, bossRole: 'healer',
-               healRadius: 120, healRate: 12, healPulseCooldown: 2.5 }
+               healRadius: 120, healRate: 12, healPulseCooldown: 2.5 },
+    splitBoss:{ hp: 380, speed: 0.55, gold: 160, color: '#ff44aa', size: 18, shape: 'diamond',
+               resist: { kinetic: 0.7, fire: 0.7, pierce: 0.7 }, bossRole: 'split',
+               splitCount: 3, splitMinionType: 'swarm' },
+    splitMinion:{ hp: 25, speed: 2.2, gold: 5, color: '#ff88cc', size: 6, shape: 'circle',
+               resist: {} }
 };
 
 function createEnemy(type, waveNum) {
@@ -86,6 +91,9 @@ function createEnemy(type, waveNum) {
         originalX: 0,
         originalY: 0,
         bossIntroShown: def.bossRole ? false : true, // show intro when boss spawns
+        // Split boss properties
+        splitCount: def.splitCount || 0,
+        splitMinionType: def.splitMinionType || null,
 
         // Apply resistance to damage based on tower's damage type
         takeDamage(dmg, damageType) {

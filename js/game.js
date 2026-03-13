@@ -1054,6 +1054,29 @@ const game = {
                     if (this._bossKills === 1) this._checkAchievement('boss_slayer');
                     if (this._bossKills >= 10) this._checkAchievement('boss_hunter');
                 }
+                // Split boss: spawn minions on death
+                if (e.bossRole === 'split' && e.splitCount > 0) {
+                    for (let i = 0; i < e.splitCount; i++) {
+                        const minion = createEnemy(e.splitMinionType || 'swarm', WaveManager.currentWave);
+                        // Position minions around the boss with some spread
+                        const angle = (i / e.splitCount) * Math.PI * 2;
+                        const spread = 40 + Math.random() * 20;
+                        minion.x = e.x + Math.cos(angle) * spread;
+                        minion.y = e.y + Math.sin(angle) * spread;
+                        minion.alive = true;
+                        minion.scored = false;
+                        this.enemies.push(minion);
+                    }
+                    // Show floating text about split
+                    this._floatingTexts.push({
+                        text: `SPLIT!`,
+                        x: e.x,
+                        y: e.y - 44,
+                        life: 1.0,
+                        maxLife: 1.0,
+                        color: '#ff44aa'
+                    });
+                }
                 // Track achievements
                 this._onEnemyKilled(e);
                 this._onGoldChange();

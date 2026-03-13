@@ -88,6 +88,7 @@ const WaveManager = {
                     if (this.currentLevel >= 3) bossTypes.push('warBoss');
                     if (this.currentLevel >= 4) bossTypes.push('voidBoss');
                     if (this.currentLevel >= 5) bossTypes.push('healerBoss');
+                    if (this.currentLevel >= 6) bossTypes.push('splitBoss');
                     queue.push(bossTypes[Utils.randInt(0, bossTypes.length - 1)]);
                 } else {
                     queue.push(group.type);
@@ -95,8 +96,8 @@ const WaveManager = {
             }
         }
         // Shuffle non-boss enemies, keep bosses last
-        const bosses = queue.filter(t => t === 'boss' || t === 'broodBoss' || t === 'warBoss' || t === 'voidBoss' || t === 'healerBoss');
-        const others = queue.filter(t => t !== 'boss' && t !== 'broodBoss' && t !== 'warBoss' && t !== 'voidBoss' && t !== 'healerBoss');
+        const bosses = queue.filter(t => t === 'boss' || t === 'broodBoss' || t === 'warBoss' || t === 'voidBoss' || t === 'healerBoss' || t === 'splitBoss');
+        const others = queue.filter(t => t !== 'boss' && t !== 'broodBoss' && t !== 'warBoss' && t !== 'voidBoss' && t !== 'healerBoss' && t !== 'splitBoss');
         for (let i = others.length - 1; i > 0; i--) {
             const j = Utils.randInt(0, i);
             [others[i], others[j]] = [others[j], others[i]];
@@ -156,7 +157,7 @@ const WaveManager = {
     // Check if current wave will have a boss
     hasBoss() {
         const def = this.getWaveDef(this.currentWave);
-        return def.some(g => g.type === 'boss' || g.type === 'broodBoss' || g.type === 'warBoss' || g.type === 'voidBoss' || g.type === 'healerBoss');
+        return def.some(g => g.type === 'boss' || g.type === 'broodBoss' || g.type === 'warBoss' || g.type === 'voidBoss' || g.type === 'healerBoss' || g.type === 'splitBoss');
     },
 
     // Get boss count for current wave
@@ -164,7 +165,7 @@ const WaveManager = {
         const def = this.getWaveDef(this.currentWave);
         let count = 0;
         for (const g of def) {
-            if (g.type === 'boss' || g.type === 'broodBoss' || g.type === 'warBoss' || g.type === 'voidBoss' || g.type === 'healerBoss') {
+            if (g.type === 'boss' || g.type === 'broodBoss' || g.type === 'warBoss' || g.type === 'voidBoss' || g.type === 'healerBoss' || g.type === 'splitBoss') {
                 count += g.count;
             }
         }
