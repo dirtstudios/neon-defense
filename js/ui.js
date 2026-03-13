@@ -153,6 +153,16 @@ const UI = {
         } else {
             highScoreEl.textContent = '';
         }
+        // Show stats
+        const statsEl = document.getElementById('menu-stats');
+        const bestWave = game.bestWave || 0;
+        const totalKills = game.totalKills || 0;
+        const stars = game.stars ? Object.values(game.stars).reduce((a,b) => a + b, 0) : 0;
+        if (bestWave > 0 || totalKills > 0 || stars > 0) {
+            statsEl.textContent = `🎯 Best Wave: ${bestWave} | 💀 Kills: ${totalKills} | ⭐ Total Stars: ${stars}`;
+        } else {
+            statsEl.textContent = '';
+        }
     },
     hideMenu() {
         document.getElementById('menu-screen').style.display = 'none';
