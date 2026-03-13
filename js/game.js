@@ -72,7 +72,11 @@ const game = {
         goldBonusChance: 0,
         lifeOnKill: false,
         chainLightning: false,
-        critChance: 0
+        critChance: 0,
+        vampirism: 0,
+        frostChance: 0,
+        multishotChance: 0,
+        berserker: false
     },
     enemySpatial: new Map(),
     enemyCellSize: 64,
@@ -412,7 +416,10 @@ const game = {
             { id: 'golden_touch', name: 'Golden Touch', desc: '15% chance for 2x gold on kills', tag: 'ECON', color: '#ffd700', apply: () => { this.perkState.goldBonusChance = 0.15; } },
             { id: 'chain_lightning', name: 'Chain Lightning', desc: 'AOE towers chain to nearby enemies', tag: 'DAMAGE', color: '#a855f7', apply: () => { this.perkState.chainLightning = true; } },
             { id: 'critical_strike', name: 'Critical Strike', desc: '10% chance for 2x damage', tag: 'DAMAGE', color: '#f43f5e', apply: () => { this.perkState.critChance = 0.10; } },
-            { id: 'vampirism', name: 'Vampirism', desc: '15% chance to heal 5 HP when killing an enemy', tag: 'DEFENSE', color: '#dc2626', apply: () => { this.perkState.vampirism = 0.15; } }
+            { id: 'vampirism', name: 'Vampirism', desc: '15% chance to heal 5 HP when killing an enemy', tag: 'DEFENSE', color: '#dc2626', apply: () => { this.perkState.vampirism = 0.15; } },
+            { id: 'frost_nova', name: 'Frost Nova', desc: '15% chance to slow enemies by 30%', tag: 'UTILITY', color: '#38bdf8', apply: () => { this.perkState.frostChance = 0.15; } },
+            { id: 'multishot', name: 'Multishot', desc: '10% chance for extra projectile', tag: 'DAMAGE', color: '#fb923c', apply: () => { this.perkState.multishotChance = 0.10; } },
+            { id: 'berserker', name: 'Berserker', desc: '+50% damage when below 5 lives', tag: 'RISK', color: '#ef4444', apply: () => { this.perkState.berserker = true; } }
         ];
     },
 

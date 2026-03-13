@@ -145,6 +145,34 @@ function createTower(type, x, y) {
                     this.aoe, this.aoeSlow, this.aoeRadius,
                     dmgType
                 );
+                // Multishot perk: 10% chance for extra projectile
+                if (game && game.perkState && game.perkState.multishotChance && Math.random() < game.perkState.multishotChance) {
+                    const spreadAngle = 0.35; // ~20 degrees
+                    const altAngle = this.aimAngle + (Math.random() < 0.5 ? spreadAngle : -spreadAngle);
+                    // Find nearby enemy for multishot
+                    let altTarget = null;
+                    if (game && game.enemies) {
+                        let minDist = 150;
+                        for (const e of game.enemies) {
+                            if (e.alive && !e.reachedEnd) {
+                                const d = Utils.dist(this.x, this.y, e.x, e.y);
+                                if (d < minDist) {
+                                    minDist = d;
+                                    altTarget = e;
+                                }
+                            }
+                        }
+                    }
+                    if (altTarget) {
+                        ProjectilePool.fire(
+                            origin.x, origin.y, altTarget,
+                            this.damage * 0.7, 10,
+                            this.projectileColor,
+                            false, false, 0,
+                            dmgType
+                        );
+                    }
+                }
                 this.recoil = this.type === 'sniper' ? 1 : (this.type === 'aoe' ? 0.8 : 0.55);
                 this.muzzleFlash = 1;
                 this.cooldown = 1 / this.fireRate;

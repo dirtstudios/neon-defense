@@ -120,6 +120,17 @@ const ProjectilePool = {
                         bonusMult *= 2;
                         isCrit = true;
                     }
+                    // Frost Nova perk: 15% chance to slow enemies by 30%
+                    if (game && game.perkState && game.perkState.frostChance && Math.random() < game.perkState.frostChance && p.target) {
+                        p.target.slowed = true;
+                        p.target.slowTimer = 2.0;
+                        p.target.baseSpeed = p.target.speed;
+                        p.target.speed = p.target.baseSpeed * 0.7;
+                    }
+                    // Berserker perk: +50% damage when below 5 lives
+                    if (game && game.perkState && game.perkState.berserker && game.lives <= 5) {
+                        bonusMult *= 1.5;
+                    }
                     const dealt = p.target.takeDamage(p.damage * bonusMult, p.damageType);
                     if (isCrit && p.target) {
                         p.target.critFlash = 0.25;
