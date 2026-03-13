@@ -177,6 +177,8 @@ const UI = {
         }
         // Best wave
         document.getElementById('end-best-wave').textContent = `Best Wave: ${game.bestWave}`;
+        // Total kills
+        document.getElementById('end-total-kills').textContent = `Total Kills: ${game.totalKills}`;
         if (game.mapInfo) {
             document.getElementById('end-map-info').textContent = `${game.mapInfo.name} • Seed: ${game.mapInfo.seed}`;
         }

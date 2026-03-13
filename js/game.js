@@ -44,6 +44,7 @@ const game = {
     perkHistory: [],
     achievements: JSON.parse(localStorage.getItem('neonDefenseAchievements') || '[]'),
     stars: JSON.parse(localStorage.getItem('neonDefenseStars') || '{}'),
+    totalKills: parseInt(localStorage.getItem('neonDefenseTotalKills') || '0'),
     _achievementDefinitions: [
         { id: 'first_blood', name: 'First Blood', desc: 'Kill your first enemy', icon: '🗡️' },
         { id: 'tower_killer', name: 'Tower Killer', desc: 'Kill 100 enemies', icon: '🏰' },
@@ -475,6 +476,9 @@ const game = {
     _onEnemyKilled(e) {
         // Track kills for achievements
         this._killCount = (this._killCount || 0) + 1;
+        // Track total kills across all runs
+        this.totalKills = (this.totalKills || 0) + 1;
+        localStorage.setItem('neonDefenseTotalKills', this.totalKills.toString());
         if (this._killCount === 1) this._checkAchievement('first_blood');
         if (this._killCount >= 100) this._checkAchievement('tower_killer');
         if (this._killCount >= 500) this._checkAchievement('slaughter');
