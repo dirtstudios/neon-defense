@@ -22,6 +22,8 @@ const game = {
     traps: [],
     _floatingTexts: [],
     _lightningBolts: [],
+    _powerups: [],
+    _activePowerups: { damage: 0, speed: 0, goldMult: 1 },
     level: 1,
     
     // FPS tracking and targeting
@@ -283,6 +285,8 @@ const game = {
         this.traps = [];
         this._floatingTexts = [];
         this._lightningBolts = [];
+        this._powerups = [];
+        this._activePowerups = { damage: 0, speed: 0, goldMult: 1 };
         this.selectedTower = null;
         this.selectedPlacedTower = null;
         this.shakeTimer = 0;
@@ -494,6 +498,37 @@ const game = {
         if (this.gold >= 5000) this._checkAchievement('rich');
     },
 
+    _activatePowerup(type, targetTower) {
+        const duration = 10; // 10 seconds
+        let msg = '';
+        if (type === 'damage') {
+            this._activePowerups.damage = duration;
+            msg = '⚔️ DAMAGE BOOST!';
+        } else if (type === 'speed') {
+            this._activePowerups.speed = duration;
+            msg = '⚡ SPEED BOOST!';
+        } else if (type === 'gold') {
+            this._activePowerups.goldMult = duration;
+            this.gold += 50;
+            msg = '💰 +50 GOLD!';
+        } else if (type === 'shield') {
+            this.lives += 1;
+            UI.updateLives(this.lives);
+            msg = '🛡️ +1 LIFE!';
+        }
+        // Show floating text
+        if (targetTower) {
+            this._floatingTexts.push({
+                text: msg,
+                x: targetTower.x,
+                y: targetTower.y - 30,
+                life: 1.5,
+                maxLife: 1.5,
+                color: type === 'damage' ? '#ff4444' : (type === 'speed' ? '#ffdd44' : (type === 'gold' ? '#ffd700' : '#4488ff'))
+            });
+        }
+    },
+
     applyPerkModifiersToTower(tower) {
         // Global damage bonus (from Glass Cannon perk)
         tower.damage *= this.perkState.globalDamageMult;
@@ -501,8 +536,12 @@ const game = {
         if (tower.type === 'sniper') tower.damage *= this.perkState.sniperDamageMult;
         if (tower.type === 'aoe') tower.damage *= this.perkState.aoeDamageMult;
         if (tower.type === 'boat') tower.damage *= this.perkState.boatDamageMult;
+        // Powerup: Damage boost
+        if (this._activePowerups.damage > 0) tower.damage *= 1.5;
         // Fire rate bonus (from Quick Reflexes perk)
         tower.fireRate *= this.perkState.fireRateMult;
+        // Powerup: Speed boost
+        if (this._activePowerups.speed > 0) tower.fireRate *= 1.4;
         // Sell value bonus (from Scavenger perk)
         tower.sellValue = Math.round(tower.sellValue * this.perkState.sellValueMult);
         if (tower.type === 'sentinel') {
@@ -982,6 +1021,8 @@ const game = {
             if (!e.alive && !e.scored && !e.reachedEnd) {
                 // Golden Touch perk: 15% chance for 2x gold
                 let goldEarned = e.gold;
+                // Gold powerup multiplier
+                if (this._activePowerups.goldMult > 1) goldEarned *= 2;
                 if (this.perkState.goldBonusChance && Math.random() < this.perkState.goldBonusChance) {
                     goldEarned *= 2;
                     this._floatingTexts.push({
@@ -1102,6 +1143,24 @@ const game = {
                 // Track achievements
                 this._onEnemyKilled(e);
                 this._onGoldChange();
+                // Powerup drop chance (5% for normal, 15% for bosses)
+                const dropChance = e.type === 'boss' ? 0.15 : 0.05;
+                if (Math.random() < dropChance) {
+                    const powerups = ['damage', 'speed', 'gold', 'shield'];
+                    const type = powerups[Math.floor(Math.random() * powerups.length)];
+                    const colors = { damage: '#ff4444', speed: '#ffdd44', gold: '#ffd700', shield: '#4488ff' };
+                    const symbols = { damage: '⚔️', speed: '⚡', gold: '💰', shield: '🛡️' };
+                    this._powerups.push({
+                        x: e.x,
+                        y: e.y,
+                        type: type,
+                        color: colors[type],
+                        symbol: symbols[type],
+                        life: 8, // 8 seconds to pick up
+                        vx: (Math.random() - 0.5) * 30,
+                        vy: -60 // pop upward
+                    });
+                }
                 this.updateUI();
             }
         }
@@ -1144,6 +1203,38 @@ const game = {
             lb.life -= dt;
             if (lb.life <= 0) this._lightningBolts.splice(i, 1);
         }
+        
+        // Update powerups
+        for (let i = this._powerups.length - 1; i >= 0; i--) {
+            const p = this._powerups[i];
+            p.life -= dt;
+            p.vy += 200 * dt; // gravity
+            p.x += p.vx * dt;
+            p.y += p.vy * dt;
+            // Bounce off ground
+            if (p.y > 520) {
+                p.y = 520;
+                p.vy *= -0.5;
+                p.vx *= 0.8;
+            }
+            // Check pickup (touching any tower or player position)
+            let pickedUp = false;
+            for (const t of this.towers) {
+                if (Math.hypot(p.x - t.x, p.y - t.y) < 30) {
+                    pickedUp = true;
+                    this._activatePowerup(p.type, t);
+                    break;
+                }
+            }
+            if (!pickedUp && p.life <= 0) {
+                this._powerups.splice(i, 1);
+            }
+        }
+        
+        // Update active powerup timers
+        if (this._activePowerups.damage > 0) this._activePowerups.damage -= dt;
+        if (this._activePowerups.speed > 0) this._activePowerups.speed -= dt;
+        if (this._activePowerups.goldMult > 1) this._activePowerups.goldMult -= dt;
 
         if (this.bossBannerTimer > 0) this.bossBannerTimer -= dt;
 
@@ -1407,6 +1498,60 @@ const game = {
             ctx.stroke();
             ctx.shadowBlur = 0;
             ctx.globalAlpha = 1;
+        }
+
+        // Powerup drops
+        for (const p of this._powerups) {
+            const pulse = 1 + Math.sin(performance.now() * 0.01) * 0.15;
+            const alpha = Math.min(1, p.life);
+            ctx.globalAlpha = alpha;
+            // Glow
+            ctx.shadowColor = p.color;
+            ctx.shadowBlur = 15;
+            // Orb
+            ctx.fillStyle = p.color;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, 12 * pulse, 0, Math.PI * 2);
+            ctx.fill();
+            // Symbol
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 12px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(p.symbol, p.x, p.y);
+            ctx.globalAlpha = 1;
+        }
+        
+        // Active powerup indicators (on HUD)
+        if (this._activePowerups.damage > 0 || this._activePowerups.speed > 0 || this._activePowerups.goldMult > 1) {
+            let indicatorX = 90;
+            if (this._activePowerups.damage > 0) {
+                ctx.fillStyle = '#ff4444';
+                ctx.fillRect(indicatorX, 52, 60, 8);
+                ctx.fillStyle = '#fff';
+                ctx.font = '8px sans-serif';
+                ctx.textAlign = 'left';
+                ctx.fillText(`⚔️ ${this._activePowerups.damage.toFixed(1)}s`, indicatorX + 2, 58);
+                indicatorX += 65;
+            }
+            if (this._activePowerups.speed > 0) {
+                ctx.fillStyle = '#ffdd44';
+                ctx.fillRect(indicatorX, 52, 60, 8);
+                ctx.fillStyle = '#fff';
+                ctx.font = '8px sans-serif';
+                ctx.textAlign = 'left';
+                ctx.fillText(`⚡ ${this._activePowerups.speed.toFixed(1)}s`, indicatorX + 2, 58);
+                indicatorX += 65;
+            }
+            if (this._activePowerups.goldMult > 1) {
+                ctx.fillStyle = '#ffd700';
+                ctx.fillRect(indicatorX, 52, 60, 8);
+                ctx.fillStyle = '#fff';
+                ctx.font = '8px sans-serif';
+                ctx.textAlign = 'left';
+                ctx.fillText(`💰 ${this._activePowerups.goldMult.toFixed(1)}s`, indicatorX + 2, 58);
+            }
         }
 
         // Tower info tooltip (when a placed tower is selected)
