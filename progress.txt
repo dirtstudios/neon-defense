@@ -3,6 +3,16 @@ Run: 43dc10a9-8c57-45dc-90b0-7399cd11ad04
 Task: Build Neon Defense - a browser-based tower defense game with neon geometric art style
 Started: Sunday, February 15th, 2026 — 4:59 AM
 
+## March 12, 2026 3:31 PM - Chain Lightning Perk (Wired!)
+- Implemented full Chain Lightning perk functionality for AOE towers
+- AOE rings now chain to up to 2 nearby enemies within 80px range
+- Chain deals 50% of original AOE damage
+- Purple lightning bolt visual effect with jagged path between source and targets
+- Floating '⚡' damage text shows chain hit amount
+- Added _lightningBolts array to game state for rendering
+- Committed and pushed to GitHub Pages
+- **Learnings:** Ring-based AOE hit detection provides good timing for chaining; lightning bolt drawing uses random jag for natural feel
+
 ## March 12, 2026 4:00 AM - Add Replayability Perks
 - Added 4 new perks to increase build diversity and replayability:
   - **Last Stand**: +1 life every 5 kills (tracks _killStreak)

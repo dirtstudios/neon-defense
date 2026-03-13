@@ -44,6 +44,8 @@ const game = {
         { id: 'first_blood', name: 'First Blood', desc: 'Kill your first enemy', icon: '🗡️' },
         { id: 'tower_killer', name: 'Tower Killer', desc: 'Kill 100 enemies', icon: '🏰' },
         { id: 'slaughter', name: 'Slaughter', desc: 'Kill 500 enemies', icon: '💀' },
+        { id: 'boss_slayer', name: 'Boss Slayer', desc: 'Defeat your first boss', icon: '👹' },
+        { id: 'boss_hunter', name: 'Boss Hunter', desc: 'Defeat 10 bosses', icon: '🎯' },
         { id: 'wave_5', name: 'Rising Tide', desc: 'Complete wave 5', icon: '🌊' },
         { id: 'wave_10', name: 'Unstoppable', desc: 'Complete wave 10', icon: '🚀' },
         { id: 'wave_25', name: 'Legend', desc: 'Complete wave 25', icon: '👑' },
@@ -1028,6 +1030,10 @@ const game = {
                     this.shake(5);
                     Audio.bossKill();
                     this.showBossBanner('BOSS DESTROYED');
+                    // Boss kill achievements
+                    this._bossKills = (this._bossKills || 0) + 1;
+                    if (this._bossKills === 1) this._checkAchievement('boss_slayer');
+                    if (this._bossKills >= 10) this._checkAchievement('boss_hunter');
                 }
                 // Track achievements
                 this._onEnemyKilled(e);
