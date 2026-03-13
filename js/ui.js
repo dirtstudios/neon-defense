@@ -175,6 +175,8 @@ const UI = {
         } else {
             highScoreEl.textContent = `Best: ${game.highScore}`;
         }
+        // Best wave
+        document.getElementById('end-best-wave').textContent = `Best Wave: ${game.bestWave}`;
         if (game.mapInfo) {
             document.getElementById('end-map-info').textContent = `${game.mapInfo.name} • Seed: ${game.mapInfo.seed}`;
         }

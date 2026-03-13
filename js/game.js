@@ -7,6 +7,7 @@ const game = {
     lives: 20,
     score: 0,
     highScore: parseInt(localStorage.getItem('neonDefenseHighScore') || '0'),
+    bestWave: parseInt(localStorage.getItem('neonDefenseBestWave') || '0'),
     speed: 1,
     selectedTower: null,
     selectedPlacedTower: null,
@@ -1031,10 +1032,15 @@ const game = {
                 e.reachedEnd = false;
                 this.shake(4); // Screen shake when enemy reaches end
                 if (this.lives <= 0) {
-                    // Save high score
+                    // Save high score and best wave
                     if (this.score > this.highScore) {
                         this.highScore = this.score;
                         localStorage.setItem('neonDefenseHighScore', this.highScore.toString());
+                    }
+                    const currentWave = WaveManager.currentWave + 1;
+                    if (currentWave > this.bestWave) {
+                        this.bestWave = currentWave;
+                        localStorage.setItem('neonDefenseBestWave', this.bestWave.toString());
                     }
                     this.setState('gameover');
                     Audio.gameOver();
