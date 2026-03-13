@@ -995,6 +995,21 @@ const game = {
                 }
                 this.gold += goldEarned;
                 this.score += goldEarned;
+                // Kill streak combo counter (visible for all players)
+                this._killCombo = (this._killCombo || 0) + 1;
+                if (this._killCombo >= 3) {
+                    this._floatingTexts.push({
+                        text: `${this._killCombo}x COMBO!`,
+                        x: e.x,
+                        y: e.y - 55,
+                        life: 0.8,
+                        maxLife: 0.8,
+                        color: this._killCombo >= 10 ? '#ff44ff' : (this._killCombo >= 7 ? '#ff8800' : '#ffff44')
+                    });
+                }
+                // Reset combo after delay
+                clearTimeout(this._comboTimeout);
+                this._comboTimeout = setTimeout(() => { this._killCombo = 0; }, 2000);
                 // Last Stand perk: +1 life every 5 kills
                 if (this.perkState.lifeOnKill) {
                     this._killStreak = (this._killStreak || 0) + 1;
