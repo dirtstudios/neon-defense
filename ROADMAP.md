@@ -14,7 +14,7 @@
 - [x] Better muzzle flashes (muzzleFlash in tower.js)
 - [x] Better enemy death effects (explosion on death)
 - [x] Better projectile variety by tower type (pierce/fire/kinetic)
-- [x] Better boss presence (4 boss types with unique mechanics)
+- [x] Better boss presence (6 boss types with unique mechanics)
 - [x] Better sentinel presence and barracks feel
 
 ### Sprint 3: Clearer strategy
