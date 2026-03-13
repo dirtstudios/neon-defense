@@ -31,7 +31,10 @@ const EnemyTypes = {
                resist: { kinetic: 0.6, fire: 0.75 }, bossRole: 'war' },
     voidBoss:{ hp: 380, speed: 0.55, gold: 140, color: '#aa44ff', size: 17, shape: 'circle',
                resist: { kinetic: 0.5, fire: 0.5, pierce: 0.5 }, bossRole: 'void', 
-               teleportCooldown: 4, lifeDrainRate: 3, lifeDrainRadius: 80 }
+               teleportCooldown: 4, lifeDrainRate: 3, lifeDrainRadius: 80 },
+    healerBoss:{ hp: 450, speed: 0.48, gold: 150, color: '#44ffaa', size: 18, shape: 'cross',
+               resist: { kinetic: 0.6, fire: 0.6, pierce: 0.6 }, bossRole: 'healer',
+               healRadius: 120, healRate: 12, healPulseCooldown: 2.5 }
 };
 
 function createEnemy(type, waveNum) {
@@ -150,7 +153,8 @@ function createEnemy(type, waveNum) {
                     if (game.showBossBanner) {
                         const bossName = this.bossRole === 'brood' ? '🐞 BROOD KING' : 
                                         this.bossRole === 'war' ? '⚔️ WAR TITAN' :
-                                        this.bossRole === 'void' ? '👻 VOID WALKER' : '👹 TITAN';
+                                        this.bossRole === 'void' ? '👻 VOID WALKER' :
+                                        this.bossRole === 'healer' ? '💚 HEALER QUEEN' : '👹 TITAN';
                         game.showBossBanner(bossName + ' APPEARS!');
                         game.shake(8);
                     }
@@ -236,6 +240,34 @@ function createEnemy(type, waveNum) {
                             this.hp = Math.min(this.maxHp, this.hp + this.lifeDrainRate * 15);
                             if (game.updateUI) game.updateUI();
                             ParticlePool.explosion(this.x, this.y, '#aa44ff', false);
+                        }
+                    }
+                }
+                
+                // HEALER BOSS: Healing aura + pulse healing
+                if (this.bossRole === 'healer') {
+                    this.healPulseCooldown -= dt;
+                    if (this.healPulseCooldown <= 0) {
+                        this.healPulseCooldown = 2.5;
+                        // Heal all nearby enemies in radius
+                        if (game && game.enemies) {
+                            const healed = [];
+                            for (const other of game.enemies) {
+                                if (other !== this && other.alive && !other.reachedEnd) {
+                                    const dist = Utils.dist(this.x, this.y, other.x, other.y);
+                                    if (dist <= this.healRadius) {
+                                        const healAmt = Math.floor(this.healRate * 3);
+                                        other.hp = Math.min(other.maxHp, other.hp + healAmt);
+                                        healed.push({ enemy: other, amount: healAmt });
+                                    }
+                                }
+                            }
+                            // Visual pulse effect
+                            if (healed.length > 0) {
+                                ParticlePool.explosion(this.x, this.y, '#44ffaa', false);
+                                if (game.showBossBanner) game.showBossBanner(`💚 HEALER RESTORES ${healed.length} ENEMIES`);
+                                if (game.shake) game.shake(3);
+                            }
                         }
                     }
                 }
