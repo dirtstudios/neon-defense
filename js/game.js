@@ -42,6 +42,7 @@ const game = {
     perkOptions: [],
     perkHistory: [],
     achievements: JSON.parse(localStorage.getItem('neonDefenseAchievements') || '[]'),
+    stars: JSON.parse(localStorage.getItem('neonDefenseStars') || '{}'),
     _achievementDefinitions: [
         { id: 'first_blood', name: 'First Blood', desc: 'Kill your first enemy', icon: '🗡️' },
         { id: 'tower_killer', name: 'Tower Killer', desc: 'Kill 100 enemies', icon: '🏰' },
@@ -498,6 +499,13 @@ const game = {
         if (this.gold >= 5000) this._checkAchievement('rich');
     },
 
+    _calculateStars() {
+        // 3 stars: 10+ lives, 2 stars: 5+ lives, 1 star: completed
+        if (this.lives >= 10) return 3;
+        if (this.lives >= 5) return 2;
+        return 1;
+    },
+
     _activatePowerup(type, targetTower) {
         const duration = 10; // 10 seconds
         let msg = '';
@@ -560,6 +568,21 @@ const game = {
 
     __doAdvanceLevel() {
         this.level++;
+        
+        // Save stars for completed level (based on lives remaining)
+        const stars = this._calculateStars();
+        const prevStars = this.stars[this.level - 1] || 0;
+        if (stars > prevStars) {
+            this.stars[this.level - 1] = stars;
+            try { localStorage.setItem('neonDefenseStars', JSON.stringify(this.stars)); } catch(e) {}
+            // Show star achievement
+            this._floatingTexts.push({
+                text: `⭐ ${stars} STAR${stars > 1 ? 'S' : ''}!`,
+                x: 400, y: 200,
+                life: 3, maxLife: 3,
+                color: '#ffd700'
+            });
+        }
         
         // Level bonus: +50 gold per level cleared
         const levelBonus = 50 * (this.level - 1) + this.perkState.economyBonusGold;

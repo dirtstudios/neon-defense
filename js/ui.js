@@ -16,7 +16,11 @@ const UI = {
         const lvl = game.level || 1;
         const prefix = lvl > 1 ? `Lv${lvl} ` : '';
         const text = endless ? `${prefix}Wave ${current + 1} (Endless)` : `${prefix}Wave ${current + 1}/${total}`;
-        document.getElementById('wave-info').textContent = text;
+        // Add star display
+        const stars = game.stars || {};
+        const currentStars = stars[lvl - 1] || 0;
+        const starDisplay = currentStars > 0 ? ' ⭐'.repeat(currentStars) : '';
+        document.getElementById('wave-info').textContent = text + starDisplay;
     },
     updateLives(lives) {
         document.getElementById('lives').textContent = `❤️ ${lives}`;
