@@ -411,7 +411,8 @@ const game = {
             { id: 'last_stand', name: 'Last Stand', desc: '+1 life for every 5 kills', tag: 'DEFENSE', color: '#22d3d3', apply: () => { this.perkState.lifeOnKill = true; } },
             { id: 'golden_touch', name: 'Golden Touch', desc: '15% chance for 2x gold on kills', tag: 'ECON', color: '#ffd700', apply: () => { this.perkState.goldBonusChance = 0.15; } },
             { id: 'chain_lightning', name: 'Chain Lightning', desc: 'AOE towers chain to nearby enemies', tag: 'DAMAGE', color: '#a855f7', apply: () => { this.perkState.chainLightning = true; } },
-            { id: 'critical_strike', name: 'Critical Strike', desc: '10% chance for 2x damage', tag: 'DAMAGE', color: '#f43f5e', apply: () => { this.perkState.critChance = 0.10; } }
+            { id: 'critical_strike', name: 'Critical Strike', desc: '10% chance for 2x damage', tag: 'DAMAGE', color: '#f43f5e', apply: () => { this.perkState.critChance = 0.10; } },
+            { id: 'vampirism', name: 'Vampirism', desc: '15% chance to heal 5 HP when killing an enemy', tag: 'DEFENSE', color: '#dc2626', apply: () => { this.perkState.vampirism = 0.15; } }
         ];
     },
 
@@ -1001,6 +1002,24 @@ const game = {
                             life: 1.0,
                             maxLife: 1.0,
                             color: '#22d3d3'
+                        });
+                    }
+                }
+                // Vampirism perk: chance to heal tower on kill
+                if (this.perkState.vampirism && Math.random() < this.perkState.vampirism) {
+                    // Find a random tower to heal
+                    const towers = this.towers.filter(t => t.hp < t.maxHp);
+                    if (towers.length > 0) {
+                        const tower = towers[Math.floor(Math.random() * towers.length)];
+                        const healAmt = 5;
+                        tower.hp = Math.min(tower.maxHp, tower.hp + healAmt);
+                        this._floatingTexts.push({
+                            text: `+${healAmt} HP 💉`,
+                            x: tower.x,
+                            y: tower.y - 20,
+                            life: 0.8,
+                            maxLife: 0.8,
+                            color: '#dc2626'
                         });
                     }
                 }
