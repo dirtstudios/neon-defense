@@ -527,6 +527,8 @@ const game = {
                 color: type === 'damage' ? '#ff4444' : (type === 'speed' ? '#ffdd44' : (type === 'gold' ? '#ffd700' : '#4488ff'))
             });
         }
+        // Play powerup sound
+        Audio.powerup();
     },
 
     applyPerkModifiersToTower(tower) {

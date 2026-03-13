@@ -77,5 +77,11 @@ const Audio = {
     win() {
         [600, 800, 1000, 1200].forEach((f, i) =>
             setTimeout(() => this._play(f, 0.2, 'sine', 0.06), i * 120));
+    },
+    powerup() {
+        // Magical chime for powerup pickup
+        this._play(880, 0.1, 'sine', 0.08);
+        setTimeout(() => this._play(1100, 0.1, 'sine', 0.07), 80);
+        setTimeout(() => this._play(1320, 0.15, 'sine', 0.06), 160);
     }
 };
