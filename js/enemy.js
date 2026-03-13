@@ -39,7 +39,10 @@ const EnemyTypes = {
                resist: { kinetic: 0.7, fire: 0.7, pierce: 0.7 }, bossRole: 'split',
                splitCount: 3, splitMinionType: 'swarm' },
     splitMinion:{ hp: 25, speed: 2.2, gold: 5, color: '#ff88cc', size: 6, shape: 'circle',
-               resist: {} }
+               resist: {} },
+    treasure:  { hp: 200, speed: 0.3, gold: 100, color: '#ffd700', size: 14, shape: 'chest',
+               resist: { kinetic: 0.3, fire: 0.3, pierce: 0.3 }, isTreasure: true,
+               treasureDrop: 'gold' } // drops bonus gold/powerup
 };
 
 function createEnemy(type, waveNum) {
@@ -80,6 +83,7 @@ function createEnemy(type, waveNum) {
         critFlash: 0,
         lastDamage: 0,
         bossRole: def.bossRole || null,
+        isTreasure: def.isTreasure || false,
         bossSpawnCooldown: def.bossRole ? 3.2 : 0,
         bossPulseCooldown: def.bossRole === 'war' ? 5.5 : 0,
         // Void boss properties
@@ -356,6 +360,20 @@ function createEnemy(type, waveNum) {
                 ctx.lineTo(this.x - s + 2, this.y - w + bob + 2);
                 ctx.lineTo(this.x - w + 2, this.y - w + bob + 2);
                 ctx.closePath();
+            } else if (this.shape === 'chest') {
+                // Treasure chest - box shape with lid
+                const w = s * 0.7;
+                const h = s * 0.6;
+                ctx.moveTo(this.x - w + 2, this.y + h + bob + 2);
+                ctx.lineTo(this.x + w + 2, this.y + h + bob + 2);
+                ctx.lineTo(this.x + w + 2, this.y - h * 0.3 + bob + 2);
+                ctx.lineTo(this.x - w + 2, this.y - h * 0.3 + bob + 2);
+                ctx.closePath();
+                // Lid
+                ctx.moveTo(this.x - w + 2, this.y - h * 0.3 + bob + 2);
+                ctx.lineTo(this.x - w + 2, this.y - h + bob + 2);
+                ctx.arc(this.x, this.y - h + bob + 2, w, Math.PI, 0, true);
+                ctx.lineTo(this.x + w + 2, this.y - h * 0.3 + bob + 2);
             }
             ctx.fill();
 

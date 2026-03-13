@@ -74,6 +74,11 @@ const WaveManager = {
             // Mini-boss waves in later levels
             wave.push({ type: 'boss', count: Math.floor((level - 1) / 2) });
         }
+        
+        // Treasure chests in later levels (every 3 waves starting at level 2)
+        if (level >= 2 && waveInLevel % 3 === 0 && waveInLevel > 0) {
+            wave.push({ type: 'treasure', count: 1 });
+        }
 
         return wave.filter(g => g.count > 0);
     },

@@ -1152,6 +1152,37 @@ const game = {
                     if (this._bossKills === 1) this._checkAchievement('boss_slayer');
                     if (this._bossKills >= 10) this._checkAchievement('boss_hunter');
                 }
+                // Treasure chest: guaranteed special drop
+                if (e.isTreasure) {
+                    // Drop a random powerup
+                    const powerups = ['damage', 'speed', 'gold', 'shield'];
+                    const type = powerups[Math.floor(Math.random() * powerups.length)];
+                    const colors = { damage: '#ff4444', speed: '#ffdd44', gold: '#ffd700', shield: '#4488ff' };
+                    const symbols = { damage: '⚔️', speed: '⚡', gold: '💰', shield: '🛡️' };
+                    // Bonus gold
+                    const bonusGold = 50 + Math.floor(Math.random() * 50);
+                    this.gold += bonusGold;
+                    // Spawn powerup
+                    this._powerups.push({
+                        x: e.x,
+                        y: e.y,
+                        type: type,
+                        color: colors[type],
+                        symbol: symbols[type],
+                        life: 10,
+                        vx: (Math.random() - 0.5) * 40,
+                        vy: -80
+                    });
+                    // Show floating text
+                    this._floatingTexts.push({
+                        text: `💎 +${bonusGold} GOLD!`,
+                        x: e.x,
+                        y: e.y - 30,
+                        life: 2,
+                        maxLife: 2,
+                        color: '#ffd700'
+                    });
+                }
                 // Split boss: spawn minions on death
                 if (e.bossRole === 'split' && e.splitCount > 0) {
                     for (let i = 0; i < e.splitCount; i++) {
