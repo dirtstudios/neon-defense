@@ -495,7 +495,20 @@ const game = {
         if (waveNum >= 25) this._checkAchievement('wave_25');
         // Perfect wave (no lives lost this wave)
         const livesBefore = this._livesAtWaveStart || this.lives;
-        if (this.lives >= livesBefore) this._checkAchievement('perfect_wave');
+        if (this.lives >= livesBefore) {
+            this._checkAchievement('perfect_wave');
+            // Perfect wave celebration!
+            this._floatingTexts.push({
+                text: '✨ PERFECT WAVE! +25 GOLD ✨',
+                x: this.canvas.width / 2,
+                y: this.canvas.height / 2 - 20,
+                life: 2.0,
+                maxLife: 2.0,
+                color: '#44ff88',
+                size: 24
+            });
+            this.gold += 25;
+        }
         this._livesAtWaveStart = this.lives;
     },
 
@@ -1532,7 +1545,7 @@ const game = {
             const alpha = ft.life / ft.maxLife;
             ctx.globalAlpha = alpha;
             ctx.fillStyle = ft.color;
-            ctx.font = 'bold 16px monospace';
+            ctx.font = 'bold ' + (ft.size || 16) + 'px monospace';
             ctx.textAlign = 'center';
             ctx.shadowColor = ft.color;
             ctx.shadowBlur = 10;
