@@ -136,6 +136,11 @@ const ProjectilePool = {
                         p.target.critFlash = 0.25;
                         p.target.critHit = true; // Track for achievements
                     }
+                    // Screen shake on boss hits
+                    if (p.target && p.target.isBoss && game) {
+                        game.shakeTimer = 0.15;
+                        game.shakeIntensity = 4;
+                    }
                     ParticlePool.impact(p.x, p.y, p.color, angle);
                     if (dealt >= 8 && game && game._floatingTexts) {
                         // Color-code damage numbers: weak=yellow, normal=white, heavy=orange, crit=red
