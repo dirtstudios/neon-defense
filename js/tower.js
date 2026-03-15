@@ -110,13 +110,19 @@ function createTower(type, x, y) {
         findTarget(enemies) {
             let closest = null;
             let closestDist = Infinity;
+            // Apply range bonus from upgrades
+            let rangeBonus = 1;
+            if (game && game.perkState && game.perkState.rangeBonus) {
+                rangeBonus += game.perkState.rangeBonus;
+            }
+            const effectiveRange = this.range * rangeBonus;
             const candidates = (typeof game !== 'undefined' && game.getNearbyEnemies)
-                ? game.getNearbyEnemies(this.x, this.y, this.range)
+                ? game.getNearbyEnemies(this.x, this.y, effectiveRange)
                 : enemies;
             for (const e of candidates) {
                 if (!e.alive) continue;
                 const d = Utils.dist(this.x, this.y, e.x, e.y);
-                if (d <= this.range && d < closestDist) {
+                if (d <= effectiveRange && d < closestDist) {
                     closest = e;
                     closestDist = d;
                 }
@@ -138,9 +144,16 @@ function createTower(type, x, y) {
             if (this.target && this.cooldown <= 0) {
                 const dmgType = DamageTypes[this.type] || 'kinetic';
                 const origin = this.getFireOrigin();
+                // Apply global damage multipliers from perks and upgrades
+                let damageMult = 1;
+                if (game && game.perkState) {
+                    damageMult *= (game.perkState.globalDamageMult || 1);
+                    damageMult *= (game.perkState.fireRateMult || 1);
+                }
+                const finalDamage = this.damage * damageMult;
                 ProjectilePool.fire(
                     origin.x, origin.y, this.target,
-                    this.damage, 10,
+                    finalDamage, 10,
                     this.projectileColor,
                     this.aoe, this.aoeSlow, this.aoeRadius,
                     dmgType
@@ -166,7 +179,7 @@ function createTower(type, x, y) {
                     if (altTarget) {
                         ProjectilePool.fire(
                             origin.x, origin.y, altTarget,
-                            this.damage * 0.7, 10,
+                            finalDamage * 0.7, 10,
                             this.projectileColor,
                             false, false, 0,
                             dmgType
@@ -175,7 +188,12 @@ function createTower(type, x, y) {
                 }
                 this.recoil = this.type === 'sniper' ? 1 : (this.type === 'aoe' ? 0.8 : 0.55);
                 this.muzzleFlash = 1;
-                this.cooldown = 1 / this.fireRate;
+                // Apply fire rate multiplier from upgrades/perks
+                let fireRateMult = 1;
+                if (game && game.perkState && game.perkState.fireRateMult) {
+                    fireRateMult = game.perkState.fireRateMult;
+                }
+                this.cooldown = 1 / (this.fireRate * fireRateMult);
                 Audio.shoot(this.type);
             }
         },

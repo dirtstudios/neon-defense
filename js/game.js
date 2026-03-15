@@ -2,7 +2,7 @@
 const game = {
     canvas: null,
     ctx: null,
-    state: 'menu', // menu, playing, gameover
+    state: 'menu', // menu, playing, gameover, shop
     gold: 200,
     lives: 20,
     score: 0,
@@ -42,6 +42,16 @@ const game = {
     perkChoiceActive: false,
     perkOptions: [],
     perkHistory: [],
+    upgradeShopActive: false,
+    upgradeShopOptions: [],
+    upgrades: {
+        damage: 0,
+        fireRate: 0,
+        range: 0,
+        economy: 0,
+        startGold: 0,
+        startLives: 0
+    },
     achievements: JSON.parse(localStorage.getItem('neonDefenseAchievements') || '[]'),
     stars: JSON.parse(localStorage.getItem('neonDefenseStars') || '{}'),
     totalKills: parseInt(localStorage.getItem('neonDefenseTotalKills') || '0'),
@@ -279,8 +289,11 @@ const game = {
     },
 
     reset() {
-        this.gold = 200;
-        this.lives = 20;
+        // Apply starting upgrade bonuses
+        const startGoldBonus = this.upgrades.startGold * 50;
+        const startLivesBonus = this.upgrades.startLives * 5;
+        this.gold = 200 + startGoldBonus;
+        this.lives = 20 + startLivesBonus;
         this.score = 0;
         this.speed = 1;
         this.towers = [];
@@ -451,6 +464,57 @@ const game = {
         this.perkOptions = [];
         UI.updateActivePerks(this.perkState, this.perkHistory);
         try { this.__doAdvanceLevel(); } catch(e) { console.error('Level advance error:', e); }
+    },
+
+    _showUpgradeShop() {
+        // Generate 3 random upgrades
+        const upgradePool = [
+            { id: 'damage', name: '⚔️ Damage+', desc: '+15% tower damage', cost: 75 + this.upgrades.damage * 25, max: 5 },
+            { id: 'fireRate', name: '⚡ Fire Rate+', desc: '+10% attack speed', cost: 60 + this.upgrades.fireRate * 20, max: 5 },
+            { id: 'range', name: '👁️ Range+', desc: '+10% tower range', cost: 50 + this.upgrades.range * 15, max: 5 },
+            { id: 'economy', name: '💰 Economy+', desc: '+20% gold from kills', cost: 100 + this.upgrades.economy * 30, max: 3 },
+            { id: 'startGold', name: '🎁 Starting Gold+', desc: '+50 starting gold', cost: 80 + this.upgrades.startGold * 40, max: 4 },
+            { id: 'startLives', name: '❤️ Starting Lives+', desc: '+5 starting lives', cost: 100 + this.upgrades.startLives * 50, max: 3 }
+        ];
+        // Filter by max level
+        const available = upgradePool.filter(u => this.upgrades[u.id] < u.max);
+        if (available.length === 0) return;
+        
+        // Shuffle and pick 3
+        const shuffled = [...available].sort(() => Math.random() - 0.5);
+        this.upgradeShopOptions = shuffled.slice(0, 3);
+        this.upgradeShopActive = true;
+        UI.showUpgradeShop(this.upgradeShopOptions, this.gold, this.upgrades);
+    },
+
+    buyUpgrade(index) {
+        const upgrade = this.upgradeShopOptions[index];
+        if (!upgrade) return;
+        if (this.gold < upgrade.cost) return;
+        if (this.upgrades[upgrade.id] >= upgrade.max) return;
+        
+        this.gold -= upgrade.cost;
+        this.upgrades[upgrade.id]++;
+        
+        // Apply upgrade effect
+        if (upgrade.id === 'damage') this.perkState.globalDamageMult += 0.15;
+        if (upgrade.id === 'fireRate') this.perkState.fireRateMult += 0.1;
+        if (upgrade.id === 'range') this.perkState.rangeBonus = (this.perkState.rangeBonus || 0) + 0.1;
+        if (upgrade.id === 'economy') this.perkState.economyBonusGold = (this.perkState.economyBonusGold || 0) + 0.2;
+        if (upgrade.id === 'startGold') this.perkState.startingGoldBonus = (this.perkState.startingGoldBonus || 0) + 50;
+        if (upgrade.id === 'startLives') this.perkState.startingLivesBonus = (this.perkState.startingLivesBonus || 0) + 5;
+        
+        // Update UI and continue
+        UI.updateGold(this.gold);
+        this.upgradeShopActive = false;
+        this.upgradeShopOptions = [];
+        UI.hideUpgradeShop();
+    },
+
+    skipShop() {
+        this.upgradeShopActive = false;
+        this.upgradeShopOptions = [];
+        UI.hideUpgradeShop();
     },
 
     _checkAchievement(id) {
@@ -1085,6 +1149,10 @@ const game = {
             if (!e.alive && !e.scored && !e.reachedEnd) {
                 // Golden Touch perk: 15% chance for 2x gold
                 let goldEarned = e.gold;
+                // Economy bonus from upgrades
+                if (this.perkState.economyBonusGold) {
+                    goldEarned *= (1 + this.perkState.economyBonusGold);
+                }
                 // Gold powerup multiplier
                 if (this._activePowerups.goldMult > 1) goldEarned *= 2;
                 if (this.perkState.goldBonusChance && Math.random() < this.perkState.goldBonusChance) {
@@ -1367,6 +1435,9 @@ const game = {
             // Level progression: after all waves for this level, advance
             if (WaveManager.currentWave >= WaveManager.waves.length && !WaveManager.endless) {
                 this._advanceLevel();
+            } else if (!this.perkChoiceActive) {
+                // Show upgrade shop between waves
+                this._showUpgradeShop();
             }
 
             this.updateUI();

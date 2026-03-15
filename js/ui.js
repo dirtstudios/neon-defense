@@ -192,5 +192,54 @@ const UI = {
         if (game.mapInfo) {
             document.getElementById('end-map-info').textContent = `${game.mapInfo.name} • Seed: ${game.mapInfo.seed}`;
         }
+    },
+
+    showUpgradeShop(upgradeOptions, gold, currentUpgrades) {
+        let modal = document.getElementById('upgrade-shop-modal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'upgrade-shop-modal';
+            modal.innerHTML = `
+                <div id="upgrade-shop-inner">
+                    <h2>🛒 UPGRADE SHOP</h2>
+                    <p style="color:#aaa;font-size:12px;margin-bottom:15px;">Choose an upgrade or skip</p>
+                    <div id="upgrade-options"></div>
+                    <button onclick="game.skipShop()" style="margin-top:15px;background:#444;">Skip ></button>
+                </div>
+            `;
+            document.getElementById('game-container').appendChild(modal);
+        }
+        
+        const container = document.getElementById('upgrade-options');
+        container.innerHTML = '';
+        
+        upgradeOptions.forEach((upgrade, i) => {
+            const current = currentUpgrades[upgrade.id] || 0;
+            const canAfford = gold >= upgrade.cost;
+            const btn = document.createElement('button');
+            btn.className = 'upgrade-option';
+            btn.style.cssText = 'display:block;width:100%;padding:12px;margin:8px 0;background:#222;border:2px solid #444;border-radius:8px;color:#fff;cursor:pointer;transition:all 0.2s;';
+            btn.innerHTML = `
+                <div style="font-size:14px;font-weight:bold;">${upgrade.name} <span style="color:#888;">(${current}/${upgrade.max})</span></div>
+                <div style="font-size:11px;color:#aaa;">${upgrade.desc}</div>
+                <div style="font-size:13px;margin-top:5px;${canAfford ? 'color:#ffd700;' : 'color:#ff4444;'}">💰 ${upgrade.cost}</div>
+            `;
+            if (canAfford && current < upgrade.max) {
+                btn.style.borderColor = '#44ff88';
+                btn.onmouseover = () => btn.style.background = '#333';
+                btn.onmouseout = () => btn.style.background = '#222';
+            } else {
+                btn.style.opacity = '0.5';
+            }
+            btn.onclick = () => game.buyUpgrade(i);
+            container.appendChild(btn);
+        });
+        
+        modal.style.display = 'flex';
+    },
+
+    hideUpgradeShop() {
+        const modal = document.getElementById('upgrade-shop-modal');
+        if (modal) modal.style.display = 'none';
     }
 };
