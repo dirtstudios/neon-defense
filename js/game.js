@@ -524,33 +524,38 @@ const game = {
         return 1;
     },
 
-    _activatePowerup(type, targetTower) {
+    _activatePowerup(type, source) {
         const duration = 10; // 10 seconds
         let msg = '';
+        let color = '#ffffff';
         if (type === 'damage') {
             this._activePowerups.damage = duration;
             msg = '⚔️ DAMAGE BOOST!';
+            color = '#ff4444';
         } else if (type === 'speed') {
             this._activePowerups.speed = duration;
             msg = '⚡ SPEED BOOST!';
+            color = '#ffdd44';
         } else if (type === 'gold') {
             this._activePowerups.goldMult = duration;
             this.gold += 50;
             msg = '💰 +50 GOLD!';
+            color = '#ffd700';
         } else if (type === 'shield') {
             this.lives += 1;
             UI.updateLives(this.lives);
             msg = '🛡️ +1 LIFE!';
+            color = '#4488ff';
         }
-        // Show floating text
-        if (targetTower) {
+        // Show floating text at pickup point
+        if (source) {
             this._floatingTexts.push({
                 text: msg,
-                x: targetTower.x,
-                y: targetTower.y - 30,
+                x: source.x,
+                y: source.y - 18,
                 life: 1.5,
                 maxLife: 1.5,
-                color: type === 'damage' ? '#ff4444' : (type === 'speed' ? '#ffdd44' : (type === 'gold' ? '#ffd700' : '#4488ff'))
+                color
             });
         }
         // Play powerup sound
@@ -855,6 +860,17 @@ const game = {
         const gridKey = Utils.gridKey(mx, my);
         const gx = Math.floor(mx / Utils.GRID);
         const gy = Math.floor(my / Utils.GRID);
+
+        // Clickable powerup pickup
+        for (let i = this._powerups.length - 1; i >= 0; i--) {
+            const p = this._powerups[i];
+            if (Utils.dist(mx, my, p.x, p.y) < 22) {
+                this._activatePowerup(p.type, p);
+                ParticlePool.spawn(p.x, p.y, p.color, 12);
+                this._powerups.splice(i, 1);
+                return;
+            }
+        }
 
         // Check if clicking existing tower
         for (const t of this.towers) {
@@ -1296,16 +1312,7 @@ const game = {
                 p.vy *= -0.5;
                 p.vx *= 0.8;
             }
-            // Check pickup (touching any tower or player position)
-            let pickedUp = false;
-            for (const t of this.towers) {
-                if (Math.hypot(p.x - t.x, p.y - t.y) < 30) {
-                    pickedUp = true;
-                    this._activatePowerup(p.type, t);
-                    break;
-                }
-            }
-            if (!pickedUp && p.life <= 0) {
+            if (p.life <= 0) {
                 this._powerups.splice(i, 1);
             }
         }
@@ -1592,13 +1599,23 @@ const game = {
             ctx.beginPath();
             ctx.arc(p.x, p.y, 12 * pulse, 0, Math.PI * 2);
             ctx.fill();
-            // Symbol
+            // Click ring
             ctx.shadowBlur = 0;
+            ctx.strokeStyle = 'rgba(255,255,255,0.7)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, 16 + Math.sin(performance.now() * 0.008) * 2, 0, Math.PI * 2);
+            ctx.stroke();
+            // Symbol
             ctx.fillStyle = '#fff';
             ctx.font = 'bold 12px sans-serif';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText(p.symbol, p.x, p.y);
+            // Tap hint
+            ctx.fillStyle = 'rgba(255,255,255,0.9)';
+            ctx.font = 'bold 9px sans-serif';
+            ctx.fillText('TAP', p.x, p.y + 24);
             ctx.globalAlpha = 1;
         }
         
